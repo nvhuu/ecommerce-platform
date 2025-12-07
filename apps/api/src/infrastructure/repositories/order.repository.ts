@@ -1,37 +1,94 @@
 import { Injectable } from '@nestjs/common';
-import { Order, OrderStatus } from '../../domain/entities/order.entity';
+import { Order } from '../../domain/entities/order.entity';
 import { IOrderRepository } from '../../domain/repositories/order.repository.interface';
-import { Prisma } from '../../generated/prisma/client';
+import { OrderStatus } from '../../generated/prisma/enums';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {
   constructor(private prisma: PrismaService) {}
 
-  async create(order: Partial<Order>): Promise<Order> {
-    const created = await this.prisma.order.create({
+  async create(order: Order): Promise<Order> {
+    const createdOrder = await this.prisma.order.create({
       data: {
-        userId: order.userId!,
-        totalAmount: order.totalAmount as unknown as Prisma.Decimal, // Cast to any/Decimal. Using unknown avoids type mismatch if number passed
-        status: order.status as any, // Enum mapping
+        userId: order.userId,
+        status: order.status as OrderStatus,
+        totalAmount: order.totalAmount,
         items: {
           create: order.items?.map((item) => ({
             productId: item.productId,
             quantity: item.quantity,
-            price: item.price as unknown as Prisma.Decimal,
+            price: item.price,
           })),
         },
       },
       include: { items: true },
     });
-    return this.mapToEntity(created);
+    return Order.toDomain(createdOrder)!;
   }
 
-  async findAll(): Promise<Order[]> {
-    const orders = await this.prisma.order.findMany({
-      include: { items: true },
-    });
-    return orders.map((o: any) => this.mapToEntity(o));
+  async findAll(options: {
+    cursor?: string;
+    page?: number;
+    limit: number;
+  }): Promise<{
+    data: Order[];
+    total?: number;
+    hasMore?: boolean;
+    lastId?: string;
+    usedCursor: boolean;
+  }> {
+    if (options.cursor) {
+      // Cursor pagination
+      const decodedCursor = Buffer.from(options.cursor, 'base64').toString();
+
+      const data = await this.prisma.order.findMany({
+        take: options.limit + 1,
+        cursor: { id: decodedCursor },
+        skip: 1,
+        where: { deletedAt: null },
+        include: { items: true },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const hasMore = data.length > options.limit;
+      const results = hasMore ? data.slice(0, options.limit) : data;
+      const lastId =
+        results.length > 0 ? results[results.length - 1].id : undefined;
+
+      return {
+        data: results
+          .map((o: any) => Order.toDomain(o))
+          .filter((o: Order | null): o is Order => o !== null),
+        hasMore,
+        lastId,
+        usedCursor: true,
+      };
+    } else {
+      // Offset pagination
+      const skip = ((options.page || 1) - 1) * options.limit;
+
+      const [data, total] = await Promise.all([
+        this.prisma.order.findMany({
+          where: { deletedAt: null },
+          skip,
+          take: options.limit,
+          include: { items: true },
+          orderBy: { createdAt: 'desc' },
+        }),
+        this.prisma.order.count({
+          where: { deletedAt: null },
+        }),
+      ]);
+
+      return {
+        data: data
+          .map((o: any) => Order.toDomain(o))
+          .filter((o: Order | null): o is Order => o !== null),
+        total,
+        usedCursor: false,
+      };
+    }
   }
 
   async findById(id: string): Promise<Order | null> {
@@ -39,44 +96,92 @@ export class OrderRepository implements IOrderRepository {
       where: { id },
       include: { items: true },
     });
-    if (!order) return null;
-    return this.mapToEntity(order);
+    if (!order || order.deletedAt) return null;
+    return Order.toDomain(order);
   }
 
-  async findByUser(userId: string): Promise<Order[]> {
-    const orders = await this.prisma.order.findMany({
-      where: { userId },
-      include: { items: true },
-    });
-    return orders.map((o: any) => this.mapToEntity(o));
+  async findByUser(
+    userId: string,
+    options: {
+      cursor?: string;
+      page?: number;
+      limit: number;
+    },
+  ): Promise<{
+    data: Order[];
+    total?: number;
+    hasMore?: boolean;
+    lastId?: string;
+    usedCursor: boolean;
+  }> {
+    if (options.cursor) {
+      // Cursor pagination
+      const decodedCursor = Buffer.from(options.cursor, 'base64').toString();
+
+      const data = await this.prisma.order.findMany({
+        take: options.limit + 1,
+        cursor: { id: decodedCursor },
+        skip: 1,
+        where: {
+          userId,
+          deletedAt: null,
+        },
+        include: { items: true },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const hasMore = data.length > options.limit;
+      const results = hasMore ? data.slice(0, options.limit) : data;
+      const lastId =
+        results.length > 0 ? results[results.length - 1].id : undefined;
+
+      return {
+        data: results
+          .map((o: any) => Order.toDomain(o))
+          .filter((o: Order | null): o is Order => o !== null),
+        hasMore,
+        lastId,
+        usedCursor: true,
+      };
+    } else {
+      // Offset pagination
+      const skip = ((options.page || 1) - 1) * options.limit;
+
+      const [data, total] = await Promise.all([
+        this.prisma.order.findMany({
+          where: {
+            userId,
+            deletedAt: null,
+          },
+          skip,
+          take: options.limit,
+          include: { items: true },
+          orderBy: { createdAt: 'desc' },
+        }),
+        this.prisma.order.count({
+          where: {
+            userId,
+            deletedAt: null,
+          },
+        }),
+      ]);
+
+      return {
+        data: data
+          .map((o: any) => Order.toDomain(o))
+          .filter((o: Order | null): o is Order => o !== null),
+        total,
+        usedCursor: false,
+      };
+    }
   }
 
   async updateStatus(id: string, status: string): Promise<Order> {
     const updated = await this.prisma.order.update({
       where: { id },
-      data: { status: status as any },
+      data: { status: status as OrderStatus },
       include: { items: true },
     });
-    return this.mapToEntity(updated);
-  }
-
-  private mapToEntity(prismaOrder: any): Order {
-    const o = new Order();
-    o.id = prismaOrder.id;
-    o.userId = prismaOrder.userId;
-    o.totalAmount = prismaOrder.totalAmount.toNumber();
-    o.status = prismaOrder.status as OrderStatus;
-    o.createdAt = prismaOrder.createdAt;
-    o.updatedAt = prismaOrder.updatedAt;
-    if (prismaOrder.items) {
-      o.items = prismaOrder.items.map((i: any) => ({
-        id: i.id,
-        orderId: i.orderId,
-        productId: i.productId,
-        quantity: i.quantity,
-        price: i.price.toNumber(),
-      }));
-    }
-    return o;
+    return Order.toDomain(updated)!;
   }
 }

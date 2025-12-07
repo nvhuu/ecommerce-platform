@@ -16,58 +16,106 @@ export class UserRepository implements IUserRepository {
         role: user.role as Role,
       },
     });
-    return this.mapToEntity(createdUser);
+    return User.toDomain(createdUser)!;
   }
 
   async findByEmail(email: string): Promise<User | null> {
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
-    if (!user) return null;
-    return this.mapToEntity(user);
+    if (!user || user.deletedAt) return null;
+    return User.toDomain(user);
   }
 
   async findById(id: string): Promise<User | null> {
     const user = await this.prisma.user.findUnique({
       where: { id },
     });
-    if (!user) return null;
-    return this.mapToEntity(user);
+    if (!user || user.deletedAt) return null;
+    return User.toDomain(user);
   }
 
-  async findAll(): Promise<User[]> {
-    const users = await this.prisma.user.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-    return users.map((user: any) => this.mapToEntity(user));
+  async findAll(options: {
+    cursor?: string;
+    page?: number;
+    limit: number;
+  }): Promise<{
+    data: User[];
+    total?: number;
+    hasMore?: boolean;
+    lastId?: string;
+    usedCursor: boolean;
+  }> {
+    if (options.cursor) {
+      // Cursor pagination
+      const decodedCursor = Buffer.from(options.cursor, 'base64').toString();
+
+      const data = await this.prisma.user.findMany({
+        take: options.limit + 1,
+        cursor: { id: decodedCursor },
+        skip: 1,
+        where: { deletedAt: null },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const hasMore = data.length > options.limit;
+      const results = hasMore ? data.slice(0, options.limit) : data;
+      const lastId =
+        results.length > 0 ? results[results.length - 1].id : undefined;
+
+      return {
+        data: results
+          .map((u: any) => User.toDomain(u))
+          .filter((u: User | null): u is User => u !== null),
+        hasMore,
+        lastId,
+        usedCursor: true,
+      };
+    } else {
+      // Offset pagination
+      const skip = ((options.page || 1) - 1) * options.limit;
+
+      const [data, total] = await Promise.all([
+        this.prisma.user.findMany({
+          where: { deletedAt: null },
+          skip,
+          take: options.limit,
+          orderBy: { createdAt: 'desc' },
+        }),
+        this.prisma.user.count({
+          where: { deletedAt: null },
+        }),
+      ]);
+
+      return {
+        data: data
+          .map((u: any) => User.toDomain(u))
+          .filter((u: User | null): u is User => u !== null),
+        total,
+        usedCursor: false,
+      };
+    }
   }
 
   async update(id: string, data: Partial<User>): Promise<User | null> {
     const user = await this.prisma.user.update({
       where: { id },
       data: {
-        ...(data.email && { email: data.email }),
-        ...(data.password && { password: data.password }),
-        ...(data.role && { role: data.role as Role }),
+        email: data.email,
+        password: data.password,
+        role: data.role as Role,
       },
     });
-    return this.mapToEntity(user);
+    return User.toDomain(user);
   }
 
-  async delete(id: string): Promise<void> {
-    await this.prisma.user.delete({
+  async delete(id: string, deletedBy?: string): Promise<void> {
+    await this.prisma.user.update({
       where: { id },
+      data: {
+        deletedAt: new Date(),
+        ...(deletedBy && { deletedBy }),
+      },
     });
-  }
-
-  private mapToEntity(prismaUser: any): User {
-    const user = new User();
-    user.id = prismaUser.id;
-    user.email = prismaUser.email;
-    user.password = prismaUser.password;
-    user.role = prismaUser.role as unknown as any; // Cast generic role to entity role
-    user.createdAt = prismaUser.createdAt;
-    user.updatedAt = prismaUser.updatedAt;
-    return user;
   }
 }

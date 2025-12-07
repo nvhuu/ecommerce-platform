@@ -8,21 +8,79 @@ export class CategoryRepository implements ICategoryRepository {
   constructor(private prisma: PrismaService) {}
 
   async create(category: Partial<Category>): Promise<Category> {
-    const created = await this.prisma.category.create({
+    const createdCategory = await this.prisma.category.create({
       data: {
         name: category.name!,
         slug: category.slug!,
         parentId: category.parentId,
       },
-    });
-    return this.mapToEntity(created);
-  }
-
-  async findAll(): Promise<Category[]> {
-    const categories = await this.prisma.category.findMany({
       include: { children: true },
     });
-    return categories.map((c: any) => this.mapToEntity(c));
+    return Category.toDomain(createdCategory)!;
+  }
+
+  async findAll(options: {
+    cursor?: string;
+    page?: number;
+    limit: number;
+  }): Promise<{
+    data: Category[];
+    total?: number;
+    hasMore?: boolean;
+    lastId?: string;
+    usedCursor: boolean;
+  }> {
+    if (options.cursor) {
+      // Cursor pagination
+      const decodedCursor = Buffer.from(options.cursor, 'base64').toString();
+
+      const data = await this.prisma.category.findMany({
+        take: options.limit + 1,
+        cursor: { id: decodedCursor },
+        skip: 1,
+        where: { deletedAt: null },
+        include: { children: true },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const hasMore = data.length > options.limit;
+      const results = hasMore ? data.slice(0, options.limit) : data;
+      const lastId =
+        results.length > 0 ? results[results.length - 1].id : undefined;
+
+      return {
+        data: results
+          .map((c: any) => Category.toDomain(c))
+          .filter((c: Category | null): c is Category => c !== null),
+        hasMore,
+        lastId,
+        usedCursor: true,
+      };
+    } else {
+      // Offset pagination
+      const skip = ((options.page || 1) - 1) * options.limit;
+
+      const [data, total] = await Promise.all([
+        this.prisma.category.findMany({
+          where: { deletedAt: null },
+          skip,
+          take: options.limit,
+          include: { children: true },
+          orderBy: { createdAt: 'desc' },
+        }),
+        this.prisma.category.count({
+          where: { deletedAt: null },
+        }),
+      ]);
+
+      return {
+        data: data
+          .map((c: any) => Category.toDomain(c))
+          .filter((c: Category | null): c is Category => c !== null),
+        total,
+        usedCursor: false,
+      };
+    }
   }
 
   async findById(id: string): Promise<Category | null> {
@@ -30,8 +88,8 @@ export class CategoryRepository implements ICategoryRepository {
       where: { id },
       include: { children: true, parent: true },
     });
-    if (!category) return null;
-    return this.mapToEntity(category);
+    if (!category || category.deletedAt) return null;
+    return Category.toDomain(category);
   }
 
   async update(id: string, category: Partial<Category>): Promise<Category> {
@@ -42,30 +100,18 @@ export class CategoryRepository implements ICategoryRepository {
         slug: category.slug,
         parentId: category.parentId,
       },
+      include: { children: true },
     });
-    return this.mapToEntity(updated);
+    return Category.toDomain(updated)!;
   }
 
-  async delete(id: string): Promise<void> {
-    await this.prisma.category.delete({ where: { id } });
-  }
-
-  private mapToEntity(prismaCategory: any): Category {
-    const cat = new Category();
-    cat.id = prismaCategory.id;
-    cat.name = prismaCategory.name;
-    cat.slug = prismaCategory.slug;
-    cat.parentId = prismaCategory.parentId;
-    cat.createdAt = prismaCategory.createdAt;
-    cat.updatedAt = prismaCategory.updatedAt;
-    if (prismaCategory.children) {
-      cat.children = prismaCategory.children.map((c: any) =>
-        this.mapToEntity(c),
-      );
-    }
-    if (prismaCategory.parent) {
-      cat.parent = this.mapToEntity(prismaCategory.parent);
-    }
-    return cat;
+  async delete(id: string, deletedBy?: string): Promise<void> {
+    await this.prisma.category.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        ...(deletedBy && { deletedBy }),
+      },
+    });
   }
 }

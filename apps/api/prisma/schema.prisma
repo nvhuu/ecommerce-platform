@@ -19,25 +19,45 @@ enum Role {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  orders    Order[]
+  id                    String     @id @default(uuid())
+  email                 String     @unique
+  password              String
+  role                  Role       @default(USER)
+  createdAt             DateTime   @default(now())
+  createdBy             String?
+  updatedAt             DateTime   @updatedAt
+  updatedBy             String?
+  deletedAt             DateTime?
+  deletedBy             String?
+  orders                Order[]
+  createdCategories     Category[] @relation("CategoryCreator")
+  updatedCategories     Category[] @relation("CategoryUpdater")
+  deletedCategories     Category[] @relation("CategoryDeleter")
+  createdProducts       Product[]  @relation("ProductCreator")
+  updatedProducts       Product[]  @relation("ProductUpdater")
+  deletedProducts       Product[]  @relation("ProductDeleter")
+  createdOrders         Order[]    @relation("OrderCreator")
+  updatedOrders         Order[]    @relation("OrderUpdater")
+  deletedOrders         Order[]    @relation("OrderDeleter")
 }
 
 model Category {
-  id        String     @id @default(uuid())
-  name      String
-  slug      String     @unique
-  parentId  String?
-  parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children  Category[] @relation("CategoryHierarchy")
-  products  Product[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id         String     @id @default(uuid())
+  name       String
+  slug       String     @unique
+  parentId   String?
+  parent     Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children   Category[] @relation("CategoryHierarchy")
+  products   Product[]
+  createdAt  DateTime   @default(now())
+  createdBy  String?
+  creator    User?      @relation("CategoryCreator", fields: [createdBy], references: [id])
+  updatedAt  DateTime   @updatedAt
+  updatedBy  String?
+  updater    User?      @relation("CategoryUpdater", fields: [updatedBy], references: [id])
+  deletedAt  DateTime?
+  deletedBy  String?
+  deleter    User?      @relation("CategoryDeleter", fields: [deletedBy], references: [id])
 }
 
 model Product {
@@ -51,7 +71,14 @@ model Product {
   category    Category    @relation(fields: [categoryId], references: [id])
   orderItems  OrderItem[]
   createdAt   DateTime    @default(now())
+  createdBy   String?
+  creator     User?       @relation("ProductCreator", fields: [createdBy], references: [id])
   updatedAt   DateTime    @updatedAt
+  updatedBy   String?
+  updater     User?       @relation("ProductUpdater", fields: [updatedBy], references: [id])
+  deletedAt   DateTime?
+  deletedBy   String?
+  deleter     User?       @relation("ProductDeleter", fields: [deletedBy], references: [id])
 }
 
 enum OrderStatus {
@@ -68,7 +95,14 @@ model Order {
   status      OrderStatus @default(PENDING)
   items       OrderItem[]
   createdAt   DateTime    @default(now())
+  createdBy   String?
+  creator     User?       @relation("OrderCreator", fields: [createdBy], references: [id])
   updatedAt   DateTime    @updatedAt
+  updatedBy   String?
+  updater     User?       @relation("OrderUpdater", fields: [updatedBy], references: [id])
+  deletedAt   DateTime?
+  deletedBy   String?
+  deleter     User?       @relation("OrderDeleter", fields: [deletedBy], references: [id])
 }
 
 model OrderItem {

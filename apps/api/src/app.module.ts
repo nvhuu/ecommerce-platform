@@ -9,7 +9,8 @@ import { OrdersModule } from './application/modules/orders/orders.module';
 import { ProductsModule } from './application/modules/products/products.module';
 import { UsersModule } from './application/modules/users/users.module';
 import { AllExceptionsFilter } from './infrastructure/filters/all-exceptions.filter';
-import { TransformInterceptor } from './infrastructure/interceptors/transform.interceptor';
+import { AuditInterceptor } from './infrastructure/interceptors/audit.interceptor';
+import { SerializeInterceptor } from './infrastructure/interceptors/serialize.interceptor';
 import { PrismaModule } from './infrastructure/prisma/prisma.module';
 
 @Module({
@@ -32,7 +33,11 @@ import { PrismaModule } from './infrastructure/prisma/prisma.module';
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: TransformInterceptor,
+      useClass: AuditInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SerializeInterceptor,
     },
   ],
 })

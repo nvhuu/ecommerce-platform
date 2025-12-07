@@ -4,7 +4,6 @@ import * as bcrypt from 'bcrypt';
 import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
 import { CreateUserDto } from '../../dtos/auth.dto';
 import { UserResponseDto } from '../../dtos/response';
-import { toDto } from '../../utils/mapper.util';
 
 @Injectable()
 export class AuthService {
@@ -18,7 +17,7 @@ export class AuthService {
     const user = await this.userRepository.findByEmail(email);
     if (user && (await bcrypt.compare(pass, user.password))) {
       // Return user without password for validation
-      return toDto(UserResponseDto, user);
+      return user;
     }
     return null;
   }
@@ -40,6 +39,6 @@ export class AuthService {
       ...data,
       password: hashedPassword,
     });
-    return toDto(UserResponseDto, user) as UserResponseDto;
+    return user;
   }
 }

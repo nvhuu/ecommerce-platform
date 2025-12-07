@@ -8,7 +8,7 @@ import { IOrderRepository } from '../../../domain/repositories/order.repository.
 import { IProductRepository } from '../../../domain/repositories/product.repository.interface';
 import { CreateOrderDto } from '../../dtos/order.dto';
 import { OrderResponseDto } from '../../dtos/response';
-import { toDto } from '../../utils/mapper.util';
+import { HybridPaginatedDto } from '../../dtos/response/hybrid-paginated.response.dto';
 
 @Injectable()
 export class OrdersService {
@@ -35,41 +35,86 @@ export class OrdersService {
       const item = new OrderItem();
       item.productId = product.id;
       item.quantity = itemDto.quantity;
-      item.price = product.price; // Snapshot price
+      item.price = product.price;
       items.push(item);
 
-      totalAmount += product.price * item.quantity;
+      totalAmount += product.price * itemDto.quantity;
     }
 
     const order = new Order();
     order.userId = userId;
-    order.items = items;
-    order.totalAmount = totalAmount;
     order.status = OrderStatus.PENDING;
+    order.totalAmount = totalAmount;
+    order.items = items;
 
     const createdOrder = await this.orderRepository.create(order);
-    return toDto(OrderResponseDto, createdOrder) as OrderResponseDto;
+    return createdOrder;
   }
 
-  async findAll(): Promise<OrderResponseDto[]> {
-    const orders = await this.orderRepository.findAll();
-    return toDto(OrderResponseDto, orders) as OrderResponseDto[];
+  async findAll(
+    cursor?: string,
+    page?: number,
+    limit: number = 10,
+  ): Promise<HybridPaginatedDto<OrderResponseDto>> {
+    const result = await this.orderRepository.findAll({ cursor, page, limit });
+
+    if (result.usedCursor) {
+      return new HybridPaginatedDto(result.data, 'cursor', {
+        hasNextPage: result.hasMore!,
+        nextCursor: result.lastId
+          ? Buffer.from(result.lastId).toString('base64')
+          : undefined,
+        limit,
+      });
+    } else {
+      return new HybridPaginatedDto(result.data, 'offset', {
+        total: result.total!,
+        page: page || 1,
+        limit,
+      });
+    }
   }
 
   async findOne(id: string): Promise<OrderResponseDto> {
     const order = await this.orderRepository.findById(id);
     if (!order) throw new NotFoundException('Order not found');
-    return toDto(OrderResponseDto, order) as OrderResponseDto;
+    return order;
   }
 
-  async findByUser(userId: string): Promise<OrderResponseDto[]> {
-    const orders = await this.orderRepository.findByUser(userId);
-    return toDto(OrderResponseDto, orders) as OrderResponseDto[];
+  async findByUser(
+    userId: string,
+    cursor?: string,
+    page?: number,
+    limit: number = 10,
+  ): Promise<HybridPaginatedDto<OrderResponseDto>> {
+    const result = await this.orderRepository.findByUser(userId, {
+      cursor,
+      page,
+      limit,
+    });
+
+    if (result.usedCursor) {
+      return new HybridPaginatedDto(result.data, 'cursor', {
+        hasNextPage: result.hasMore!,
+        nextCursor: result.lastId
+          ? Buffer.from(result.lastId).toString('base64')
+          : undefined,
+        limit,
+      });
+    } else {
+      return new HybridPaginatedDto(result.data, 'offset', {
+        total: result.total!,
+        page: page || 1,
+        limit,
+      });
+    }
   }
 
   async updateStatus(id: string, status: string): Promise<OrderResponseDto> {
-    const order = await this.orderRepository.updateStatus(id, status);
+    const order = await this.orderRepository.findById(id);
     if (!order) throw new NotFoundException('Order not found');
-    return toDto(OrderResponseDto, order) as OrderResponseDto;
+
+    const updated = await this.orderRepository.updateStatus(id, status);
+    return updated;
   }
 }

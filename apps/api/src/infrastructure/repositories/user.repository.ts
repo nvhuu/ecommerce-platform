@@ -35,6 +35,31 @@ export class UserRepository implements IUserRepository {
     return this.mapToEntity(user);
   }
 
+  async findAll(): Promise<User[]> {
+    const users = await this.prisma.user.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    return users.map((user: any) => this.mapToEntity(user));
+  }
+
+  async update(id: string, data: Partial<User>): Promise<User | null> {
+    const user = await this.prisma.user.update({
+      where: { id },
+      data: {
+        ...(data.email && { email: data.email }),
+        ...(data.password && { password: data.password }),
+        ...(data.role && { role: data.role as Role }),
+      },
+    });
+    return this.mapToEntity(user);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.user.delete({
+      where: { id },
+    });
+  }
+
   private mapToEntity(prismaUser: any): User {
     const user = new User();
     user.id = prismaUser.id;

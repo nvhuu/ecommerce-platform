@@ -5,6 +5,7 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { instanceToPlain } from 'class-transformer';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { RESPONSE_MESSAGE_KEY } from '../decorators/response-message.decorator';
@@ -27,15 +28,23 @@ export class TransformInterceptor<T> implements NestInterceptor<
     next: CallHandler,
   ): Observable<Response<T>> {
     return next.handle().pipe(
-      map((data) => ({
-        statusCode: context.switchToHttp().getResponse().statusCode,
-        message:
-          this.reflector.get<string>(
-            RESPONSE_MESSAGE_KEY,
-            context.getHandler(),
-          ) || 'Success',
-        data,
-      })),
+      map((data) => {
+        // Transform class instances to plain objects, respecting @Expose/@Exclude
+        const transformedData = instanceToPlain(data, {
+          excludeExtraneousValues: false,
+          exposeUnsetFields: false,
+        });
+
+        return {
+          statusCode: context.switchToHttp().getResponse().statusCode,
+          message:
+            this.reflector.get<string>(
+              RESPONSE_MESSAGE_KEY,
+              context.getHandler(),
+            ) || 'Success',
+          data: transformedData as T,
+        };
+      }),
     );
   }
 }

@@ -7,17 +7,22 @@ import {
 import { IOrderRepository } from '../../../domain/repositories/order.repository.interface';
 import { IProductRepository } from '../../../domain/repositories/product.repository.interface';
 import { CreateOrderDto } from '../../dtos/order.dto';
+import { OrderResponseDto } from '../../dtos/response';
+import { toDto } from '../../utils/mapper.util';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @Inject('IOrderRepository')
-    private orderRepository: IOrderRepository,
+    private readonly orderRepository: IOrderRepository,
     @Inject('IProductRepository')
-    private productRepository: IProductRepository,
+    private readonly productRepository: IProductRepository,
   ) {}
 
-  async create(userId: string, createOrderDto: CreateOrderDto) {
+  async create(
+    userId: string,
+    createOrderDto: CreateOrderDto,
+  ): Promise<OrderResponseDto> {
     const items: OrderItem[] = [];
     let totalAmount = 0;
 
@@ -42,22 +47,29 @@ export class OrdersService {
     order.totalAmount = totalAmount;
     order.status = OrderStatus.PENDING;
 
-    return this.orderRepository.create(order);
+    const createdOrder = await this.orderRepository.create(order);
+    return toDto(OrderResponseDto, createdOrder) as OrderResponseDto;
   }
 
-  findAll() {
-    return this.orderRepository.findAll();
+  async findAll(): Promise<OrderResponseDto[]> {
+    const orders = await this.orderRepository.findAll();
+    return toDto(OrderResponseDto, orders) as OrderResponseDto[];
   }
 
-  findOne(id: string) {
-    return this.orderRepository.findById(id);
+  async findOne(id: string): Promise<OrderResponseDto> {
+    const order = await this.orderRepository.findById(id);
+    if (!order) throw new NotFoundException('Order not found');
+    return toDto(OrderResponseDto, order) as OrderResponseDto;
   }
 
-  findByUser(userId: string) {
-    return this.orderRepository.findByUser(userId);
+  async findByUser(userId: string): Promise<OrderResponseDto[]> {
+    const orders = await this.orderRepository.findByUser(userId);
+    return toDto(OrderResponseDto, orders) as OrderResponseDto[];
   }
 
-  updateStatus(id: string, status: string) {
-    return this.orderRepository.updateStatus(id, status);
+  async updateStatus(id: string, status: string): Promise<OrderResponseDto> {
+    const order = await this.orderRepository.updateStatus(id, status);
+    if (!order) throw new NotFoundException('Order not found');
+    return toDto(OrderResponseDto, order) as OrderResponseDto;
   }
 }

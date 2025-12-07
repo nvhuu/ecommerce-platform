@@ -1,6 +1,6 @@
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 
-export class Category {
+export class CategoryResponseDto {
   @Expose()
   id!: string;
 
@@ -14,10 +14,12 @@ export class Category {
   parentId?: string | null;
 
   @Expose()
-  children?: Category[];
+  @Type(() => CategoryResponseDto)
+  children?: CategoryResponseDto[];
 
   @Expose()
-  parent?: Category;
+  @Type(() => CategoryResponseDto)
+  parent?: CategoryResponseDto;
 
   @Expose()
   createdAt!: Date;

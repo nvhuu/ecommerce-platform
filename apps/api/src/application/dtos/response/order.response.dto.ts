@@ -1,12 +1,7 @@
 import { Expose, Type } from 'class-transformer';
+import { OrderStatus } from '../../../domain/entities/order.entity';
 
-export enum OrderStatus {
-  PENDING = 'PENDING',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED',
-}
-
-export class OrderItem {
+export class OrderItemResponseDto {
   @Expose()
   id!: string;
 
@@ -23,7 +18,7 @@ export class OrderItem {
   price!: number;
 }
 
-export class Order {
+export class OrderResponseDto {
   @Expose()
   id!: string;
 
@@ -37,8 +32,8 @@ export class Order {
   status!: OrderStatus;
 
   @Expose()
-  @Type(() => OrderItem)
-  items?: OrderItem[];
+  @Type(() => OrderItemResponseDto)
+  items?: OrderItemResponseDto[];
 
   @Expose()
   createdAt!: Date;

@@ -3,20 +3,22 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
 import { CreateUserDto } from '../../dtos/auth.dto';
+import { UserResponseDto } from '../../dtos/response';
+import { toDto } from '../../utils/mapper.util';
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject('IUserRepository')
-    private userRepository: IUserRepository,
-    private jwtService: JwtService,
+    private readonly userRepository: IUserRepository,
+    private readonly jwtService: JwtService,
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.userRepository.findByEmail(email);
     if (user && (await bcrypt.compare(pass, user.password))) {
-      const { password, ...result } = user;
-      return result;
+      // Return user without password for validation
+      return toDto(UserResponseDto, user);
     }
     return null;
   }
@@ -28,7 +30,7 @@ export class AuthService {
     };
   }
 
-  async register(data: CreateUserDto) {
+  async register(data: CreateUserDto): Promise<UserResponseDto> {
     const existingUser = await this.userRepository.findByEmail(data.email);
     if (existingUser) {
       throw new ConflictException('Email already exists');
@@ -38,7 +40,6 @@ export class AuthService {
       ...data,
       password: hashedPassword,
     });
-    const { password, ...result } = user;
-    return result;
+    return toDto(UserResponseDto, user) as UserResponseDto;
   }
 }

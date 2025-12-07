@@ -1,31 +1,47 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ICategoryRepository } from '../../../domain/repositories/category.repository.interface';
 import { CreateCategoryDto, UpdateCategoryDto } from '../../dtos/category.dto';
+import { CategoryResponseDto } from '../../dtos/response';
+import { toDto } from '../../utils/mapper.util';
 
 @Injectable()
 export class CategoriesService {
   constructor(
     @Inject('ICategoryRepository')
-    private categoryRepository: ICategoryRepository,
+    private readonly categoryRepository: ICategoryRepository,
   ) {}
 
-  create(createCategoryDto: CreateCategoryDto) {
-    return this.categoryRepository.create(createCategoryDto);
+  async create(
+    createCategoryDto: CreateCategoryDto,
+  ): Promise<CategoryResponseDto> {
+    const category = await this.categoryRepository.create(createCategoryDto);
+    return toDto(CategoryResponseDto, category) as CategoryResponseDto;
   }
 
-  findAll() {
-    return this.categoryRepository.findAll();
+  async findAll(): Promise<CategoryResponseDto[]> {
+    const categories = await this.categoryRepository.findAll();
+    return toDto(CategoryResponseDto, categories) as CategoryResponseDto[];
   }
 
-  findOne(id: string) {
-    return this.categoryRepository.findById(id);
+  async findOne(id: string): Promise<CategoryResponseDto> {
+    const category = await this.categoryRepository.findById(id);
+    if (!category) throw new NotFoundException('Category not found');
+    return toDto(CategoryResponseDto, category) as CategoryResponseDto;
   }
 
-  update(id: string, updateCategoryDto: UpdateCategoryDto) {
-    return this.categoryRepository.update(id, updateCategoryDto);
+  async update(
+    id: string,
+    updateCategoryDto: UpdateCategoryDto,
+  ): Promise<CategoryResponseDto> {
+    const category = await this.categoryRepository.update(
+      id,
+      updateCategoryDto,
+    );
+    if (!category) throw new NotFoundException('Category not found');
+    return toDto(CategoryResponseDto, category) as CategoryResponseDto;
   }
 
-  remove(id: string) {
-    return this.categoryRepository.delete(id);
+  async remove(id: string): Promise<void> {
+    await this.categoryRepository.delete(id);
   }
 }

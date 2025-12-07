@@ -1,7 +1,7 @@
 import { Expose, Type } from 'class-transformer';
-import { Category } from './category.entity';
+import { CategoryResponseDto } from './category.response.dto';
 
-export class Product {
+export class ProductResponseDto {
   @Expose()
   id!: string;
 
@@ -24,8 +24,8 @@ export class Product {
   categoryId!: string;
 
   @Expose()
-  @Type(() => Category)
-  category?: Category;
+  @Type(() => CategoryResponseDto)
+  category?: CategoryResponseDto;
 
   @Expose()
   createdAt!: Date;

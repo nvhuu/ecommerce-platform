@@ -22,7 +22,7 @@ export class CategoryRepository implements ICategoryRepository {
     const categories = await this.prisma.category.findMany({
       include: { children: true },
     });
-    return categories.map((c) => this.mapToEntity(c));
+    return categories.map((c: any) => this.mapToEntity(c));
   }
 
   async findById(id: string): Promise<Category | null> {
@@ -59,7 +59,9 @@ export class CategoryRepository implements ICategoryRepository {
     cat.createdAt = prismaCategory.createdAt;
     cat.updatedAt = prismaCategory.updatedAt;
     if (prismaCategory.children) {
-      cat.children = prismaCategory.children.map((c) => this.mapToEntity(c));
+      cat.children = prismaCategory.children.map((c: any) =>
+        this.mapToEntity(c),
+      );
     }
     if (prismaCategory.parent) {
       cat.parent = this.mapToEntity(prismaCategory.parent);

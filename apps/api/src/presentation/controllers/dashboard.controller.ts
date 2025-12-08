@@ -1,4 +1,10 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { DashboardStatsResponseDto } from '../../application/dtos/response';
 import { DashboardService } from '../../application/modules/dashboard/dashboard.service';
 import { Role } from '../../domain/entities/user.entity';
@@ -8,6 +14,8 @@ import { RolesGuard } from '../../infrastructure/auth/guards/roles.guard';
 import { ResponseMessage } from '../../infrastructure/decorators/response-message.decorator';
 import { Serialize } from '../../infrastructure/decorators/serialize.decorator';
 
+@ApiTags('Dashboard')
+@ApiBearerAuth('JWT-auth')
 @Controller('dashboard')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.SUPERADMIN)
@@ -15,6 +23,12 @@ export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   @Get('stats')
+  @ApiOperation({ summary: 'Get dashboard statistics' })
+  @ApiResponse({
+    status: 200,
+    description: 'Dashboard stats retrieved successfully',
+    type: DashboardStatsResponseDto,
+  })
   @Serialize(DashboardStatsResponseDto)
   @ResponseMessage('Dashboard stats retrieved successfully')
   getStats() {

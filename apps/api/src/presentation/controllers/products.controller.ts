@@ -9,6 +9,12 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { PaginationQueryDto } from '../../application/dtos/pagination.dto';
 import {
   CreateProductDto,
@@ -26,6 +32,8 @@ import {
   Serialize,
 } from '../../infrastructure/decorators/serialize.decorator';
 
+@ApiTags('Products')
+@ApiBearerAuth('JWT-auth')
 @Controller('products')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ProductsController {
@@ -33,6 +41,12 @@ export class ProductsController {
 
   @Post()
   @Roles(Role.SUPERADMIN)
+  @ApiOperation({ summary: 'Create new product' })
+  @ApiResponse({
+    status: 201,
+    description: 'Product created successfully',
+    type: ProductResponseDto,
+  })
   @Serialize(ProductResponseDto)
   @ResponseMessage('Product created successfully')
   create(@Body() createProductDto: CreateProductDto) {
@@ -40,6 +54,11 @@ export class ProductsController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all products' })
+  @ApiResponse({
+    status: 200,
+    description: 'Products retrieved successfully',
+  })
   @Serialize(HybridPaginatedDto(ProductResponseDto))
   @ResponseMessage('Products retrieved successfully')
   findAll(@Query() query: PaginationQueryDto) {
@@ -47,6 +66,11 @@ export class ProductsController {
   }
 
   @Get('category/:categoryId')
+  @ApiOperation({ summary: 'Get products by category' })
+  @ApiResponse({
+    status: 200,
+    description: 'Products retrieved successfully',
+  })
   @Serialize(HybridPaginatedDto(ProductResponseDto))
   @ResponseMessage('Products retrieved successfully')
   findByCategory(
@@ -62,6 +86,12 @@ export class ProductsController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get product by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Product retrieved successfully',
+    type: ProductResponseDto,
+  })
   @Serialize(ProductResponseDto)
   @ResponseMessage('Product retrieved successfully')
   findOne(@Param('id') id: string) {
@@ -70,6 +100,12 @@ export class ProductsController {
 
   @Patch(':id')
   @Roles(Role.SUPERADMIN)
+  @ApiOperation({ summary: 'Update product' })
+  @ApiResponse({
+    status: 200,
+    description: 'Product updated successfully',
+    type: ProductResponseDto,
+  })
   @Serialize(ProductResponseDto)
   @ResponseMessage('Product updated successfully')
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
@@ -78,6 +114,11 @@ export class ProductsController {
 
   @Delete(':id')
   @Roles(Role.SUPERADMIN)
+  @ApiOperation({ summary: 'Delete product' })
+  @ApiResponse({
+    status: 200,
+    description: 'Product deleted successfully',
+  })
   @ResponseMessage('Product deleted successfully')
   remove(@Param('id') id: string) {
     return this.productsService.remove(id);

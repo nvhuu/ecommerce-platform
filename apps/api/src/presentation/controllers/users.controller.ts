@@ -9,6 +9,12 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CreateUserDto } from '../../application/dtos/auth.dto';
 import { PaginationQueryDto } from '../../application/dtos/pagination.dto';
 import { UserResponseDto } from '../../application/dtos/response';
@@ -24,6 +30,8 @@ import {
   Serialize,
 } from '../../infrastructure/decorators/serialize.decorator';
 
+@ApiTags('Users')
+@ApiBearerAuth('JWT-auth')
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
@@ -31,6 +39,12 @@ export class UsersController {
 
   @Post()
   @Roles(Role.SUPERADMIN)
+  @ApiOperation({ summary: 'Create new user' })
+  @ApiResponse({
+    status: 201,
+    description: 'User created successfully',
+    type: UserResponseDto,
+  })
   @Serialize(UserResponseDto)
   @ResponseMessage('User created successfully')
   create(@Body() createUserDto: CreateUserDto) {
@@ -38,6 +52,11 @@ export class UsersController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiResponse({
+    status: 200,
+    description: 'Users retrieved successfully',
+  })
   @Serialize(HybridPaginatedDto(UserResponseDto))
   @ResponseMessage('Users retrieved successfully')
   findAll(@Query() query: PaginationQueryDto) {
@@ -45,6 +64,12 @@ export class UsersController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get user by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'User retrieved successfully',
+    type: UserResponseDto,
+  })
   @Serialize(UserResponseDto)
   @ResponseMessage('User retrieved successfully')
   findOne(@Param('id') id: string) {
@@ -53,6 +78,12 @@ export class UsersController {
 
   @Patch(':id')
   @Roles(Role.SUPERADMIN)
+  @ApiOperation({ summary: 'Update user' })
+  @ApiResponse({
+    status: 200,
+    description: 'User updated successfully',
+    type: UserResponseDto,
+  })
   @Serialize(UserResponseDto)
   @ResponseMessage('User updated successfully')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
@@ -61,6 +92,11 @@ export class UsersController {
 
   @Delete(':id')
   @Roles(Role.SUPERADMIN)
+  @ApiOperation({ summary: 'Delete user' })
+  @ApiResponse({
+    status: 200,
+    description: 'User deleted successfully',
+  })
   @ResponseMessage('User deleted successfully')
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);

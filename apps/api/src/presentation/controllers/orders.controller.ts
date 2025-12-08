@@ -9,6 +9,13 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CreateOrderDto } from '../../application/dtos/order.dto';
 import { PaginationQueryDto } from '../../application/dtos/pagination.dto';
 import { OrderResponseDto } from '../../application/dtos/response';
@@ -23,12 +30,20 @@ import {
   Serialize,
 } from '../../infrastructure/decorators/serialize.decorator';
 
+@ApiTags('Orders')
+@ApiBearerAuth('JWT-auth')
 @Controller('orders')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create new order' })
+  @ApiResponse({
+    status: 201,
+    description: 'Order created successfully',
+    type: OrderResponseDto,
+  })
   @Serialize(OrderResponseDto)
   @ResponseMessage('Order created successfully')
   create(@Body() createOrderDto: CreateOrderDto, @Request() req: any) {
@@ -37,6 +52,11 @@ export class OrdersController {
 
   @Get()
   @Roles(Role.SUPERADMIN)
+  @ApiOperation({ summary: 'Get all orders' })
+  @ApiResponse({
+    status: 200,
+    description: 'Orders retrieved successfully',
+  })
   @Serialize(HybridPaginatedDto(OrderResponseDto))
   @ResponseMessage('Orders retrieved successfully')
   findAll(@Query() query: PaginationQueryDto) {
@@ -44,6 +64,12 @@ export class OrdersController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get order by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Order retrieved successfully',
+    type: OrderResponseDto,
+  })
   @Serialize(OrderResponseDto)
   @ResponseMessage('Order retrieved successfully')
   findOne(@Param('id') id: string) {
@@ -52,6 +78,25 @@ export class OrdersController {
 
   @Patch(':id/status')
   @Roles(Role.SUPERADMIN)
+  @ApiOperation({ summary: 'Update order status' })
+  @ApiResponse({
+    status: 200,
+    description: 'Order status updated successfully',
+    type: OrderResponseDto,
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        status: {
+          type: 'string',
+          example: 'SHIPPED',
+          description: 'New status for the order',
+        },
+      },
+      required: ['status'],
+    },
+  })
   @Serialize(OrderResponseDto)
   @ResponseMessage('Order status updated successfully')
   updateStatus(@Param('id') id: string, @Body() body: { status: string }) {

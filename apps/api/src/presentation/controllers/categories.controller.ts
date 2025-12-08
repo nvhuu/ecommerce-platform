@@ -10,6 +10,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
   CreateCategoryDto,
   UpdateCategoryDto,
 } from '../../application/dtos/category.dto';
@@ -26,6 +32,8 @@ import {
   Serialize,
 } from '../../infrastructure/decorators/serialize.decorator';
 
+@ApiTags('Categories')
+@ApiBearerAuth('JWT-auth')
 @Controller('categories')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class CategoriesController {
@@ -33,6 +41,12 @@ export class CategoriesController {
 
   @Post()
   @Roles(Role.SUPERADMIN)
+  @ApiOperation({ summary: 'Create new category' })
+  @ApiResponse({
+    status: 201,
+    description: 'Category created successfully',
+    type: CategoryResponseDto,
+  })
   @Serialize(CategoryResponseDto)
   @ResponseMessage('Category created successfully')
   create(@Body() createCategoryDto: CreateCategoryDto) {
@@ -40,6 +54,11 @@ export class CategoriesController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all categories' })
+  @ApiResponse({
+    status: 200,
+    description: 'Categories retrieved successfully',
+  })
   @Serialize(HybridPaginatedDto(CategoryResponseDto))
   @ResponseMessage('Categories retrieved successfully')
   findAll(@Query() query: PaginationQueryDto) {
@@ -51,6 +70,12 @@ export class CategoriesController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get category by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Category retrieved successfully',
+    type: CategoryResponseDto,
+  })
   @Serialize(CategoryResponseDto)
   @ResponseMessage('Category retrieved successfully')
   findOne(@Param('id') id: string) {
@@ -59,6 +84,12 @@ export class CategoriesController {
 
   @Patch(':id')
   @Roles(Role.SUPERADMIN)
+  @ApiOperation({ summary: 'Update category' })
+  @ApiResponse({
+    status: 200,
+    description: 'Category updated successfully',
+    type: CategoryResponseDto,
+  })
   @Serialize(CategoryResponseDto)
   @ResponseMessage('Category updated successfully')
   update(
@@ -70,6 +101,11 @@ export class CategoriesController {
 
   @Delete(':id')
   @Roles(Role.SUPERADMIN)
+  @ApiOperation({ summary: 'Delete category' })
+  @ApiResponse({
+    status: 200,
+    description: 'Category deleted successfully',
+  })
   @ResponseMessage('Category deleted successfully')
   remove(@Param('id') id: string) {
     return this.categoriesService.remove(id);

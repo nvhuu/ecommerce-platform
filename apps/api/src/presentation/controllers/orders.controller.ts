@@ -24,7 +24,6 @@ import { Role } from '../../domain/entities/user.entity';
 import { Roles } from '../../infrastructure/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../infrastructure/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../infrastructure/auth/guards/roles.guard';
-import { ResponseMessage } from '../../infrastructure/decorators/response-message.decorator';
 import {
   HybridPaginatedDto,
   Serialize,
@@ -45,7 +44,6 @@ export class OrdersController {
     type: OrderResponseDto,
   })
   @Serialize(OrderResponseDto)
-  @ResponseMessage('Order created successfully')
   create(@Body() createOrderDto: CreateOrderDto, @Request() req: any) {
     return this.ordersService.create(req.user, createOrderDto);
   }
@@ -58,7 +56,6 @@ export class OrdersController {
     description: 'Orders retrieved successfully',
   })
   @Serialize(HybridPaginatedDto(OrderResponseDto))
-  @ResponseMessage('Orders retrieved successfully')
   findAll(@Query() query: PaginationQueryDto) {
     return this.ordersService.findAll(query.cursor, query.page, query.limit);
   }
@@ -71,7 +68,6 @@ export class OrdersController {
     type: OrderResponseDto,
   })
   @Serialize(OrderResponseDto)
-  @ResponseMessage('Order retrieved successfully')
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(id);
   }
@@ -98,7 +94,6 @@ export class OrdersController {
     },
   })
   @Serialize(OrderResponseDto)
-  @ResponseMessage('Order status updated successfully')
   updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
     return this.ordersService.updateStatus(id, body.status);
   }

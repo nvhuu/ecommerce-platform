@@ -11,6 +11,7 @@ import { UsersModule } from './application/modules/users/users.module';
 import { AllExceptionsFilter } from './infrastructure/filters/all-exceptions.filter';
 import { AuditInterceptor } from './infrastructure/interceptors/audit.interceptor';
 import { SerializeInterceptor } from './infrastructure/interceptors/serialize.interceptor';
+import { TransformInterceptor } from './infrastructure/interceptors/transform.interceptor';
 import { PrismaModule } from './infrastructure/prisma/prisma.module';
 
 @Module({
@@ -30,6 +31,10 @@ import { PrismaModule } from './infrastructure/prisma/prisma.module';
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,

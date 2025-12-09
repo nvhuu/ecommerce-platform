@@ -28,20 +28,34 @@ export class TransformInterceptor<T> implements NestInterceptor<
     next: CallHandler,
   ): Observable<Response<T>> {
     return next.handle().pipe(
-      map((data) => {
+      map((data: any) => {
+        let responseData = data;
+        let responseMessage =
+          this.reflector.get<string>(
+            RESPONSE_MESSAGE_KEY,
+            context.getHandler(),
+          ) || 'Success';
+
+        // Check if data contains message override from service
+        if (
+          data &&
+          typeof data === 'object' &&
+          'message' in data &&
+          'data' in data
+        ) {
+          responseMessage = data.message;
+          responseData = data.data;
+        }
+
         // Transform class instances to plain objects, respecting @Expose/@Exclude
-        const transformedData = instanceToPlain(data, {
+        const transformedData = instanceToPlain(responseData, {
           excludeExtraneousValues: false,
           exposeUnsetFields: false,
         });
 
         return {
           statusCode: context.switchToHttp().getResponse().statusCode,
-          message:
-            this.reflector.get<string>(
-              RESPONSE_MESSAGE_KEY,
-              context.getHandler(),
-            ) || 'Success',
+          message: responseMessage,
           data: transformedData as T,
         };
       }),

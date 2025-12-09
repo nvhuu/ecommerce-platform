@@ -1,0 +1,11 @@
+node_modules
+dist
+coverage
+.git
+.turbo
+.env
+*.md
+**/*.spec.ts
+**/*.test.ts
+apps/api/src/generated
+apps/api/generated

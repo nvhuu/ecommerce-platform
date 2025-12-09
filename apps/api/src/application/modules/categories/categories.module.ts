@@ -4,8 +4,10 @@ import { CategoryRepository } from '../../../infrastructure/repositories/categor
 import { CategoriesController } from '../../../presentation/controllers/categories.controller';
 import { CategoriesService } from './categories.service';
 
+import { UsersModule } from '../users/users.module';
+
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, UsersModule],
   controllers: [CategoriesController],
   providers: [
     CategoriesService,

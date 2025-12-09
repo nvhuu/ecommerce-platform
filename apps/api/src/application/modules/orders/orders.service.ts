@@ -9,6 +9,7 @@ import { IProductRepository } from '../../../domain/repositories/product.reposit
 import { CreateOrderDto } from '../../dtos/order.dto';
 import { OrderResponseDto } from '../../dtos/response';
 import { HybridPaginatedDto } from '../../dtos/response/hybrid-paginated.response.dto';
+import { ServiceResponse } from '../../interfaces/service-response.interface';
 
 @Injectable()
 export class OrdersService {
@@ -20,9 +21,10 @@ export class OrdersService {
   ) {}
 
   async create(
-    userId: string,
+    user: any,
     createOrderDto: CreateOrderDto,
-  ): Promise<OrderResponseDto> {
+  ): Promise<ServiceResponse<OrderResponseDto>> {
+    const userId = user.id || user; // Handle both user object or ID string
     const items: OrderItem[] = [];
     let totalAmount = 0;
 
@@ -48,18 +50,23 @@ export class OrdersService {
     order.items = items;
 
     const createdOrder = await this.orderRepository.create(order);
-    return createdOrder;
+    return {
+      message: 'Order created successfully',
+      data: createdOrder,
+    };
   }
 
   async findAll(
     cursor?: string,
     page?: number,
     limit: number = 10,
-  ): Promise<HybridPaginatedDto<OrderResponseDto>> {
+  ): Promise<ServiceResponse<HybridPaginatedDto<OrderResponseDto>>> {
     const result = await this.orderRepository.findAll({ cursor, page, limit });
 
+    let data: HybridPaginatedDto<OrderResponseDto>;
+
     if (result.usedCursor) {
-      return new HybridPaginatedDto(result.data, 'cursor', {
+      data = new HybridPaginatedDto(result.data, 'cursor', {
         hasNextPage: result.hasMore!,
         nextCursor: result.lastId
           ? Buffer.from(result.lastId).toString('base64')
@@ -67,18 +74,26 @@ export class OrdersService {
         limit,
       });
     } else {
-      return new HybridPaginatedDto(result.data, 'offset', {
+      data = new HybridPaginatedDto(result.data, 'offset', {
         total: result.total!,
         page: page || 1,
         limit,
       });
     }
+
+    return {
+      message: 'Orders retrieved successfully',
+      data,
+    };
   }
 
-  async findOne(id: string): Promise<OrderResponseDto> {
+  async findOne(id: string): Promise<ServiceResponse<OrderResponseDto>> {
     const order = await this.orderRepository.findById(id);
     if (!order) throw new NotFoundException('Order not found');
-    return order;
+    return {
+      message: 'Order retrieved successfully',
+      data: order,
+    };
   }
 
   async findByUser(
@@ -86,15 +101,17 @@ export class OrdersService {
     cursor?: string,
     page?: number,
     limit: number = 10,
-  ): Promise<HybridPaginatedDto<OrderResponseDto>> {
+  ): Promise<ServiceResponse<HybridPaginatedDto<OrderResponseDto>>> {
     const result = await this.orderRepository.findByUser(userId, {
       cursor,
       page,
       limit,
     });
 
+    let data: HybridPaginatedDto<OrderResponseDto>;
+
     if (result.usedCursor) {
-      return new HybridPaginatedDto(result.data, 'cursor', {
+      data = new HybridPaginatedDto(result.data, 'cursor', {
         hasNextPage: result.hasMore!,
         nextCursor: result.lastId
           ? Buffer.from(result.lastId).toString('base64')
@@ -102,19 +119,30 @@ export class OrdersService {
         limit,
       });
     } else {
-      return new HybridPaginatedDto(result.data, 'offset', {
+      data = new HybridPaginatedDto(result.data, 'offset', {
         total: result.total!,
         page: page || 1,
         limit,
       });
     }
+
+    return {
+      message: 'Orders retrieved successfully',
+      data,
+    };
   }
 
-  async updateStatus(id: string, status: string): Promise<OrderResponseDto> {
+  async updateStatus(
+    id: string,
+    status: string,
+  ): Promise<ServiceResponse<OrderResponseDto>> {
     const order = await this.orderRepository.findById(id);
     if (!order) throw new NotFoundException('Order not found');
 
     const updated = await this.orderRepository.updateStatus(id, status);
-    return updated;
+    return {
+      message: 'Order status updated successfully',
+      data: updated,
+    };
   }
 }

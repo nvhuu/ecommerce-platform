@@ -5,8 +5,10 @@ import { ProductRepository } from '../../../infrastructure/repositories/product.
 import { OrdersController } from '../../../presentation/controllers/orders.controller';
 import { OrdersService } from './orders.service';
 
+import { UsersModule } from '../users/users.module';
+
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, UsersModule],
   controllers: [OrdersController],
   providers: [
     OrdersService,

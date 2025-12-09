@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: ecommerce-mongo
+    ports:
+      - "27017:27017"
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo_data:/data/db
+
+  mongo-init:
+    image: mongo:latest
+    depends_on:
+      - mongo
+    restart: "no"
+    command: >
+      bash -c "sleep 5 && mongosh --host mongo --eval 'try { rs.initiate({ _id: \"rs0\", members: [{ _id: 0, host: \"mongo:27017\" }] }) } catch (e) { print(e) }'"
+
+  app:
+    image: node:20
+    container_name: ecommerce-monorepo
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000" # Web
+      - "3001:3001" # CMS
+      - "3002:3002" # API
+      - "3003:3003" # Docs
+    environment:
+      - DATABASE_URL=mongodb://mongo:27017/ecommerce_platform?replicaSet=rs0
+    command: sh -c "cd apps/api && npx prisma generate && npx prisma db push && cd ../.. && npm run dev"
+    depends_on:
+      - mongo-init
+
+volumes:
+  mongo_data:

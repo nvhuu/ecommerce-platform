@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo_data:/data/db
+
+  mongo-init:
+    image: mongo:latest
+    depends_on:
+      - mongo
+    restart: "no"
+    command: >
+      bash -c "sleep 10 && mongosh --host mongo --eval 'try { rs.initiate({ _id: \"rs0\", members: [{ _id: 0, host: \"mongo:27017\" }] }) } catch (e) { print(e) }'"
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - DATABASE_URL=mongodb://mongo:27017/ecommerce_platform?replicaSet=rs0
+    depends_on:
+      - mongo-init
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+  cms:
+    build:
+      context: .
+      dockerfile: apps/cms/Dockerfile
+    ports:
+      - "3001:3001"
+    depends_on:
+      - api
+
+volumes:
+  mongo_data:

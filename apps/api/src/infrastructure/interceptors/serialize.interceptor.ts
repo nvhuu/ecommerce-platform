@@ -43,14 +43,30 @@ export class SerializeInterceptor implements NestInterceptor {
     }
 
     return next.handle().pipe(
-      map((data) => {
+      map((res: any) => {
+        let data = res;
+        let message: string | undefined;
+
+        // Check if response matches ServiceResponse interface
+        if (
+          res &&
+          typeof res === 'object' &&
+          'message' in res &&
+          'data' in res
+        ) {
+          data = res.data;
+          message = res.message;
+        }
+
+        let serializedData: any;
+
         // Handle hybrid pagination
         if (isHybridPaginated && data instanceof HybridPaginatedDto) {
           const transformedData = data.data.map((item: any) =>
             plainToInstance(target, item, { excludeExtraneousValues: true }),
           );
 
-          return new HybridPaginatedDto(
+          serializedData = new HybridPaginatedDto(
             transformedData,
             data.meta.paginationType,
             {
@@ -67,13 +83,12 @@ export class SerializeInterceptor implements NestInterceptor {
             },
           );
         }
-
         // Handle cursor pagination
-        if (isCursorPaginated && data instanceof CursorPaginatedDto) {
+        else if (isCursorPaginated && data instanceof CursorPaginatedDto) {
           const transformedData = data.data.map((item: any) =>
             plainToInstance(target, item, { excludeExtraneousValues: true }),
           );
-          return new CursorPaginatedDto(
+          serializedData = new CursorPaginatedDto(
             transformedData,
             data.meta.hasNextPage,
             data.meta.limit,
@@ -82,28 +97,33 @@ export class SerializeInterceptor implements NestInterceptor {
               : undefined,
           );
         }
-
         // Handle offset pagination
-        if (isPaginated && data instanceof PaginatedDto) {
+        else if (isPaginated && data instanceof PaginatedDto) {
           const transformedData = data.data.map((item: any) =>
             plainToInstance(target, item, { excludeExtraneousValues: true }),
           );
-          return new PaginatedDto(
+          serializedData = new PaginatedDto(
             transformedData,
             data.meta.total,
             data.meta.page,
             data.meta.limit,
           );
         }
-
         // Handle single object or array
-        if (Array.isArray(data)) {
-          return data.map((item) =>
+        else if (Array.isArray(data)) {
+          serializedData = data.map((item) =>
             plainToInstance(target, item, { excludeExtraneousValues: true }),
           );
+        } else {
+          serializedData = plainToInstance(target, data, {
+            excludeExtraneousValues: true,
+          });
         }
 
-        return plainToInstance(target, data, { excludeExtraneousValues: true });
+        if (message) {
+          return { message, data: serializedData };
+        }
+        return serializedData;
       }),
     );
   }

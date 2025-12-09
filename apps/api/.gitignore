@@ -3,3 +3,11 @@ node_modules
 .env
 
 /generated/prisma
+dist
+coverage
+generated
+src/generated
+src/**/*.js
+src/**/*.js.map
+!src/instrument.js
+

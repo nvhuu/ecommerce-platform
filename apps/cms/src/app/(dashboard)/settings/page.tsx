@@ -6,8 +6,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card as AntCard, Button, Divider, Form, Input, message } from "antd";
 import { useRouter } from "next/navigation";
 
+import { ElementType } from "react";
+
 // Workaround for Ant Design + React 19 type issue
-const Card = AntCard as any;
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+const Card = AntCard as ElementType;
 
 export default function SettingsPage() {
   const [form] = Form.useForm();

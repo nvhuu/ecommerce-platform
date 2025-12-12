@@ -36,6 +36,7 @@ model User {
   updatedOrders         Order[]    @relation("OrderUpdater")
   deletedOrders         Order[]    @relation("OrderDeleter")
   createdMedia          Media[]    @relation("MediaCreator")
+  createdFolders        MediaFolder[] @relation("FolderCreator")
 }
 
 model Category {
@@ -112,13 +113,27 @@ model OrderItem {
   price     Float
 }
 
+model MediaFolder {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  parentId  String?       @db.ObjectId
+  parent    MediaFolder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children  MediaFolder[] @relation("FolderHierarchy")
+  media     Media[]
+  createdAt DateTime      @default(now())
+  createdBy String?       @db.ObjectId
+  creator   User?         @relation("FolderCreator", fields: [createdBy], references: [id])
+}
+
 model Media {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
   fileName  String
   fileType  String
   fileSize  Int
   fileUrl   String
-  createdAt DateTime @default(now())
-  createdBy String?  @db.ObjectId
-  creator   User?    @relation("MediaCreator", fields: [createdBy], references: [id])
+  folderId  String?      @db.ObjectId
+  folder    MediaFolder? @relation(fields: [folderId], references: [id])
+  createdAt DateTime     @default(now())
+  createdBy String?      @db.ObjectId
+  creator   User?        @relation("MediaCreator", fields: [createdBy], references: [id])
 }

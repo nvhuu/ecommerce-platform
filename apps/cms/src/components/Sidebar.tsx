@@ -3,6 +3,7 @@
 import {
   AppstoreOutlined,
   DashboardOutlined,
+  FileImageOutlined,
   SettingOutlined,
   ShoppingCartOutlined,
   ShoppingOutlined,
@@ -20,6 +21,7 @@ const navItems = [
   { name: "Products", href: "/products", icon: <ShoppingOutlined /> },
   { name: "Orders", href: "/orders", icon: <ShoppingCartOutlined /> },
   { name: "Users", href: "/users", icon: <UserOutlined /> },
+  { name: "Media", href: "/media", icon: <FileImageOutlined /> },
   { name: "Settings", href: "/settings", icon: <SettingOutlined /> },
 ];
 

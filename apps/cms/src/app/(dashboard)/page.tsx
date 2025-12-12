@@ -9,8 +9,12 @@ import {
 } from "@ant-design/icons";
 import { Card as AntCard, Col, Row, Statistic, Table, Tag } from "antd";
 
+import { ElementType } from "react";
+
 // Workaround for Ant Design + React 19 type issue
-const Card = AntCard as any;
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+const Card = AntCard as ElementType;
 
 export default function DashboardPage() {
   // Mock data for recent orders

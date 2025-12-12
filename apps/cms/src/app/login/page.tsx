@@ -5,8 +5,12 @@ import { useMutation } from "@tanstack/react-query";
 import { Card as AntCard, Button, Form, Input, Typography, message } from "antd";
 import { useRouter } from "next/navigation";
 
+import { ElementType } from "react";
+
 // Workaround for Ant Design + React 19 type issue
-const Card = AntCard as any;
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+const Card = AntCard as ElementType;
 
 const { Title, Text } = Typography;
 

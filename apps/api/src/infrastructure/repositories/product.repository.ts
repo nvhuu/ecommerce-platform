@@ -53,8 +53,8 @@ export class ProductRepository implements IProductRepository {
 
       return {
         data: results
-          .map((p: any) => Product.toDomain(p))
-          .filter((p: Product | null): p is Product => p !== null),
+          .map((p) => Product.toDomain(p))
+          .filter((p): p is Product => p !== null),
         hasMore,
         lastId,
         usedCursor: true,
@@ -78,8 +78,8 @@ export class ProductRepository implements IProductRepository {
 
       return {
         data: data
-          .map((p: any) => Product.toDomain(p))
-          .filter((p: Product | null): p is Product => p !== null),
+          .map((p) => Product.toDomain(p))
+          .filter((p): p is Product => p !== null),
         total,
         usedCursor: false,
       };
@@ -132,8 +132,8 @@ export class ProductRepository implements IProductRepository {
 
       return {
         data: results
-          .map((p: any) => Product.toDomain(p))
-          .filter((p: Product | null): p is Product => p !== null),
+          .map((p) => Product.toDomain(p))
+          .filter((p): p is Product => p !== null),
         hasMore,
         lastId,
         usedCursor: true,
@@ -163,8 +163,8 @@ export class ProductRepository implements IProductRepository {
 
       return {
         data: data
-          .map((p: any) => Product.toDomain(p))
-          .filter((p: Product | null): p is Product => p !== null),
+          .map((p) => Product.toDomain(p))
+          .filter((p): p is Product => p !== null),
         total,
         usedCursor: false,
       };

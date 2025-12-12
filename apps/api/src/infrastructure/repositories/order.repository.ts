@@ -31,6 +31,7 @@ export class OrderRepository implements IOrderRepository {
     cursor?: string;
     page?: number;
     limit: number;
+    search?: string;
   }): Promise<{
     data: Order[];
     total?: number;
@@ -46,7 +47,10 @@ export class OrderRepository implements IOrderRepository {
         take: options.limit + 1,
         cursor: { id: decodedCursor },
         skip: 1,
-        where: { deletedAt: null },
+        where: {
+          deletedAt: null,
+          ...(options.search ? { id: { contains: options.search } } : {}),
+        },
         include: { items: true },
         orderBy: { createdAt: 'desc' },
       });
@@ -58,8 +62,8 @@ export class OrderRepository implements IOrderRepository {
 
       return {
         data: results
-          .map((o: any) => Order.toDomain(o))
-          .filter((o: Order | null): o is Order => o !== null),
+          .map((o) => Order.toDomain(o))
+          .filter((o): o is Order => o !== null),
         hasMore,
         lastId,
         usedCursor: true,
@@ -70,21 +74,27 @@ export class OrderRepository implements IOrderRepository {
 
       const [data, total] = await Promise.all([
         this.prisma.order.findMany({
-          where: { deletedAt: null },
+          where: {
+            deletedAt: null,
+            ...(options.search ? { id: { contains: options.search } } : {}),
+          },
           skip,
           take: options.limit,
           include: { items: true },
           orderBy: { createdAt: 'desc' },
         }),
         this.prisma.order.count({
-          where: { deletedAt: null },
+          where: {
+            deletedAt: null,
+            ...(options.search ? { id: { contains: options.search } } : {}),
+          },
         }),
       ]);
 
       return {
         data: data
-          .map((o: any) => Order.toDomain(o))
-          .filter((o: Order | null): o is Order => o !== null),
+          .map((o) => Order.toDomain(o))
+          .filter((o): o is Order => o !== null),
         total,
         usedCursor: false,
       };
@@ -137,8 +147,8 @@ export class OrderRepository implements IOrderRepository {
 
       return {
         data: results
-          .map((o: any) => Order.toDomain(o))
-          .filter((o: Order | null): o is Order => o !== null),
+          .map((o) => Order.toDomain(o))
+          .filter((o): o is Order => o !== null),
         hasMore,
         lastId,
         usedCursor: true,
@@ -168,8 +178,8 @@ export class OrderRepository implements IOrderRepository {
 
       return {
         data: data
-          .map((o: any) => Order.toDomain(o))
-          .filter((o: Order | null): o is Order => o !== null),
+          .map((o) => Order.toDomain(o))
+          .filter((o): o is Order => o !== null),
         total,
         usedCursor: false,
       };

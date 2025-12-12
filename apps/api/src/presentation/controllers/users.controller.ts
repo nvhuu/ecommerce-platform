@@ -19,7 +19,7 @@ import { CreateUserDto } from '../../application/dtos/auth.dto';
 import { PaginationQueryDto } from '../../application/dtos/pagination.dto';
 import { UserResponseDto } from '../../application/dtos/response';
 import { UpdateUserDto } from '../../application/dtos/user.dto';
-import { UsersService } from '../../application/modules/users/users.service';
+import { UsersService } from '../../application/services/users.service';
 import { Role } from '../../domain/entities/user.entity';
 import { Roles } from '../../infrastructure/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../infrastructure/auth/guards/jwt-auth.guard';
@@ -60,7 +60,12 @@ export class UsersController {
   @Serialize(HybridPaginatedDto(UserResponseDto))
   @ResponseMessage('Users retrieved successfully')
   findAll(@Query() query: PaginationQueryDto) {
-    return this.usersService.findAll(query.cursor, query.page, query.limit);
+    return this.usersService.findAll(
+      query.cursor,
+      query.page,
+      query.limit,
+      query.search,
+    );
   }
 
   @Get(':id')

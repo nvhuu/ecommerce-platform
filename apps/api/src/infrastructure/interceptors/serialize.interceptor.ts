@@ -5,7 +5,7 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { plainToInstance } from 'class-transformer';
+import { ClassConstructor, plainToInstance } from 'class-transformer';
 import { map, Observable } from 'rxjs';
 import { CursorPaginatedDto } from '../../application/dtos/response/cursor-paginated.response.dto';
 import { HybridPaginatedDto } from '../../application/dtos/response/hybrid-paginated.response.dto';
@@ -26,14 +26,20 @@ import {
 export class SerializeInterceptor implements NestInterceptor {
   constructor(private reflector: Reflector) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const target = this.reflector.get(SERIALIZE_KEY, context.getHandler());
-    const isPaginated = this.reflector.get(PAGINATED_KEY, context.getHandler());
-    const isCursorPaginated = this.reflector.get(
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    const target = this.reflector.get<ClassConstructor<unknown>>(
+      SERIALIZE_KEY,
+      context.getHandler(),
+    );
+    const isPaginated = this.reflector.get<boolean>(
+      PAGINATED_KEY,
+      context.getHandler(),
+    );
+    const isCursorPaginated = this.reflector.get<boolean>(
       CURSOR_PAGINATED_KEY,
       context.getHandler(),
     );
-    const isHybridPaginated = this.reflector.get(
+    const isHybridPaginated = this.reflector.get<boolean>(
       HYBRID_PAGINATED_KEY,
       context.getHandler(),
     );
@@ -43,7 +49,7 @@ export class SerializeInterceptor implements NestInterceptor {
     }
 
     return next.handle().pipe(
-      map((res: any) => {
+      map((res: unknown) => {
         let data = res;
         let message: string | undefined;
 
@@ -54,15 +60,17 @@ export class SerializeInterceptor implements NestInterceptor {
           'message' in res &&
           'data' in res
         ) {
-          data = res.data;
-          message = res.message;
+          const resObj = res as { data: unknown; message: unknown };
+          data = resObj.data;
+          message =
+            typeof resObj.message === 'string' ? resObj.message : undefined;
         }
 
-        let serializedData: any;
+        let serializedData: unknown;
 
         // Handle hybrid pagination
         if (isHybridPaginated && data instanceof HybridPaginatedDto) {
-          const transformedData = data.data.map((item: any) =>
+          const transformedData = data.data.map((item: unknown) =>
             plainToInstance(target, item, { excludeExtraneousValues: true }),
           );
 
@@ -85,7 +93,7 @@ export class SerializeInterceptor implements NestInterceptor {
         }
         // Handle cursor pagination
         else if (isCursorPaginated && data instanceof CursorPaginatedDto) {
-          const transformedData = data.data.map((item: any) =>
+          const transformedData = data.data.map((item: unknown) =>
             plainToInstance(target, item, { excludeExtraneousValues: true }),
           );
           serializedData = new CursorPaginatedDto(
@@ -99,7 +107,7 @@ export class SerializeInterceptor implements NestInterceptor {
         }
         // Handle offset pagination
         else if (isPaginated && data instanceof PaginatedDto) {
-          const transformedData = data.data.map((item: any) =>
+          const transformedData = data.data.map((item: unknown) =>
             plainToInstance(target, item, { excludeExtraneousValues: true }),
           );
           serializedData = new PaginatedDto(

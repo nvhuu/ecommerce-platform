@@ -21,7 +21,7 @@ import {
   UpdateProductDto,
 } from '../../application/dtos/product.dto';
 import { ProductResponseDto } from '../../application/dtos/response';
-import { ProductsService } from '../../application/modules/products/products.service';
+import { ProductsService } from '../../application/services/products.service';
 import { Role } from '../../domain/entities/user.entity';
 import { Roles } from '../../infrastructure/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../infrastructure/auth/guards/jwt-auth.guard';

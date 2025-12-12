@@ -1,8 +1,8 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateUserDto, LoginDto } from '../../application/dtos/auth.dto';
 import { UserResponseDto } from '../../application/dtos/response';
-import { AuthService } from '../../application/modules/auth/auth.service';
+import { AuthService } from '../../application/services/auth.service';
 import { ResponseMessage } from '../../infrastructure/decorators/response-message.decorator';
 import { Serialize } from '../../infrastructure/decorators/serialize.decorator';
 
@@ -19,7 +19,14 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Login successful' })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+    const user = await this.authService.validateUser(
+      loginDto.email,
+      loginDto.password,
+    );
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    return this.authService.login(user);
   }
 
   @Post('register')

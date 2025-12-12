@@ -17,34 +17,38 @@ export class Category extends BaseEntity {
   @Expose()
   parent?: Category;
 
-  static toDomain(data: any): Category | null {
-    if (!data) return null;
+  static toDomain(input: unknown): Category | null {
+    if (!input || typeof input !== 'object') return null;
+    const data = input as Record<string, unknown>;
     const category = new Category();
-    category.id = data.id;
-    category.name = data.name;
-    category.slug = data.slug;
-    category.parentId = data.parentId;
+    category.id = data.id as string;
+    category.name = data.name as string;
+    category.slug = data.slug as string;
+    category.parentId = data.parentId as string | null; // or undefined? BaseEntity has optional? No, Category has ? | null
 
     // Recursively transform children, filtering soft-deleted
-    if (data.children) {
+    if (Array.isArray(data.children)) {
       category.children = data.children
-        .filter((c: any) => !c.deletedAt)
-        .map((c: any) => Category.toDomain(c))
-        .filter((c: Category | null): c is Category => c !== null);
+        .filter((c) => !(c as Record<string, unknown>).deletedAt)
+        .map((c) => Category.toDomain(c))
+        .filter((c): c is Category => c !== null);
     }
 
     // Transform parent if present and not soft-deleted
-    if (data.parent && !data.parent.deletedAt) {
-      const parent = Category.toDomain(data.parent);
+    const parentData = data.parent as Record<string, unknown> | undefined;
+    if (parentData && !parentData.deletedAt) {
+      const parent = Category.toDomain(parentData);
       if (parent) category.parent = parent;
     }
 
-    category.createdAt = data.createdAt;
-    category.updatedAt = data.updatedAt;
-    category.createdBy = data.createdBy;
-    category.updatedBy = data.updatedBy;
-    category.deletedAt = data.deletedAt;
-    category.deletedBy = data.deletedBy;
+    category.createdAt = data.createdAt as Date;
+    category.updatedAt = data.updatedAt as Date;
+    category.createdBy = data.createdBy as string;
+    category.updatedBy = data.updatedBy as string;
+    category.deletedAt = data.deletedAt ? (data.deletedAt as Date) : undefined;
+    category.deletedBy = data.deletedBy
+      ? (data.deletedBy as string)
+      : undefined;
     return category;
   }
 }

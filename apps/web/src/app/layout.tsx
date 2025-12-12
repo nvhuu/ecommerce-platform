@@ -1,4 +1,8 @@
+import { CartDrawer } from "@/components/CartDrawer";
+import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
+import { CartProvider } from "@/providers/CartProvider";
+import QueryProvider from "@/providers/QueryProvider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -28,11 +32,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <Navbar />
-        <main className='flex-1'>{children}</main>
-        <footer className='border-t py-6 text-center text-sm text-gray-500'>
-          © 2024 Ecommerce Store. All rights reserved.
-        </footer>
+        <QueryProvider>
+          <CartProvider>
+            <Navbar />
+            <CartDrawer />
+            <main className='flex-1 pt-16'>{children}</main>
+            <Footer />
+          </CartProvider>
+        </QueryProvider>
       </body>
     </html>
   );

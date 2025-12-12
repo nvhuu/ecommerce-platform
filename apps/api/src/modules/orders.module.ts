@@ -1,0 +1,25 @@
+import { Module } from '@nestjs/common';
+import { OrdersService } from '../application/services/orders.service';
+import { PrismaModule } from '../infrastructure/prisma/prisma.module';
+import { OrderRepository } from '../infrastructure/repositories/order.repository';
+import { ProductRepository } from '../infrastructure/repositories/product.repository';
+import { OrdersController } from '../presentation/controllers/orders.controller';
+
+import { UsersModule } from './users.module';
+
+@Module({
+  imports: [PrismaModule, UsersModule],
+  controllers: [OrdersController],
+  providers: [
+    OrdersService,
+    {
+      provide: 'IOrderRepository',
+      useClass: OrderRepository,
+    },
+    {
+      provide: 'IProductRepository',
+      useClass: ProductRepository,
+    },
+  ],
+})
+export class OrdersModule {}

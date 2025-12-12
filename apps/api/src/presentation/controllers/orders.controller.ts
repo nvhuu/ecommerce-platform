@@ -6,7 +6,7 @@ import {
   Patch,
   Post,
   Query,
-  Request,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -16,10 +16,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Request } from 'express';
 import { CreateOrderDto } from '../../application/dtos/order.dto';
 import { PaginationQueryDto } from '../../application/dtos/pagination.dto';
 import { OrderResponseDto } from '../../application/dtos/response';
-import { OrdersService } from '../../application/modules/orders/orders.service';
+import { OrdersService } from '../../application/services/orders.service';
 import { Role } from '../../domain/entities/user.entity';
 import { Roles } from '../../infrastructure/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../infrastructure/auth/guards/jwt-auth.guard';
@@ -44,7 +45,10 @@ export class OrdersController {
     type: OrderResponseDto,
   })
   @Serialize(OrderResponseDto)
-  create(@Body() createOrderDto: CreateOrderDto, @Request() req: any) {
+  create(
+    @Body() createOrderDto: CreateOrderDto,
+    @Req() req: Request & { user: { id: string } },
+  ) {
     return this.ordersService.create(req.user, createOrderDto);
   }
 
@@ -57,7 +61,12 @@ export class OrdersController {
   })
   @Serialize(HybridPaginatedDto(OrderResponseDto))
   findAll(@Query() query: PaginationQueryDto) {
-    return this.ordersService.findAll(query.cursor, query.page, query.limit);
+    return this.ordersService.findAll(
+      query.cursor,
+      query.page,
+      query.limit,
+      query.search,
+    );
   }
 
   @Get(':id')

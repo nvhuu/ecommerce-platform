@@ -5,12 +5,12 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { instanceToPlain } from 'class-transformer';
+import { Response as ExpressResponse } from 'express';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { RESPONSE_MESSAGE_KEY } from '../decorators/response-message.decorator';
 
-export interface Response<T> {
+export interface ApiResponse<T> {
   statusCode: number;
   message: string;
   data: T;
@@ -19,42 +19,39 @@ export interface Response<T> {
 @Injectable()
 export class TransformInterceptor<T> implements NestInterceptor<
   T,
-  Response<T>
+  ApiResponse<T>
 > {
   constructor(private reflector: Reflector) {}
 
   intercept(
     context: ExecutionContext,
     next: CallHandler,
-  ): Observable<Response<T>> {
+  ): Observable<ApiResponse<T>> {
     return next.handle().pipe(
-      map((data: any) => {
+      map((data: unknown) => {
         let responseData = data;
         let responseMessage =
           this.reflector.get<string>(
             RESPONSE_MESSAGE_KEY,
             context.getHandler(),
-          ) || 'Success';
+          ) || 'Operation successful';
 
-        // Check if data contains message override from service
         if (
           data &&
           typeof data === 'object' &&
           'message' in data &&
           'data' in data
         ) {
-          responseMessage = data.message;
-          responseData = data.data;
+          const typedData = data as { message: string; data: unknown };
+          responseMessage = typedData.message;
+          responseData = typedData.data;
         }
 
-        // Transform class instances to plain objects, respecting @Expose/@Exclude
-        const transformedData = instanceToPlain(responseData, {
-          excludeExtraneousValues: false,
-          exposeUnsetFields: false,
-        });
+        const transformedData = responseData;
 
         return {
-          statusCode: context.switchToHttp().getResponse().statusCode,
+          statusCode: context.switchToHttp().getResponse<ExpressResponse>()
+            .statusCode,
           message: responseMessage,
           data: transformedData as T,
         };

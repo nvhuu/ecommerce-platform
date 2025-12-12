@@ -25,29 +25,33 @@ export class Product extends BaseEntity {
   @Type(() => Category)
   category?: Category;
 
-  static toDomain(data: any): Product | null {
-    if (!data) return null;
+  static toDomain(input: unknown): Product | null {
+    if (!input || typeof input !== 'object') return null;
+    const data = input as Record<string, unknown>;
     const product = new Product();
-    product.id = data.id;
-    product.name = data.name;
-    product.description = data.description;
-    product.price = data.price;
-    product.stock = data.stock;
-    product.images = data.images;
-    product.categoryId = data.categoryId;
+    product.id = data.id as string;
+    product.name = data.name as string;
+    product.description = data.description as string;
+    product.price = Number(data.price);
+    product.stock = Number(data.stock);
+    product.images = Array.isArray(data.images)
+      ? (data.images as string[])
+      : [];
+    product.categoryId = data.categoryId as string;
 
     // Transform nested category if present and not soft-deleted
-    if (data.category && !data.category.deletedAt) {
-      const category = Category.toDomain(data.category);
+    const categoryData = data.category as Record<string, unknown> | undefined;
+    if (categoryData && !categoryData.deletedAt) {
+      const category = Category.toDomain(categoryData);
       if (category) product.category = category;
     }
 
-    product.createdAt = data.createdAt;
-    product.updatedAt = data.updatedAt;
-    product.createdBy = data.createdBy;
-    product.updatedBy = data.updatedBy;
-    product.deletedAt = data.deletedAt;
-    product.deletedBy = data.deletedBy;
+    product.createdAt = data.createdAt as Date;
+    product.updatedAt = data.updatedAt as Date;
+    product.createdBy = data.createdBy as string;
+    product.updatedBy = data.updatedBy as string;
+    product.deletedAt = data.deletedAt ? (data.deletedAt as Date) : undefined;
+    product.deletedBy = data.deletedBy ? (data.deletedBy as string) : undefined;
     return product;
   }
 }

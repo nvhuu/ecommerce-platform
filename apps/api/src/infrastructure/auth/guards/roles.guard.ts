@@ -5,9 +5,14 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Role } from '@prisma/client';
+import { Request } from 'express';
+import { Role } from '../../../domain/entities/user.entity';
 import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
 import { ROLES_KEY } from '../decorators/roles.decorator';
+
+interface RequestWithUser extends Request {
+  user?: { id: string };
+}
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -24,10 +29,12 @@ export class RolesGuard implements CanActivate {
     if (!requiredRoles) {
       return true;
     }
-    const { user } = context.switchToHttp().getRequest();
-    if (!user || !user.userId) return false;
+    const request = context.switchToHttp().getRequest<RequestWithUser>();
+    const user = request.user;
 
-    const dbUser = await this.userRepository.findById(user.userId);
+    if (!user || !user.id) return false;
+
+    const dbUser = await this.userRepository.findById(user.id);
     if (!dbUser) return false;
 
     return requiredRoles.some((role) => dbUser.role === role);

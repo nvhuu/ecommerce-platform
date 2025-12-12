@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Role } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 import { User } from '../../domain/entities/user.entity';
 import { IUserRepository } from '../../domain/repositories/user.repository.interface';
 import { PrismaService } from '../prisma/prisma.service';
@@ -39,6 +39,7 @@ export class UserRepository implements IUserRepository {
     cursor?: string;
     page?: number;
     limit: number;
+    search?: string;
   }): Promise<{
     data: User[];
     total?: number;
@@ -50,11 +51,22 @@ export class UserRepository implements IUserRepository {
       // Cursor pagination
       const decodedCursor = Buffer.from(options.cursor, 'base64').toString();
 
+      const where: Prisma.UserWhereInput = {
+        deletedAt: null,
+        ...(options.search
+          ? {
+              OR: [
+                { email: { contains: options.search, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+      };
+
       const data = await this.prisma.user.findMany({
         take: options.limit + 1,
         cursor: { id: decodedCursor },
         skip: 1,
-        where: { deletedAt: null },
+        where,
         orderBy: { createdAt: 'desc' },
       });
 
@@ -65,8 +77,8 @@ export class UserRepository implements IUserRepository {
 
       return {
         data: results
-          .map((u: any) => User.toDomain(u))
-          .filter((u: User | null): u is User => u !== null),
+          .map((u) => User.toDomain(u))
+          .filter((u): u is User => u !== null),
         hasMore,
         lastId,
         usedCursor: true,
@@ -77,20 +89,42 @@ export class UserRepository implements IUserRepository {
 
       const [data, total] = await Promise.all([
         this.prisma.user.findMany({
-          where: { deletedAt: null },
+          where: {
+            deletedAt: null,
+            ...(options.search
+              ? {
+                  OR: [
+                    {
+                      email: { contains: options.search, mode: 'insensitive' },
+                    },
+                  ],
+                }
+              : {}),
+          },
           skip,
           take: options.limit,
           orderBy: { createdAt: 'desc' },
         }),
         this.prisma.user.count({
-          where: { deletedAt: null },
+          where: {
+            deletedAt: null,
+            ...(options.search
+              ? {
+                  OR: [
+                    {
+                      email: { contains: options.search, mode: 'insensitive' },
+                    },
+                  ],
+                }
+              : {}),
+          },
         }),
       ]);
 
       return {
         data: data
-          .map((u: any) => User.toDomain(u))
-          .filter((u: User | null): u is User => u !== null),
+          .map((u) => User.toDomain(u))
+          .filter((u): u is User => u !== null),
         total,
         usedCursor: false,
       };

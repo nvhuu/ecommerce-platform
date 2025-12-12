@@ -17,14 +17,15 @@ export class OrderItem {
   @Expose()
   price!: number;
 
-  static toDomain(data: any): OrderItem | null {
-    if (!data) return null;
+  static toDomain(input: unknown): OrderItem | null {
+    if (!input || typeof input !== 'object') return null;
+    const data = input as Record<string, unknown>;
     const item = new OrderItem();
-    item.id = data.id;
-    item.orderId = data.orderId;
-    item.productId = data.productId;
-    item.quantity = data.quantity;
-    item.price = data.price;
+    item.id = data.id as string;
+    item.orderId = data.orderId as string;
+    item.productId = data.productId as string;
+    item.quantity = Number(data.quantity);
+    item.price = Number(data.price);
     return item;
   }
 }
@@ -42,27 +43,28 @@ export class Order extends BaseEntity {
   @Expose()
   items?: OrderItem[];
 
-  static toDomain(data: any): Order | null {
-    if (!data) return null;
+  static toDomain(input: unknown): Order | null {
+    if (!input || typeof input !== 'object') return null;
+    const data = input as Record<string, unknown>;
     const order = new Order();
-    order.id = data.id;
-    order.userId = data.userId;
-    order.status = data.status;
-    order.totalAmount = data.totalAmount;
+    order.id = data.id as string;
+    order.userId = data.userId as string;
+    order.status = data.status as OrderStatus;
+    order.totalAmount = Number(data.totalAmount);
 
     // Transform nested items if present
-    if (data.items) {
+    if (Array.isArray(data.items)) {
       order.items = data.items
-        .map((item: any) => OrderItem.toDomain(item))
-        .filter((item: OrderItem | null): item is OrderItem => item !== null);
+        .map((item) => OrderItem.toDomain(item))
+        .filter((item): item is OrderItem => item !== null);
     }
 
-    order.createdAt = data.createdAt;
-    order.updatedAt = data.updatedAt;
-    order.createdBy = data.createdBy;
-    order.updatedBy = data.updatedBy;
-    order.deletedAt = data.deletedAt;
-    order.deletedBy = data.deletedBy;
+    order.createdAt = data.createdAt as Date;
+    order.updatedAt = data.updatedAt as Date;
+    order.createdBy = data.createdBy as string;
+    order.updatedBy = data.updatedBy as string;
+    order.deletedAt = data.deletedAt ? (data.deletedAt as Date) : undefined;
+    order.deletedBy = data.deletedBy ? (data.deletedBy as string) : undefined;
     return order;
   }
 }

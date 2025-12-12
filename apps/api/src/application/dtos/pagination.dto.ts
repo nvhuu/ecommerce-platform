@@ -36,4 +36,20 @@ export class PaginationQueryDto {
   @Min(1)
   @Max(100)
   limit?: number = 10;
+
+  @ApiPropertyOptional({
+    description: 'Search term for filtering results',
+    example: 'search phrase',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter by field (e.g., status, role)',
+    example: 'ACTIVE',
+  })
+  @IsOptional()
+  @IsString()
+  filter?: string;
 }

@@ -6,7 +6,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { DashboardStatsResponseDto } from '../../application/dtos/response';
-import { DashboardService } from '../../application/modules/dashboard/dashboard.service';
+import { DashboardService } from '../../application/services/dashboard.service';
 import { Role } from '../../domain/entities/user.entity';
 import { Roles } from '../../infrastructure/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../infrastructure/auth/guards/jwt-auth.guard';

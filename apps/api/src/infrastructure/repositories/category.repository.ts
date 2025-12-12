@@ -23,6 +23,7 @@ export class CategoryRepository implements ICategoryRepository {
     cursor?: string;
     page?: number;
     limit: number;
+    search?: string;
   }): Promise<{
     data: Category[];
     total?: number;
@@ -38,7 +39,17 @@ export class CategoryRepository implements ICategoryRepository {
         take: options.limit + 1,
         cursor: { id: decodedCursor },
         skip: 1,
-        where: { deletedAt: null },
+        where: {
+          deletedAt: null,
+          ...(options.search
+            ? {
+                OR: [
+                  { name: { contains: options.search, mode: 'insensitive' } },
+                  { slug: { contains: options.search, mode: 'insensitive' } },
+                ],
+              }
+            : {}),
+        },
         include: { children: true },
         orderBy: { createdAt: 'desc' },
       });
@@ -50,8 +61,8 @@ export class CategoryRepository implements ICategoryRepository {
 
       return {
         data: results
-          .map((c: any) => Category.toDomain(c))
-          .filter((c: Category | null): c is Category => c !== null),
+          .map((c) => Category.toDomain(c))
+          .filter((c): c is Category => c !== null),
         hasMore,
         lastId,
         usedCursor: true,
@@ -62,21 +73,41 @@ export class CategoryRepository implements ICategoryRepository {
 
       const [data, total] = await Promise.all([
         this.prisma.category.findMany({
-          where: { deletedAt: null },
+          where: {
+            deletedAt: null,
+            ...(options.search
+              ? {
+                  OR: [
+                    { name: { contains: options.search, mode: 'insensitive' } },
+                    { slug: { contains: options.search, mode: 'insensitive' } },
+                  ],
+                }
+              : {}),
+          },
           skip,
           take: options.limit,
           include: { children: true },
           orderBy: { createdAt: 'desc' },
         }),
         this.prisma.category.count({
-          where: { deletedAt: null },
+          where: {
+            deletedAt: null,
+            ...(options.search
+              ? {
+                  OR: [
+                    { name: { contains: options.search, mode: 'insensitive' } },
+                    { slug: { contains: options.search, mode: 'insensitive' } },
+                  ],
+                }
+              : {}),
+          },
         }),
       ]);
 
       return {
         data: data
-          .map((c: any) => Category.toDomain(c))
-          .filter((c: Category | null): c is Category => c !== null),
+          .map((c) => Category.toDomain(c))
+          .filter((c): c is Category => c !== null),
         total,
         usedCursor: false,
       };

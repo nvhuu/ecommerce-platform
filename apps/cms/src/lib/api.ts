@@ -1,27 +1,27 @@
 import axios from "axios";
 
+// TODO: Get API URL from env
+const API_URL = "http://localhost:3002";
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1",
+  baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true, // For cookies
 });
 
-api.interceptors.request.use((config) => {
-  // Client-side only - safely access localStorage
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
-
+// Add interceptors for auth token (if using Bearer) or error handling
 api.interceptors.response.use(
-  (response) => response.data,
+  (response) => response,
   (error) => {
-    // Handle global errors here (e.g. 401 redirect)
+    // Handle 401s, etc.
+    if (error.response?.status === 401) {
+      // Redirect to login or refresh token
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+    }
     return Promise.reject(error);
   }
 );

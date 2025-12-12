@@ -1,115 +1,141 @@
 "use client";
 
 import api from "@/lib/api";
-import { Product } from "@/types";
+import { useQuery } from "@tanstack/react-query";
+// @ts-ignore
+import { motion } from "framer-motion";
+// @ts-ignore
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 export default function Home() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: categories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const res = await api.get("/categories");
+      return res.data.data;
+    },
+  });
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const response = await api.get<Product[]>("/products");
-      setProducts(response as any); // Correctly type cast via interceptor logic if needed, but here raw axios data is standard unless intercepted
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to fetch products", error);
-      setLoading(false);
-    }
-  };
+  const { data: featuredProducts } = useQuery({
+    queryKey: ["products", "featured"],
+    queryFn: async () => {
+      // Assuming we have a products endpoint, referencing /products for now
+      // In a real app we might pass a filter
+      const res = await api.get("/products?limit=4");
+      return res.data.data;
+    },
+  });
 
   return (
-    <div className='space-y-12 pb-12'>
+    <div className='flex flex-col min-h-screen'>
       {/* Hero Section */}
-      <section className='bg-gradient-to-r from-gray-900 to-gray-800 text-white py-20'>
-        <div className='container mx-auto px-4 text-center'>
-          <h1 className='text-4xl md:text-6xl font-bold mb-6'>Summer Collection 2025</h1>
-          <p className='text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto'>
-            Discover the latest trends in fashion and accessories. Premium quality, sustainable
-            materials, and timeless designs.
-          </p>
-          <div className='flex justify-center gap-4'>
+      <section className='relative h-[80vh] flex items-center justify-center overflow-hidden bg-black text-white'>
+        <div className='absolute inset-0 z-0'>
+          <div className='absolute inset-0 bg-gradient-to-r from-black/80 to-transparent z-10' />
+          {/* Abstract Background or Image */}
+          <div className="w-full h-full bg-[url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-60" />
+        </div>
+
+        <div className='relative z-20 container mx-auto px-4'>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className='max-w-2xl'
+          >
+            <h1 className='text-5xl md:text-7xl font-bold mb-6 tracking-tight leading-tight'>
+              Elevate Your <br />
+              <span className='text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600'>
+                Lifestyle.
+              </span>
+            </h1>
+            <p className='text-lg md:text-xl text-gray-300 mb-8 max-w-lg'>
+              Discover a curated collection of premium products designed for the modern connoisseur.
+              Uncompromising quality, timeless style.
+            </p>
+            <div className='flex gap-4'>
+              <Link
+                href='/products'
+                className='bg-white text-black px-8 py-4 rounded-full font-medium hover:bg-gray-100 transition-colors flex items-center gap-2'
+              >
+                Shop Now <ArrowRight size={18} />
+              </Link>
+              <Link
+                href='/about'
+                className='border border-white/30 backdrop-blur-sm text-white px-8 py-4 rounded-full font-medium hover:bg-white/10 transition-colors'
+              >
+                Our Story
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Featured Categories */}
+      <section className='py-20 bg-gray-50'>
+        <div className='container mx-auto px-4'>
+          <div className='flex justify-between items-end mb-12'>
+            <div>
+              <h2 className='text-3xl font-bold mb-2'>Shop by Category</h2>
+              <p className='text-gray-500'>Explore our wide range of collections</p>
+            </div>
             <Link
               href='/products'
-              className='bg-white text-gray-900 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors flex items-center gap-2'
+              className='text-blue-600 font-medium hover:underline flex items-center gap-1'
             >
-              <ShoppingBag className='w-5 h-5' />
-              Shop Now
+              View All <ArrowRight size={16} />
             </Link>
           </div>
-        </div>
-      </section>
 
-      {/* Featured Products */}
-      <section className='container mx-auto px-4'>
-        <div className='flex items-center justify-between mb-8'>
-          <h2 className='text-2xl font-bold'>Featured Products</h2>
-          <Link
-            href='/products'
-            className='text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm font-medium'
-          >
-            View All <ArrowRight className='w-4 h-4' />
-          </Link>
-        </div>
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+            {categories?.slice(0, 3).map((category: any, index: number) => (
+              <motion.div
+                key={category.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className='group relative h-80 rounded-2xl overflow-hidden cursor-pointer'
+              >
+                <div className='absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors z-10' />
+                {/* Fallback pattern if no image */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${getGradient(index)}`} />
 
-        {loading ? (
-          <div className='grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6'>
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className='h-[300px] bg-gray-100 rounded-lg animate-pulse' />
-            ))}
-          </div>
-        ) : (
-          <div className='grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6'>
-            {products.slice(0, 4).map((product) => (
-              <div key={product.id} className='group cursor-pointer'>
-                <div className='relative aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3'>
-                  {/* Placeholder for real image or dynamic image from DB */}
-                  <div className='absolute inset-0 flex items-center justify-center text-gray-400 bg-gray-200'>
-                    Product Image
+                <div className='absolute bottom-0 left-0 p-8 z-20 w-full'>
+                  <h3 className='text-2xl font-bold text-white mb-2'>{category.name}</h3>
+                  <div className='h-0 group-hover:h-6 overflow-hidden transition-all duration-300'>
+                    <span className='text-white/90 text-sm flex items-center gap-2'>
+                      Explore Collection <ArrowRight size={14} />
+                    </span>
                   </div>
                 </div>
-                <h3 className='font-medium group-hover:text-blue-600 transition-colors'>
-                  {product.name}
-                </h3>
-                <p className='text-gray-500 text-sm mb-2'>{product.category?.name || "Category"}</p>
-                <div className='flex items-center justify-between'>
-                  <span className='font-bold'>${product.price}</span>
-                  <button className='text-blue-600 text-sm hover:underline'>Add to Cart</button>
-                </div>
-              </div>
+              </motion.div>
             ))}
-            {products.length === 0 && (
-              <p className='text-gray-500 col-span-4 text-center py-10'>No products available.</p>
-            )}
           </div>
-        )}
+        </div>
       </section>
 
-      {/* Newsletter / Footer Promo */}
-      <section className='bg-gray-50 py-16'>
-        <div className='container mx-auto px-4 text-center'>
-          <h2 className='text-2xl font-bold mb-4'>Stay Updated</h2>
-          <p className='text-gray-600 mb-6'>
-            Subscribe to our newsletter for exclusive offers and updates.
-          </p>
-          <div className='max-w-md mx-auto flex gap-2'>
-            <input
-              type='email'
-              placeholder='Enter your email'
-              className='flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500'
-            />
-            <button className='bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800'>
-              Subscribe
-            </button>
+      {/* Trending Products (Placeholder) */}
+      <section className='py-20'>
+        <div className='container mx-auto px-4'>
+          <h2 className='text-3xl font-bold mb-12 text-center'>Trending Now</h2>
+          {/* Product Grid would go here */}
+          <div className='text-center text-gray-500 py-12 bg-gray-50 rounded-xl border border-dashed'>
+            Products will be loaded here from the API...
           </div>
         </div>
       </section>
     </div>
   );
+}
+
+function getGradient(index: number) {
+  const gradients = [
+    "from-blue-500 to-cyan-400",
+    "from-purple-500 to-pink-400",
+    "from-orange-500 to-yellow-400",
+    "from-green-500 to-emerald-400",
+  ];
+  return gradients[index % gradients.length];
 }

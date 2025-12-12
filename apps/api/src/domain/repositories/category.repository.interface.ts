@@ -2,7 +2,12 @@ import { Category } from '../entities/category.entity';
 
 export interface ICategoryRepository {
   create(category: Partial<Category>): Promise<Category>;
-  findAll(options: { cursor?: string; page?: number; limit: number }): Promise<{
+  findAll(options: {
+    cursor?: string;
+    page?: number;
+    limit: number;
+    search?: string;
+  }): Promise<{
     data: Category[];
     total?: number;
     hasMore?: boolean;

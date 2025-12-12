@@ -21,7 +21,7 @@ import {
 } from '../../application/dtos/category.dto';
 import { PaginationQueryDto } from '../../application/dtos/pagination.dto';
 import { CategoryResponseDto } from '../../application/dtos/response';
-import { CategoriesService } from '../../application/modules/categories/categories.service';
+import { CategoriesService } from '../../application/services/categories.service';
 import { Role } from '../../domain/entities/user.entity';
 import { Roles } from '../../infrastructure/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../infrastructure/auth/guards/jwt-auth.guard';
@@ -66,6 +66,7 @@ export class CategoriesController {
       query.cursor,
       query.page,
       query.limit,
+      query.search,
     );
   }
 

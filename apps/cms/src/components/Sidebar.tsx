@@ -1,44 +1,51 @@
 "use client";
 
-import clsx from "clsx";
+import {
+  AppstoreOutlined,
+  DashboardOutlined,
+  SettingOutlined,
+  ShoppingCartOutlined,
+  ShoppingOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import { Layout, Menu } from "antd";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+const { Sider } = Layout;
+
 const navItems = [
-  { name: "Dashboard", href: "/" },
-  { name: "Categories", href: "/categories" },
-  { name: "Products", href: "/products" },
-  { name: "Orders", href: "/orders" },
+  { name: "Dashboard", href: "/", icon: <DashboardOutlined /> },
+  { name: "Categories", href: "/categories", icon: <AppstoreOutlined /> },
+  { name: "Products", href: "/products", icon: <ShoppingOutlined /> },
+  { name: "Orders", href: "/orders", icon: <ShoppingCartOutlined /> },
+  { name: "Users", href: "/users", icon: <UserOutlined /> },
+  { name: "Settings", href: "/settings", icon: <SettingOutlined /> },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
 
+  // Determine selected key
+  const selectedKey =
+    navItems.find((item) => item.href !== "/" && pathname.startsWith(item.href))?.href ||
+    (pathname === "/" ? "/" : "");
+
   return (
-    <div className='w-64 bg-slate-900 text-white min-h-screen flex flex-col p-4 flex-shrink-0'>
-      <div className='mb-8 px-2'>
-        <h1 className='text-2xl font-bold tracking-tight'>Admin CMS</h1>
+    <Sider width={250} theme='dark' className='min-h-screen'>
+      <div className='flex items-center justify-center h-16 bg-rgba(255,255,255,0.1) m-2 rounded-lg'>
+        <h1 className='text-white text-xl font-bold tracking-wider m-0'>ADMIN CMS</h1>
       </div>
-      <nav className='flex flex-col gap-1'>
-        {navItems.map((item) => {
-          const isActive =
-            pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={clsx(
-                "px-4 py-2 rounded-md transition-colors text-sm font-medium",
-                isActive
-                  ? "bg-blue-600 text-white"
-                  : "text-slate-300 hover:bg-slate-800 hover:text-white"
-              )}
-            >
-              {item.name}
-            </Link>
-          );
-        })}
-      </nav>
-    </div>
+      <Menu
+        theme='dark'
+        mode='inline'
+        selectedKeys={[selectedKey]}
+        items={navItems.map((item) => ({
+          key: item.href,
+          icon: item.icon,
+          label: <Link href={item.href}>{item.name}</Link>,
+        }))}
+      />
+    </Sider>
   );
 }

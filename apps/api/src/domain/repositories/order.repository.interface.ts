@@ -2,7 +2,12 @@ import { Order } from '../entities/order.entity';
 
 export interface IOrderRepository {
   create(order: Order): Promise<Order>;
-  findAll(options: { cursor?: string; page?: number; limit: number }): Promise<{
+  findAll(options: {
+    cursor?: string;
+    page?: number;
+    limit: number;
+    search?: string;
+  }): Promise<{
     data: Order[];
     total?: number;
     hasMore?: boolean;

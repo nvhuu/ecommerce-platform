@@ -1,61 +1,108 @@
 "use client";
 
 import api from "@/lib/api";
-import { Product } from "@/types";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+// @ts-ignore
+import { ChevronDown, Filter, SlidersHorizontal } from "lucide-react";
+// @ts-ignore
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const category = searchParams.get("category");
+  const search = searchParams.get("search");
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  const { data, isLoading } = useQuery({
+    queryKey: ["products", category, search],
+    queryFn: async () => {
+      const params: any = { limit: 50 };
+      if (category) params.category = category; // Assuming API supports filter by category ID/slug
+      if (search) params.search = search;
 
-  const fetchProducts = async () => {
-    try {
-      const response = await api.get<Product[]>("/products");
-      setProducts(response as any);
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to fetch products", error);
-      setLoading(false);
-    }
-  };
+      const res = await api.get("/products", { params });
+      return res.data.data;
+    },
+  });
 
   return (
     <div className='container mx-auto px-4 py-8'>
-      <h1 className='text-3xl font-bold mb-8'>All Products</h1>
+      {/* Header & Filters */}
+      <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4'>
+        <div>
+          <h1 className='text-3xl font-bold'>
+            {category ? `${category.charAt(0).toUpperCase() + category.slice(1)}` : "All Products"}
+          </h1>
+          <p className='text-gray-500 mt-1'>
+            {isLoading ? "Loading..." : `${data?.length || 0} items`}
+          </p>
+        </div>
 
-      {loading ? (
-        <div className='grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6'>
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className='h-[300px] bg-gray-100 rounded-lg animate-pulse' />
-          ))}
+        <div className='flex gap-2'>
+          <button className='flex items-center gap-2 px-4 py-2 border rounded-full hover:bg-gray-50'>
+            <Filter size={18} /> Filter
+          </button>
+          <button className='flex items-center gap-2 px-4 py-2 border rounded-full hover:bg-gray-50'>
+            <SlidersHorizontal size={18} /> Sort
+          </button>
         </div>
-      ) : (
-        <div className='grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6'>
-          {products.map((product) => (
-            <div key={product.id} className='group cursor-pointer'>
-              <div className='relative aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3'>
-                <div className='absolute inset-0 flex items-center justify-center text-gray-400 bg-gray-200'>
-                  Product Image
+      </div>
+
+      {/* Product Grid */}
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10'>
+        {isLoading
+          ? // Skeleton Loaders
+            Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className='animate-pulse'>
+                <div className='bg-gray-200 aspect-[3/4] rounded-lg mb-4' />
+                <div className='h-4 bg-gray-200 rounded w-3/4 mb-2' />
+                <div className='h-4 bg-gray-200 rounded w-1/4' />
+              </div>
+            ))
+          : data?.map((product: any) => (
+              <Link
+                href={`/products/${product.id}`}
+                key={product.id}
+                className='group cursor-pointer block'
+              >
+                <div className='relative aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden mb-4'>
+                  {/* Image Placeholder */}
+                  {product.images && product.images[0] ? (
+                    <div className='relative w-full h-full'>
+                      {/* Using standard img for now to verify functionality quickly without domain config */}
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                        className='object-cover w-full h-full group-hover:scale-105 transition-transform duration-500'
+                      />
+                    </div>
+                  ) : (
+                    <div className='w-full h-full flex items-center justify-center text-gray-400 bg-gray-50'>
+                      No Image
+                    </div>
+                  )}
+
+                  {/* Quick Add Button (Optional on hover) */}
+                  <div className='absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity'>
+                    <button className='bg-white p-3 rounded-full shadow-lg hover:bg-black hover:text-white transition-colors'>
+                      <span className='sr-only'>Quick View</span>
+                      <ChevronDown size={20} className='rotate-[-90deg]' />
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <h3 className='font-medium group-hover:text-blue-600 transition-colors'>
-                {product.name}
-              </h3>
-              <p className='text-gray-500 text-sm mb-2'>{product.category?.name || "Category"}</p>
-              <div className='flex items-center justify-between'>
-                <span className='font-bold'>${product.price}</span>
-                <button className='text-blue-600 text-sm hover:underline'>Add to Cart</button>
-              </div>
-            </div>
-          ))}
-          {products.length === 0 && (
-            <p className='text-gray-500 col-span-4 text-center py-10'>No products available.</p>
-          )}
-        </div>
+
+                <div>
+                  <h3 className='font-medium text-gray-900 group-hover:text-blue-600 transition-colors'>
+                    {product.name}
+                  </h3>
+                  <p className='text-gray-500 mt-1'>${Number(product.price).toFixed(2)}</p>
+                </div>
+              </Link>
+            ))}
+      </div>
+
+      {!isLoading && (!data || data.length === 0) && (
+        <div className='text-center py-20 text-gray-500'>No products found.</div>
       )}
     </div>
   );

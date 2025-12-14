@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function Footer() {
   return (
     <footer className='bg-white border-t py-12'>
@@ -13,19 +15,19 @@ export function Footer() {
             <h4 className='font-semibold mb-4'>Shop</h4>
             <ul className='space-y-2 text-sm text-gray-500'>
               <li>
-                <a href='/products' className='hover:text-black'>
+                <Link href='/products' className='hover:text-black'>
                   All Products
-                </a>
+                </Link>
               </li>
               <li>
-                <a href='/products?category=clothing' className='hover:text-black'>
+                <Link href='/products?category=clothing' className='hover:text-black'>
                   Clothing
-                </a>
+                </Link>
               </li>
               <li>
-                <a href='/products?category=accessories' className='hover:text-black'>
+                <Link href='/products?category=accessories' className='hover:text-black'>
                   Accessories
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -33,19 +35,19 @@ export function Footer() {
             <h4 className='font-semibold mb-4'>Company</h4>
             <ul className='space-y-2 text-sm text-gray-500'>
               <li>
-                <a href='/about' className='hover:text-black'>
+                <Link href='/about' className='hover:text-black'>
                   About Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a href='/contact' className='hover:text-black'>
+                <Link href='/contact' className='hover:text-black'>
                   Contact
-                </a>
+                </Link>
               </li>
               <li>
-                <a href='/terms' className='hover:text-black'>
+                <Link href='/terms' className='hover:text-black'>
                   Terms of Service
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

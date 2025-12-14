@@ -1,10 +1,10 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import api from "@/lib/api";
+import { DownOutlined, FilterOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-// @ts-ignore
-import { ChevronDown, Filter, SlidersHorizontal } from "lucide-react";
-// @ts-ignore
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
@@ -40,10 +40,10 @@ export default function ProductsPage() {
 
         <div className='flex gap-2'>
           <button className='flex items-center gap-2 px-4 py-2 border rounded-full hover:bg-gray-50'>
-            <Filter size={18} /> Filter
+            <FilterOutlined style={{ fontSize: 18 }} /> Filter
           </button>
           <button className='flex items-center gap-2 px-4 py-2 border rounded-full hover:bg-gray-50'>
-            <SlidersHorizontal size={18} /> Sort
+            <UnorderedListOutlined style={{ fontSize: 18 }} /> Sort
           </button>
         </div>
       </div>
@@ -86,7 +86,7 @@ export default function ProductsPage() {
                   <div className='absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity'>
                     <button className='bg-white p-3 rounded-full shadow-lg hover:bg-black hover:text-white transition-colors'>
                       <span className='sr-only'>Quick View</span>
-                      <ChevronDown size={20} className='rotate-[-90deg]' />
+                      <DownOutlined style={{ fontSize: 20 }} rotate={-90} />
                     </button>
                   </div>
                 </div>

@@ -1,0 +1,72 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import {
+  AddToCartDto,
+  UpdateCartItemDto,
+} from '../../application/dtos/cart.dto';
+import { CartService } from '../../application/services/cart.service';
+// import { JwtAuthGuard } from '../../infrastructure/guards/jwt-auth.guard'; // Assuming existence
+
+// Define custom request interface to avoid any
+interface RequestWithUser extends Request {
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+  };
+}
+
+@ApiTags('Cart')
+@Controller('cart')
+// @UseGuards(JwtAuthGuard) // Uncomment when Guard is verified/available
+// @ApiBearerAuth()
+export class CartController {
+  constructor(private readonly cartService: CartService) {}
+
+  @Get()
+  async getCart(@Req() req: RequestWithUser) {
+    // Mock user ID for now if Auth not fully wired in Request
+    const userId = req.user?.id || 'mock-user-id';
+    return this.cartService.getCart(userId);
+  }
+
+  @Post()
+  async addToCart(@Req() req: RequestWithUser, @Body() dto: AddToCartDto) {
+    const userId = req.user?.id || 'mock-user-id';
+    return this.cartService.addToCart(userId, dto);
+  }
+
+  @Patch(':itemId')
+  async updateItem(
+    @Req() req: RequestWithUser,
+    @Param('itemId') itemId: string,
+    @Body() dto: UpdateCartItemDto,
+  ) {
+    const userId = req.user?.id || 'mock-user-id';
+    return this.cartService.updateCartItem(userId, itemId, dto);
+  }
+
+  @Delete(':itemId')
+  async removeItem(
+    @Req() req: RequestWithUser,
+    @Param('itemId') itemId: string,
+  ) {
+    const userId = req.user?.id || 'mock-user-id';
+    return this.cartService.removeCartItem(userId, itemId);
+  }
+
+  @Delete()
+  async clearCart(@Req() req: RequestWithUser) {
+    const userId = req.user?.id || 'mock-user-id';
+    return this.cartService.clearCart(userId);
+  }
+}

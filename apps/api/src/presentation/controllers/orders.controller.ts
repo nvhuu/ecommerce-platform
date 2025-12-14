@@ -69,6 +69,25 @@ export class OrdersController {
     );
   }
 
+  @Get('mine')
+  @ApiOperation({ summary: 'Get my orders' })
+  @ApiResponse({
+    status: 200,
+    description: 'User orders retrieved successfully',
+  })
+  @Serialize(HybridPaginatedDto(OrderResponseDto))
+  findMyOrders(
+    @Req() req: Request & { user: { id: string } },
+    @Query() query: PaginationQueryDto,
+  ) {
+    return this.ordersService.findByUser(
+      req.user.id,
+      query.cursor,
+      query.page,
+      query.limit,
+    );
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get order by ID' })
   @ApiResponse({

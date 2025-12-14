@@ -1,15 +1,16 @@
 "use client";
 
 import { useCart } from "@/providers/CartProvider";
-// @ts-ignore
+import { useAuth } from "@/providers/auth-provider";
+import { MenuOutlined, SearchOutlined, ShoppingOutlined, UserOutlined } from "@ant-design/icons";
+// @ts-expect-error -- framer-motion types missing
 import { AnimatePresence, motion } from "framer-motion";
-// @ts-ignore
-import { Menu, Search, ShoppingBag, User } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 export function Navbar() {
   const { cartCount, setIsCartOpen } = useCart();
+  const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
@@ -17,7 +18,7 @@ export function Navbar() {
       <div className='container mx-auto px-4 h-16 flex items-center justify-between'>
         {/* Mobile Menu Button */}
         <button className='md:hidden p-2' onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          <Menu size={24} />
+          <MenuOutlined style={{ fontSize: 24 }} />
         </button>
 
         {/* Logo */}
@@ -41,16 +42,52 @@ export function Navbar() {
         {/* Icons */}
         <div className='flex items-center space-x-4'>
           <button className='p-2 hover:bg-gray-100 rounded-full transition-colors'>
-            <Search size={20} />
+            <SearchOutlined style={{ fontSize: 20 }} />
           </button>
-          <Link href='/login' className='p-2 hover:bg-gray-100 rounded-full transition-colors'>
-            <User size={20} />
-          </Link>
+
+          {user ? (
+            <div className='relative group'>
+              <button className='p-2 hover:bg-gray-100 rounded-full transition-colors flex items-center gap-2'>
+                <UserOutlined style={{ fontSize: 20 }} />
+                <span className='text-xs font-medium hidden md:inline-block'>
+                  {user.email?.split("@")[0]}
+                </span>
+              </button>
+              <div className='absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 focus:outline-none hidden group-hover:block'>
+                <div className='px-4 py-2 text-xs text-gray-500 border-b'>
+                  Signed in as <br />{" "}
+                  <span className='font-medium text-gray-900'>{user.email}</span>
+                </div>
+                <Link
+                  href='/profile'
+                  className='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100'
+                >
+                  Your Profile
+                </Link>
+                <Link
+                  href='/account/orders'
+                  className='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100'
+                >
+                  My Orders
+                </Link>
+                <button
+                  onClick={logout}
+                  className='block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100'
+                >
+                  Sign out
+                </button>
+              </div>
+            </div>
+          ) : (
+            <Link href='/login' className='p-2 hover:bg-gray-100 rounded-full transition-colors'>
+              <UserOutlined style={{ fontSize: 20 }} />
+            </Link>
+          )}
           <button
             className='p-2 hover:bg-gray-100 rounded-full transition-colors relative'
             onClick={() => setIsCartOpen(true)}
           >
-            <ShoppingBag size={20} />
+            <ShoppingOutlined style={{ fontSize: 20 }} />
             {cartCount > 0 && (
               <motion.span
                 initial={{ scale: 0 }}

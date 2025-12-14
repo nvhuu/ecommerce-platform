@@ -10,6 +10,7 @@ import { CreateOrderDto } from '../dtos/order.dto';
 import { OrderResponseDto } from '../dtos/response';
 import { HybridPaginatedDto } from '../dtos/response/hybrid-paginated.response.dto';
 import { ServiceResponse } from '../interfaces/service-response.interface';
+import { CartService } from './cart.service';
 
 @Injectable()
 export class OrdersService {
@@ -18,38 +19,72 @@ export class OrdersService {
     private readonly orderRepository: IOrderRepository,
     @Inject('IProductRepository')
     private readonly productRepository: IProductRepository,
+    private readonly cartService: CartService,
   ) {}
 
   async create(
     user: { id: string } | string,
     createOrderDto: CreateOrderDto,
   ): Promise<ServiceResponse<OrderResponseDto>> {
-    const userId = typeof user === 'string' ? user : user.id; // Handle both user object or ID string
+    const userId = typeof user === 'string' ? user : user.id;
+
+    // 1. Fetch Cart
+    const cart = await this.cartService.getCart(userId);
+    if (!cart || !cart.items || cart.items.length === 0) {
+      throw new NotFoundException('Cart is empty');
+    }
+
     const items: OrderItem[] = [];
     let totalAmount = 0;
 
-    for (const itemDto of createOrderDto.items) {
-      const product = await this.productRepository.findById(itemDto.productId);
+    // 2. Validate Items, Check Stock, and Calculate Total
+    for (const cartItem of cart.items) {
+      const product = await this.productRepository.findById(cartItem.productId);
       if (!product) {
-        throw new NotFoundException(`Product ${itemDto.productId} not found`);
+        throw new NotFoundException(`Product ${cartItem.productId} not found`);
+      }
+
+      if (product.stock < cartItem.quantity) {
+        throw new NotFoundException(
+          `Insufficient stock for product ${product.name}`,
+        );
       }
 
       const item = new OrderItem();
       item.productId = product.id;
-      item.quantity = itemDto.quantity;
+      item.quantity = cartItem.quantity;
       item.price = product.price;
       items.push(item);
 
-      totalAmount += product.price * itemDto.quantity;
+      totalAmount += product.price * cartItem.quantity;
     }
 
+    // 3. Create Order
     const order = new Order();
     order.userId = userId;
     order.status = OrderStatus.PENDING;
     order.totalAmount = totalAmount;
     order.items = items;
+    order.shippingAddress = createOrderDto.shippingAddress;
+    order.paymentMethod = createOrderDto.paymentMethod || 'COD';
 
     const createdOrder = await this.orderRepository.create(order);
+
+    // 4. Update Stock
+    for (const item of items) {
+      // We fetch again or assume concurrency isn't an issue for this demo.
+      // Ideally this should be transactional.
+      const product = await this.productRepository.findById(item.productId);
+      if (product) {
+        await this.productRepository.update(product.id, {
+          stock: product.stock - item.quantity,
+        });
+      }
+    }
+
+    // 5. Clear Cart
+    await this.cartService.clearCart(userId);
+
     return {
       message: 'Order created successfully',
       data: createdOrder,

@@ -1,21 +1,24 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import api from "@/lib/api";
 import { useCart } from "@/providers/CartProvider";
+import {
+  CarOutlined,
+  MinusOutlined,
+  PlusOutlined,
+  SafetyCertificateOutlined,
+  ShoppingOutlined,
+  StarFilled,
+  StarOutlined,
+} from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-// @ts-ignore
+// @ts-expect-error -- framer-motion types missing
 import { motion } from "framer-motion";
-// @ts-ignore
-import { Minus, Plus, Shield, ShoppingBag, Star, Truck } from "lucide-react";
-import { useParams } from "next/navigation"; // Correct hook for App Router params
+import { useParams } from "next/navigation";
 import { useState } from "react";
 
-export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  // Note: params is a promise in Next.js 15+, need to unwrap it or use React.use()
-  // For simplicity with standard usage patterns we might need to await it in server components
-  // But this is a client component ('use client').
-  // Actually, in Next.js 15 client components receive params as a Promise.
-  // Let's use `useParams` hook instead which is easier in client components.
+export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
 
   const { addToCart } = useCart();
@@ -26,7 +29,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     queryKey: ["products", id],
     queryFn: async () => {
       const res = await api.get(`/products/${id}`);
-      return res.data; // Assuming API returns single product directly or { data: ... }
+      return res.data;
     },
     enabled: !!id,
   });
@@ -38,6 +41,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const handleAddToCart = () => {
     addToCart({
       id: product.id,
+      productId: product.id,
       name: product.name,
       price: Number(product.price),
       image: product.images?.[0],
@@ -93,7 +97,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           <div className='flex items-center gap-4 mb-6'>
             <div className='flex text-yellow-500'>
               {[1, 2, 3, 4, 5].map((s) => (
-                <Star key={s} size={18} fill='currentColor' />
+                <StarFilled key={s} style={{ fontSize: 18 }} />
               ))}
             </div>
             <span className='text-gray-500 text-sm'>(42 Reviews)</span>
@@ -111,11 +115,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className='p-3 hover:bg-gray-50'
                 >
-                  <Minus size={16} />
+                  <MinusOutlined style={{ fontSize: 16 }} />
                 </button>
                 <span className='w-12 text-center font-medium'>{quantity}</span>
                 <button onClick={() => setQuantity(quantity + 1)} className='p-3 hover:bg-gray-50'>
-                  <Plus size={16} />
+                  <PlusOutlined style={{ fontSize: 16 }} />
                 </button>
               </div>
             </div>
@@ -125,22 +129,22 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 onClick={handleAddToCart}
                 className='flex-1 bg-black text-white py-4 rounded-full font-bold hover:bg-gray-900 transition-transform active:scale-95 flex items-center justify-center gap-2'
               >
-                <ShoppingBag size={20} /> Add to Cart
+                <ShoppingOutlined style={{ fontSize: 20 }} /> Add to Cart
               </button>
               {/* Wishlist Button Placeholder */}
               <button className='p-4 border rounded-full hover:bg-gray-50 transition-colors'>
-                <Star size={20} />
+                <StarOutlined style={{ fontSize: 20 }} />
               </button>
             </div>
           </div>
 
           <div className='grid grid-cols-2 gap-4 text-sm text-gray-500'>
             <div className='flex items-center gap-3'>
-              <Truck size={20} className='text-gray-900' />
+              <CarOutlined style={{ fontSize: 20 }} className='text-gray-900' />
               <span>Free Shipping & Returns</span>
             </div>
             <div className='flex items-center gap-3'>
-              <Shield size={20} className='text-gray-900' />
+              <SafetyCertificateOutlined style={{ fontSize: 20 }} className='text-gray-900' />
               <span>Lifetime Warranty</span>
             </div>
           </div>

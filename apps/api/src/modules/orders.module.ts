@@ -5,10 +5,11 @@ import { OrderRepository } from '../infrastructure/repositories/order.repository
 import { ProductRepository } from '../infrastructure/repositories/product.repository';
 import { OrdersController } from '../presentation/controllers/orders.controller';
 
+import { CartModule } from './cart.module';
 import { UsersModule } from './users.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule],
+  imports: [PrismaModule, UsersModule, CartModule],
   controllers: [OrdersController],
   providers: [
     OrdersService,
@@ -21,5 +22,6 @@ import { UsersModule } from './users.module';
       useClass: ProductRepository,
     },
   ],
+  exports: [OrdersService],
 })
 export class OrdersModule {}

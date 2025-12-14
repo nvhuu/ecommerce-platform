@@ -1,12 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import {
-  ArrayMinSize,
-  IsArray,
+  IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsPositive,
+  IsString,
   IsUUID,
-  ValidateNested,
 } from 'class-validator';
 
 export class CreateOrderItemDto {
@@ -29,22 +28,19 @@ export class CreateOrderItemDto {
 
 export class CreateOrderDto {
   @ApiProperty({
-    description: 'Order items',
-    type: [CreateOrderItemDto],
-    example: [
-      {
-        productId: '550e8400-e29b-41d4-a716-446655440000',
-        quantity: 2,
-      },
-      {
-        productId: '660e8400-e29b-41d4-a716-446655440001',
-        quantity: 1,
-      },
-    ],
+    description: 'Shipping Address (JSON string or plain text)',
+    example: '123 Main St, New York, NY 10001',
   })
-  @IsArray()
-  @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => CreateOrderItemDto)
-  items!: CreateOrderItemDto[];
+  @IsString()
+  @IsNotEmpty()
+  shippingAddress!: string;
+
+  @ApiProperty({
+    description: 'Payment Method',
+    example: 'COD',
+    default: 'COD',
+  })
+  @IsString()
+  @IsOptional()
+  paymentMethod?: string;
 }

@@ -15,10 +15,12 @@ import { SerializeInterceptor } from './infrastructure/interceptors/serialize.in
 import { TransformInterceptor } from './infrastructure/interceptors/transform.interceptor';
 import { PrismaModule } from './infrastructure/prisma/prisma.module';
 import { AuthModule } from './modules/auth.module';
+import { CartModule } from './modules/cart.module';
 import { CategoriesModule } from './modules/categories.module';
 import { DashboardModule } from './modules/dashboard.module';
 import { MediaModule } from './modules/media.module';
 import { OrdersModule } from './modules/orders.module';
+import { PaymentModule } from './modules/payment.module';
 import { ProductsModule } from './modules/products.module';
 import { UsersModule } from './modules/users.module';
 
@@ -47,6 +49,8 @@ import { UsersModule } from './modules/users.module';
     UsersModule,
     DashboardModule,
     MediaModule,
+    CartModule,
+    PaymentModule,
   ],
   controllers: [],
   providers: [

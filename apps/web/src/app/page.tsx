@@ -1,11 +1,11 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import api from "@/lib/api";
+import { ArrowRightOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-// @ts-ignore
+// @ts-expect-error -- framer motion types
 import { motion } from "framer-motion";
-// @ts-ignore
-import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export default function Home() {
@@ -13,16 +13,6 @@ export default function Home() {
     queryKey: ["categories"],
     queryFn: async () => {
       const res = await api.get("/categories");
-      return res.data.data;
-    },
-  });
-
-  const { data: featuredProducts } = useQuery({
-    queryKey: ["products", "featured"],
-    queryFn: async () => {
-      // Assuming we have a products endpoint, referencing /products for now
-      // In a real app we might pass a filter
-      const res = await api.get("/products?limit=4");
       return res.data.data;
     },
   });
@@ -59,7 +49,7 @@ export default function Home() {
                 href='/products'
                 className='bg-white text-black px-8 py-4 rounded-full font-medium hover:bg-gray-100 transition-colors flex items-center gap-2'
               >
-                Shop Now <ArrowRight size={18} />
+                Shop Now <ArrowRightOutlined style={{ fontSize: 18 }} />
               </Link>
               <Link
                 href='/about'
@@ -84,7 +74,7 @@ export default function Home() {
               href='/products'
               className='text-blue-600 font-medium hover:underline flex items-center gap-1'
             >
-              View All <ArrowRight size={16} />
+              View All <ArrowRightOutlined style={{ fontSize: 16 }} />
             </Link>
           </div>
 
@@ -106,7 +96,7 @@ export default function Home() {
                   <h3 className='text-2xl font-bold text-white mb-2'>{category.name}</h3>
                   <div className='h-0 group-hover:h-6 overflow-hidden transition-all duration-300'>
                     <span className='text-white/90 text-sm flex items-center gap-2'>
-                      Explore Collection <ArrowRight size={14} />
+                      Explore Collection <ArrowRightOutlined style={{ fontSize: 14 }} />
                     </span>
                   </div>
                 </div>

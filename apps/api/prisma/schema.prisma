@@ -1,7 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-
-
+  output   = "../src/generated/client"
 }
 
 datasource db {
@@ -37,6 +36,7 @@ model User {
   deletedOrders         Order[]    @relation("OrderDeleter")
   createdMedia          Media[]    @relation("MediaCreator")
   createdFolders        MediaFolder[] @relation("FolderCreator")
+  cart                  Cart?
 }
 
 model Category {
@@ -77,6 +77,7 @@ model Product {
   deletedAt   DateTime?
   deletedBy   String?     @db.ObjectId
   deleter     User?       @relation("ProductDeleter", fields: [deletedBy], references: [id])
+  cartItems   CartItem[]
 }
 
 enum OrderStatus {
@@ -86,21 +87,23 @@ enum OrderStatus {
 }
 
 model Order {
-  id          String      @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String      @db.ObjectId
-  user        User        @relation(fields: [userId], references: [id])
-  totalAmount Float
-  status      OrderStatus @default(PENDING)
-  items       OrderItem[]
-  createdAt   DateTime    @default(now())
-  createdBy   String?     @db.ObjectId
-  creator     User?       @relation("OrderCreator", fields: [createdBy], references: [id])
-  updatedAt   DateTime    @updatedAt
-  updatedBy   String?     @db.ObjectId
-  updater     User?       @relation("OrderUpdater", fields: [updatedBy], references: [id])
-  deletedAt   DateTime?
-  deletedBy   String?     @db.ObjectId
-  deleter     User?       @relation("OrderDeleter", fields: [deletedBy], references: [id])
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String      @db.ObjectId
+  user            User        @relation(fields: [userId], references: [id])
+  totalAmount     Float
+  status          OrderStatus @default(PENDING)
+  items           OrderItem[]
+  shippingAddress String?     // Stores address as JSON string
+  paymentMethod   String?     // e.g. "COD", "STRIPE"
+  createdAt       DateTime    @default(now())
+  createdBy       String?     @db.ObjectId
+  creator         User?       @relation("OrderCreator", fields: [createdBy], references: [id])
+  updatedAt       DateTime    @updatedAt
+  updatedBy       String?     @db.ObjectId
+  updater         User?       @relation("OrderUpdater", fields: [updatedBy], references: [id])
+  deletedAt       DateTime?
+  deletedBy       String?     @db.ObjectId
+  deleter         User?       @relation("OrderDeleter", fields: [deletedBy], references: [id])
 }
 
 model OrderItem {
@@ -136,4 +139,22 @@ model Media {
   createdAt DateTime     @default(now())
   createdBy String?      @db.ObjectId
   creator   User?        @relation("MediaCreator", fields: [createdBy], references: [id])
+}
+
+model Cart {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String     @unique @db.ObjectId
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  cartId    String   @db.ObjectId
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
 }

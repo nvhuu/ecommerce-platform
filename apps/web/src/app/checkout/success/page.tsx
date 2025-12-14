@@ -1,14 +1,14 @@
 "use client";
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
-// @ts-ignore
-import { CheckCircle } from "lucide-react";
+import { CheckCircleFilled } from "@ant-design/icons";
 import Link from "next/link";
 
 export default function CheckoutSuccessPage() {
   return (
     <div className='min-h-[60vh] flex flex-col items-center justify-center p-4 text-center'>
       <div className='text-green-500 mb-6'>
-        <CheckCircle size={80} />
+        <CheckCircleFilled style={{ fontSize: 80 }} />
       </div>
       <h1 className='text-4xl font-bold mb-4'>Order Placed!</h1>
       <p className='text-xl text-gray-500 mb-8 max-w-md'>

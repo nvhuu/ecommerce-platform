@@ -41,6 +41,12 @@ export class Order extends BaseEntity {
   totalAmount!: number;
 
   @Expose()
+  shippingAddress?: string;
+
+  @Expose()
+  paymentMethod?: string;
+
+  @Expose()
   items?: OrderItem[];
 
   static toDomain(input: unknown): Order | null {
@@ -50,7 +56,10 @@ export class Order extends BaseEntity {
     order.id = data.id as string;
     order.userId = data.userId as string;
     order.status = data.status as OrderStatus;
+    order.status = data.status as OrderStatus;
     order.totalAmount = Number(data.totalAmount);
+    order.shippingAddress = data.shippingAddress as string | undefined;
+    order.paymentMethod = data.paymentMethod as string | undefined;
 
     // Transform nested items if present
     if (Array.isArray(data.items)) {

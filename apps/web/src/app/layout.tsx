@@ -1,8 +1,11 @@
 import { CartDrawer } from "@/components/CartDrawer";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
+import StyledComponentsRegistry from "@/providers/AntdRegistry";
+import { AuthProvider } from "@/providers/auth-provider";
 import { CartProvider } from "@/providers/CartProvider";
 import QueryProvider from "@/providers/QueryProvider";
+import { ThemeProvider } from "@/providers/theme-provider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -32,14 +35,20 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <QueryProvider>
-          <CartProvider>
-            <Navbar />
-            <CartDrawer />
-            <main className='flex-1 pt-16'>{children}</main>
-            <Footer />
-          </CartProvider>
-        </QueryProvider>
+        <StyledComponentsRegistry>
+          <QueryProvider>
+            <AuthProvider>
+              <CartProvider>
+                <ThemeProvider>
+                  <Navbar />
+                  <CartDrawer />
+                  <main className='flex-1 pt-16'>{children}</main>
+                  <Footer />
+                </ThemeProvider>
+              </CartProvider>
+            </AuthProvider>
+          </QueryProvider>
+        </StyledComponentsRegistry>
       </body>
     </html>
   );

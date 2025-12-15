@@ -1,15 +1,25 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { ProcessPaymentDto } from '../../application/dtos/payment/process-payment.dto';
+import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
 import { PaymentService } from '../../application/services/payment.service';
-import { JwtAuthGuard } from '../../infrastructure/auth/guards/jwt-auth.guard';
 
 @Controller('payments')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
   @Post('process')
-  @UseGuards(JwtAuthGuard)
-  async processPayment(@Body() dto: ProcessPaymentDto) {
-    return this.paymentService.processPayment(dto);
+  async createPayment(
+    @Body() body: { orderId: string; amount: number; paymentMethod: string },
+  ) {
+    if (!body.orderId || !body.amount) {
+      throw new BadRequestException('Order ID and amount are required');
+    }
+    const success = await this.paymentService.processPayment(
+      body.orderId,
+      body.amount,
+      body.paymentMethod,
+    );
+    return {
+      success,
+      message: success ? 'Payment successful' : 'Payment failed',
+    };
   }
 }

@@ -1,6 +1,8 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
+import { ReviewForm } from "@/components/reviews/ReviewForm";
+import { ReviewsList } from "@/components/reviews/ReviewsList";
 import api from "@/lib/api";
 import { useCart } from "@/providers/CartProvider";
 import {
@@ -147,6 +149,18 @@ export default function ProductDetailPage() {
               <SafetyCertificateOutlined style={{ fontSize: 20 }} className='text-gray-900' />
               <span>Lifetime Warranty</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div className='mt-20'>
+        <h2 className='text-2xl font-bold mb-8'>Customer Reviews</h2>
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-12'>
+          <div>
+            <ReviewsList productId={id as string} />
+          </div>
+          <div>
+            <ReviewForm productId={id as string} />
           </div>
         </div>
       </div>

@@ -1,9 +1,9 @@
 import { CreditCardOutlined } from "@ant-design/icons";
+import type { FormInstance } from "antd";
 import { Card, Form, Input, Radio } from "antd";
 
 interface PaymentFormProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  form: any; // Antd Form instance
+  form: FormInstance;
 }
 
 export function PaymentForm({ form }: PaymentFormProps) {

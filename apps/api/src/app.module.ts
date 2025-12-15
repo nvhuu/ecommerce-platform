@@ -22,6 +22,7 @@ import { MediaModule } from './modules/media.module';
 import { OrdersModule } from './modules/orders.module';
 import { PaymentModule } from './modules/payment.module';
 import { ProductsModule } from './modules/products.module';
+import { ReviewsModule } from './modules/reviews.module';
 import { UsersModule } from './modules/users.module';
 
 @Module({
@@ -51,6 +52,7 @@ import { UsersModule } from './modules/users.module';
     MediaModule,
     CartModule,
     PaymentModule,
+    ReviewsModule,
   ],
   controllers: [],
   providers: [

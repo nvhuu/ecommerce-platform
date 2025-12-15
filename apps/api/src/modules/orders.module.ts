@@ -22,6 +22,6 @@ import { UsersModule } from './users.module';
       useClass: ProductRepository,
     },
   ],
-  exports: [OrdersService],
+  exports: [OrdersService, 'IOrderRepository', 'IProductRepository'],
 })
 export class OrdersModule {}

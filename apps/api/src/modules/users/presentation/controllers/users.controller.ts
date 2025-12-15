@@ -1,0 +1,57 @@
+import { Roles } from '@/core/decorators/roles.decorator';
+import { Serialize } from '@/core/decorators/serialize.decorator';
+import { JwtAuthGuard } from '@/modules/auth/infrastructure/guards/jwt-auth.guard';
+import { RolesGuard } from '@/modules/auth/infrastructure/guards/roles.guard';
+import { PaginationQueryDto } from '@/shared/dtos/query/pagination-query.dto';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { UserResponseDto } from '../../application/dtos/response/user.response.dto';
+import { UpdateUserDto } from '../../application/dtos/user.dto';
+import { UsersService } from '../../application/services/users.service';
+
+@ApiTags('users')
+@Controller('users')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
+  @Get()
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Get all users with pagination' })
+  findAll(@Query() query: PaginationQueryDto) {
+    return this.usersService.findAll(query.page, query.limit, query.search);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get user by ID' })
+  @Serialize(UserResponseDto)
+  findOne(@Param('id') id: string) {
+    return this.usersService.findOne(id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update user' })
+  @Serialize(UserResponseDto)
+  update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
+    return this.usersService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Delete user' })
+  remove(@Param('id') id: string) {
+    return this.usersService.remove(id);
+  }
+}

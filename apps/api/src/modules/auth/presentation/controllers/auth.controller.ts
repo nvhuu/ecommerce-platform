@@ -1,0 +1,52 @@
+import { Serialize } from '@/core/decorators/serialize.decorator';
+import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { UserResponseDto } from '../../../../modules/users/application/dtos/response/user.response.dto';
+import { Role } from '../../../users/domain/entities/user.entity';
+import { CreateUserDto, LoginDto } from '../../application/dtos/auth.dto';
+import { AuthService } from '../../application/services/auth.service';
+
+@ApiTags('Auth')
+@Controller('auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Post('login')
+  @ApiOperation({
+    summary: 'User login',
+    description: 'Authenticate user and return JWT token',
+  })
+  @ApiResponse({ status: 200, description: 'Login successful' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  async login(@Body() loginDto: LoginDto) {
+    const user = await this.authService.validateUser(
+      loginDto.email,
+      loginDto.password,
+    );
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    // user is Omit<User, 'password'>, which has id, email, role.
+    // Cast to required type or let TS infer if compatible (it should be if User has these fields)
+    return this.authService.login(
+      user as { id: string; email: string; role: Role },
+    );
+  }
+
+  @Post('register')
+  @ApiOperation({
+    summary: 'Register new user',
+    description: 'Create a new user account',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'User registered successfully',
+    type: UserResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 409, description: 'Email already exists' })
+  @Serialize(UserResponseDto)
+  async register(@Body() user: CreateUserDto) {
+    return this.authService.register(user);
+  }
+}

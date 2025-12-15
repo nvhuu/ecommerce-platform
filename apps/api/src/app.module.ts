@@ -4,26 +4,25 @@ import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { join } from 'path';
-import appConfig from './config/app.config';
-import authConfig from './config/auth.config';
-import databaseConfig from './config/database.config';
-import sentryConfig from './config/sentry.config';
-import storageConfig from './config/storage.config';
-import { AllExceptionsFilter } from './infrastructure/filters/all-exceptions.filter';
-import { AuditInterceptor } from './infrastructure/interceptors/audit.interceptor';
-import { SerializeInterceptor } from './infrastructure/interceptors/serialize.interceptor';
-import { TransformInterceptor } from './infrastructure/interceptors/transform.interceptor';
-import { PrismaModule } from './infrastructure/prisma/prisma.module';
-import { AuthModule } from './modules/auth.module';
-import { CartModule } from './modules/cart.module';
-import { CategoriesModule } from './modules/categories.module';
-import { DashboardModule } from './modules/dashboard.module';
-import { MediaModule } from './modules/media.module';
-import { OrdersModule } from './modules/orders.module';
-import { PaymentModule } from './modules/payment.module';
-import { ProductsModule } from './modules/products.module';
-import { ReviewsModule } from './modules/reviews.module';
-import { UsersModule } from './modules/users.module';
+import appConfig from './core/config/app.config';
+import authConfig from './core/config/auth.config';
+import databaseConfig from './core/config/database.config';
+import sentryConfig from './core/config/sentry.config';
+import storageConfig from './core/config/storage.config';
+import { AllExceptionsFilter } from './core/filters/all-exceptions.filter';
+import { AuditInterceptor } from './core/interceptors/audit.interceptor';
+import { SerializeInterceptor } from './core/interceptors/serialize.interceptor';
+import { PrismaModule } from './core/prisma/prisma.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { CartModule } from './modules/cart/cart.module';
+import { CategoriesModule } from './modules/categories/categories.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { MediaModule } from './modules/media/media.module';
+import { OrdersModule } from './modules/orders/orders.module';
+import { PaymentModule } from './modules/payment/payment.module';
+import { ProductsModule } from './modules/products/products.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -60,10 +59,7 @@ import { UsersModule } from './modules/users.module';
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
     },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TransformInterceptor,
-    },
+
     {
       provide: APP_INTERCEPTOR,
       useClass: AuditInterceptor,

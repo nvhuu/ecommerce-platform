@@ -20,7 +20,12 @@
     "noImplicitAny": true,
     "strictBindCallApply": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["node", "jest", "express"]
+    "types": ["node", "jest", "express"],
+    "paths": {
+      "@/core/*": ["src/core/*"],
+      "@/shared/*": ["src/shared/*"],
+      "@/modules/*": ["src/modules/*"]
+    }
   },
   "exclude": ["node_modules", "dist", "prisma.config.ts", "generated"]
 }

@@ -1,4 +1,5 @@
-import { Roles } from '@/core/decorators/roles.decorator';
+import { Role } from '@prisma/client';
+import { Roles } from '@/modules/auth/infrastructure/decorators/roles.decorator';
 import { Serialize } from '@/core/decorators/serialize.decorator';
 import { JwtAuthGuard } from '@/modules/auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '@/modules/auth/infrastructure/guards/roles.guard';
@@ -29,7 +30,7 @@ export class ProductsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(Role.SUPERADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new product' })
   @Serialize(ProductResponseDto)
@@ -65,7 +66,7 @@ export class ProductsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(Role.SUPERADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update product' })
   @Serialize(ProductResponseDto)
@@ -75,7 +76,7 @@ export class ProductsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(Role.SUPERADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete product' })
   remove(@Param('id') id: string) {

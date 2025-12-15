@@ -1,4 +1,5 @@
-import { Roles } from '@/core/decorators/roles.decorator';
+import { Role } from '@prisma/client';
+import { Roles } from '@/modules/auth/infrastructure/decorators/roles.decorator';
 import { Serialize } from '@/core/decorators/serialize.decorator';
 import { JwtAuthGuard } from '@/modules/auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '@/modules/auth/infrastructure/guards/roles.guard';
@@ -29,7 +30,7 @@ export class CategoriesController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(Role.SUPERADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new category' })
   @Serialize(CategoryResponseDto)
@@ -56,7 +57,7 @@ export class CategoriesController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(Role.SUPERADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update category' })
   @Serialize(CategoryResponseDto)
@@ -66,7 +67,7 @@ export class CategoriesController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(Role.SUPERADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete category' })
   remove(@Param('id') id: string) {

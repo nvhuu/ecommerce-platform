@@ -1,4 +1,5 @@
-import { Roles } from '@/core/decorators/roles.decorator';
+import { Role } from '@prisma/client';
+import { Roles } from '@/modules/auth/infrastructure/decorators/roles.decorator';
 import { Serialize } from '@/core/decorators/serialize.decorator';
 import { JwtAuthGuard } from '@/modules/auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '@/modules/auth/infrastructure/guards/roles.guard';
@@ -27,7 +28,7 @@ export class UsersController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @Roles(Role.SUPERADMIN)
   @ApiOperation({ summary: 'Get all users with pagination' })
   findAll(@Query() query: PaginationQueryDto) {
     return this.usersService.findAll(query.page, query.limit, query.search);
@@ -49,7 +50,7 @@ export class UsersController {
 
   @Delete(':id')
   @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @Roles(Role.SUPERADMIN)
   @ApiOperation({ summary: 'Delete user' })
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);

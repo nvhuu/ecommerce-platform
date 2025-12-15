@@ -1,5 +1,6 @@
 import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
 import { PaymentService } from '../../application/services/payment.service';
+import { PaymentMethod } from '../../domain/entities/payment.entity';
 
 @Controller('payments')
 export class PaymentController {
@@ -12,14 +13,11 @@ export class PaymentController {
     if (!body.orderId || !body.amount) {
       throw new BadRequestException('Order ID and amount are required');
     }
-    const success = await this.paymentService.processPayment(
+
+    return this.paymentService.processPayment(
       body.orderId,
       body.amount,
-      body.paymentMethod,
+      body.paymentMethod as PaymentMethod,
     );
-    return {
-      success,
-      message: success ? 'Payment successful' : 'Payment failed',
-    };
   }
 }

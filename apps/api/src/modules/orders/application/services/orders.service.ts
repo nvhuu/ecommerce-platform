@@ -1,6 +1,7 @@
 import { MESSAGES } from '@/shared/constants/messages.constant';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
+import { IProductRepository } from '../../../products/domain/repositories/product.repository.interface';
 import { Order, OrderStatus } from '../../domain/entities/order.entity';
 import { IOrderRepository } from '../../domain/repositories/order.repository.interface';
 import { CreateOrderDto } from '../dtos/order.dto';
@@ -11,14 +12,20 @@ export class OrdersService {
   constructor(
     @Inject('IOrderRepository')
     private readonly orderRepository: IOrderRepository,
+    @Inject('IProductRepository')
+    private readonly productRepository: IProductRepository,
   ) {}
 
-  async create(dto: CreateOrderDto) {
+  async create(userId: string, dto: CreateOrderDto) {
+    // Note: This is a simplified version
+    // In a full implementation, you'd fetch items from cart
     const order = new Order();
-    order.userId = dto.userId;
+    order.userId = userId;
     order.status = OrderStatus.PENDING;
-    order.totalAmount = dto.totalAmount;
-    order.items = dto.items;
+    order.shippingAddress = dto.shippingAddress;
+    order.paymentMethod = dto.paymentMethod || 'COD';
+    order.items = []; // Items would come from cart in real implementation
+    order.totalAmount = 0; // Would be calculated from cart items
 
     const created = await this.orderRepository.create(order);
     return {

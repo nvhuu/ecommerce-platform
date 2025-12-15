@@ -12,6 +12,7 @@ export const MESSAGES = {
     FORBIDDEN: 'Access forbidden',
     VALIDATION_ERROR: 'Validation failed',
     INTERNAL_ERROR: 'Internal server error',
+    BAD_REQUEST: 'Bad request',
   },
 
   // Auth messages
@@ -23,6 +24,7 @@ export const MESSAGES = {
     INVALID_CREDENTIALS: 'Invalid credentials',
     EMAIL_ALREADY_EXISTS: 'Email already exists',
     PASSWORD_RESET_SUCCESS: 'Password reset successful',
+    USER_NOT_FOUND: 'User not found',
   },
 
   // Category messages
@@ -44,6 +46,7 @@ export const MESSAGES = {
     LIST_RETRIEVED: 'Products retrieved successfully',
     NOT_FOUND: 'Product not found',
     STOCK_UPDATED: 'Product stock updated successfully',
+    INSUFFICIENT_STOCK: 'Insufficient product stock',
   },
 
   // Order messages
@@ -56,7 +59,8 @@ export const MESSAGES = {
     STATUS_UPDATED: 'Order status updated successfully',
     NOT_FOUND: 'Order not found',
     EMPTY_CART: 'Cart is empty',
-    INSUFFICIENT_STOCK: 'Insufficient stock',
+    INSUFFICIENT_STOCK: 'Insufficient stock for order',
+    INVALID_STATUS: 'Invalid order status',
   },
 
   // User messages
@@ -77,6 +81,7 @@ export const MESSAGES = {
     ITEM_UPDATED: 'Cart item updated',
     ITEM_REMOVED: 'Item removed from cart',
     CLEARED: 'Cart cleared successfully',
+    ITEM_NOT_FOUND: 'Cart item not found',
   },
 
   // Payment messages
@@ -85,6 +90,8 @@ export const MESSAGES = {
     FAILED: 'Payment failed',
     CANCELLED: 'Payment cancelled',
     REFUNDED: 'Payment refunded successfully',
+    AMOUNT_MISMATCH: 'Payment amount does not match order total',
+    INVALID_METHOD: 'Invalid payment method',
   },
 
   // Media messages
@@ -93,6 +100,8 @@ export const MESSAGES = {
     DELETED: 'File deleted successfully',
     LIST_RETRIEVED: 'Media files retrieved successfully',
     FOLDER_CREATED: 'Folder created successfully',
+    NOT_FOUND: 'Media file not found',
+    INVALID_TYPE: 'Invalid file type',
   },
 
   // Dashboard messages
@@ -107,6 +116,7 @@ export const MESSAGES = {
     UPDATED: 'Review updated successfully',
     DELETED: 'Review deleted successfully',
     LIST_RETRIEVED: 'Reviews retrieved successfully',
+    NOT_FOUND: 'Review not found',
   },
 } as const;
 

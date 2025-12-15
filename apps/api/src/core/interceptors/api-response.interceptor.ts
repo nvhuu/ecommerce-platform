@@ -49,9 +49,9 @@ export class ApiResponseInterceptor<T> implements NestInterceptor<
 
           // Check if it also has pagination info
           if (
-            'page' in typedResponse &&
-            'limit' in typedResponse &&
-            'total' in typedResponse
+            typeof typedResponse.page === 'number' &&
+            typeof typedResponse.limit === 'number' &&
+            typeof typedResponse.total === 'number'
           ) {
             return ApiResponse.successWithPaging(
               data,

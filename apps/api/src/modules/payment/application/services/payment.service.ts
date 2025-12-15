@@ -1,3 +1,4 @@
+import { MESSAGES } from '@/shared/constants/messages.constant';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { OrdersService } from '../../../orders/application/services/orders.service';
 import { OrderStatus } from '../../../orders/domain/entities/order.entity';
@@ -21,10 +22,10 @@ export class PaymentService {
     orderId: string,
     amount: number,
     paymentMethod: PaymentMethod,
-  ): Promise<Payment> {
+  ) {
     const orderResponse = await this.ordersService.findOne(orderId);
     if (!orderResponse.data) {
-      throw new NotFoundException('Order not found');
+      throw new NotFoundException(MESSAGES.ORDER.NOT_FOUND);
     }
 
     const order = orderResponse.data;
@@ -32,9 +33,7 @@ export class PaymentService {
     const orderAmount = new Money(order.totalAmount, 'USD');
 
     if (!paymentAmount.equals(orderAmount)) {
-      throw new Error(
-        `Payment amount ${paymentAmount.toString()} does not match order total ${orderAmount.toString()}`,
-      );
+      throw new Error(MESSAGES.PAYMENT.AMOUNT_MISMATCH);
     }
 
     // Create payment entity
@@ -51,14 +50,18 @@ export class PaymentService {
     if (success) {
       payment.status = PaymentStatus.SUCCESS;
       payment.transactionId = `txn_${Date.now()}`;
-
       await this.ordersService.updateStatus(orderId, OrderStatus.COMPLETED);
     } else {
       payment.status = PaymentStatus.FAILED;
       payment.failureReason = 'Mock payment failed';
     }
 
-    return this.paymentRepository.create(payment);
+    const created = await this.paymentRepository.create(payment);
+
+    return {
+      message: success ? MESSAGES.PAYMENT.PROCESSED : MESSAGES.PAYMENT.FAILED,
+      data: created,
+    };
   }
 
   private async mockPaymentGateway(payment: Payment): Promise<boolean> {

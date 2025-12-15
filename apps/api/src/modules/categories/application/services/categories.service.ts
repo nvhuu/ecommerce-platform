@@ -1,10 +1,10 @@
-import { MESSAGES } from '@/shared/constants/messages.constant';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
-import { Category } from '../../domain/entities/category.entity';
+import { MESSAGES } from '@/shared/constants/messages.constant';
 import { ICategoryRepository } from '../../domain/repositories/category.repository.interface';
 import { CreateCategoryDto, UpdateCategoryDto } from '../dtos/category.dto';
 import { CategoryResponseDto } from '../dtos/response/category.response.dto';
+import { Category } from '../../domain/entities/category.entity';
 
 @Injectable()
 export class CategoriesService {
@@ -16,7 +16,8 @@ export class CategoriesService {
   async create(dto: CreateCategoryDto) {
     const category = new Category();
     category.name = dto.name;
-    category.description = dto.description;
+    category.slug = dto.name.toLowerCase().replace(/\s+/g, '-');
+    category.parentId = dto.parentId || null;
 
     const created = await this.categoryRepository.create(category);
 

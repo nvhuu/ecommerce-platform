@@ -66,8 +66,8 @@ export class CategoryRepository implements ICategoryRepository {
     const created = await this.prisma.category.create({
       data: {
         name: category.name,
-        description: category.description,
-        parentId: category.parentId || null,
+        slug: category.slug,
+        ...(category.parentId && { parentId: category.parentId }),
         createdBy: category.createdBy || null,
       },
     });
@@ -81,9 +81,7 @@ export class CategoryRepository implements ICategoryRepository {
       where: { id },
       data: {
         ...(category.name && { name: category.name }),
-        ...(category.description !== undefined && {
-          description: category.description,
-        }),
+        ...(category.slug && { slug: category.slug }),
         ...(category.parentId !== undefined && { parentId: category.parentId }),
       },
     });

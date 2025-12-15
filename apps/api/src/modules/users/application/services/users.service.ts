@@ -5,7 +5,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { plainToClass } from 'class-transformer';
+import { User } from '../../domain/entities/user.entity';
 import { IUserRepository } from '../../domain/repositories/user.repository.interface';
 import { UserResponseDto } from '../dtos/response/user.response.dto';
 import { UpdateUserDto } from '../dtos/user.dto';
@@ -16,6 +18,20 @@ export class UsersService {
     @Inject('IUserRepository')
     private readonly userRepository: IUserRepository,
   ) {}
+
+  async create(data: { email: string; password: string; name?: string }) {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const user = new User();
+    user.email = data.email;
+    user.password = hashedPassword;
+
+    const created = await this.userRepository.create(user);
+    return plainToClass(UserResponseDto, created);
+  }
+
+  async findByEmail(email: string) {
+    return this.userRepository.findByEmail(email);
+  }
 
   async findAll(page?: number, limit?: number, search?: string) {
     const result = await this.userRepository.findAll({

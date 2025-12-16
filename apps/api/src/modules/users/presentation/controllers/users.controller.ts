@@ -1,6 +1,5 @@
-import { Role } from '@prisma/client';
-import { Roles } from '@/modules/auth/infrastructure/decorators/roles.decorator';
 import { Serialize } from '@/core/decorators/serialize.decorator';
+import { Roles } from '@/modules/auth/infrastructure/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/modules/auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '@/modules/auth/infrastructure/guards/roles.guard';
 import { PaginationQueryDto } from '@/shared/dtos/query/pagination-query.dto';
@@ -11,12 +10,14 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Role } from '@prisma/client';
 import { UserResponseDto } from '../../application/dtos/response/user.response.dto';
-import { UpdateUserDto } from '../../application/dtos/user.dto';
+import { CreateUserDto, UpdateUserDto } from '../../application/dtos/user.dto';
 import { UsersService } from '../../application/services/users.service';
 
 @ApiTags('users')
@@ -25,6 +26,15 @@ import { UsersService } from '../../application/services/users.service';
 @ApiBearerAuth()
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Post()
+  @UseGuards(RolesGuard)
+  @Roles(Role.SUPERADMIN)
+  @ApiOperation({ summary: 'Create a new user (Admin only)' })
+  @Serialize(UserResponseDto)
+  create(@Body() dto: CreateUserDto) {
+    return this.usersService.create(dto);
+  }
 
   @Get()
   @UseGuards(RolesGuard)

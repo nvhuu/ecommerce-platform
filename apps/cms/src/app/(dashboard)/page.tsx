@@ -7,64 +7,34 @@ import {
   ShoppingCartOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Card as AntCard, Col, Row, Statistic, Table, Tag } from "antd";
-
-import { ElementType } from "react";
-
-// Workaround for Ant Design + React 19 type issue
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-const Card = AntCard as ElementType;
+import { Card, Col, Row, Skeleton, Statistic, Table, Tag } from "antd";
+import type { Order } from "@/domain/entities/order.entity";
+import { useDashboardStats } from "@/presentation/hooks/useDashboard";
+import { useOrders } from "@/presentation/hooks/useOrders";
 
 export default function DashboardPage() {
-  // Mock data for recent orders
-  const recentOrders = [
-    {
-      key: "1",
-      orderId: "#ORD-001",
-      customer: "John Doe",
-      amount: "$120.00",
-      status: "Completed",
-    },
-    {
-      key: "2",
-      orderId: "#ORD-002",
-      customer: "Jane Smith",
-      amount: "$85.50",
-      status: "Processing",
-    },
-    {
-      key: "3",
-      orderId: "#ORD-003",
-      customer: "Alice Johnson",
-      amount: "$200.00",
-      status: "Pending",
-    },
-    {
-      key: "4",
-      orderId: "#ORD-004",
-      customer: "Bob Brown",
-      amount: "$55.20",
-      status: "Rejected",
-    },
-  ];
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: ordersData, isLoading: ordersLoading } = useOrders({ page: 1, limit: 5 });
+
+  const recentOrders = ordersData?.data || [];
 
   const columns = [
     {
       title: "Order ID",
-      dataIndex: "orderId",
-      key: "orderId",
-      render: (text: string) => <a className='text-blue-600 font-medium'>{text}</a>,
+      dataIndex: "id",
+      key: "id",
+      render: (text: string) => <a className='text-blue-600 font-medium'>#{text.slice(0, 8)}</a>,
     },
     {
       title: "Customer",
-      dataIndex: "customer",
       key: "customer",
+      render: (record: Order) => record.user?.name || record.user?.email || "N/A",
     },
     {
       title: "Amount",
-      dataIndex: "amount",
+      dataIndex: "totalAmount",
       key: "amount",
+      render: (amount: number) => `$${amount.toFixed(2)}`,
     },
     {
       title: "Status",
@@ -72,17 +42,27 @@ export default function DashboardPage() {
       dataIndex: "status",
       render: (status: string) => {
         let color = "geekblue";
-        if (status === "Completed") color = "green";
-        if (status === "Rejected") color = "volcano";
-        if (status === "Pending") color = "orange";
+        if (status === "COMPLETED") color = "green";
+        if (status === "CANCELLED") color = "volcano";
+        if (status === "PENDING") color = "orange";
+        if (status === "PROCESSING") color = "blue";
         return (
           <Tag color={color} key={status}>
-            {status.toUpperCase()}
+            {status}
           </Tag>
         );
       },
     },
   ];
+
+  if (statsLoading) {
+    return (
+      <div className='space-y-6'>
+        <Skeleton active />
+        <Skeleton active />
+      </div>
+    );
+  }
 
   return (
     <div className='space-y-6'>
@@ -93,55 +73,93 @@ export default function DashboardPage() {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} md={6}>
-          <Card variant='borderless' className='shadow-sm hover:shadow-md transition-shadow'>
+          <Card className='shadow-sm hover:shadow-md transition-shadow'>
             <Statistic
               title='Total Sales'
-              value={112893}
+              value={stats?.totalSales || 0}
               precision={2}
-              styles={{ content: { color: "#3f8600" } }}
+              valueStyle={{ color: "#3f8600" }}
               prefix={<DollarOutlined />}
-              suffix=''
             />
             <div className='mt-2 text-xs text-gray-500'>
-              <ArrowUpOutlined className='text-green-500' />{" "}
-              <span className='text-green-500 font-medium'>12%</span> vs last month
+              {stats && stats.salesGrowth >= 0 ? (
+                <>
+                  <ArrowUpOutlined className='text-green-500' />{" "}
+                  <span className='text-green-500 font-medium'>{stats.salesGrowth}%</span>
+                </>
+              ) : (
+                <>
+                  <ArrowDownOutlined className='text-red-500' />{" "}
+                  <span className='text-red-500 font-medium'>
+                    {Math.abs(stats?.salesGrowth || 0)}%
+                  </span>
+                </>
+              )}{" "}
+              vs last month
             </div>
           </Card>
         </Col>
+
         <Col xs={24} sm={12} md={6}>
-          <Card variant='borderless' className='shadow-sm hover:shadow-md transition-shadow'>
+          <Card className='shadow-sm hover:shadow-md transition-shadow'>
             <Statistic
               title='Total Orders'
-              value={93}
-              styles={{ content: { color: "#1677ff" } }}
+              value={stats?.totalOrders || 0}
+              valueStyle={{ color: "#1677ff" }}
               prefix={<ShoppingCartOutlined />}
             />
             <div className='mt-2 text-xs text-gray-500'>
-              <ArrowUpOutlined className='text-green-500' />{" "}
-              <span className='text-green-500 font-medium'>8%</span> vs last month
+              {stats && stats.ordersGrowth >= 0 ? (
+                <>
+                  <ArrowUpOutlined className='text-green-500' />{" "}
+                  <span className='text-green-500 font-medium'>{stats.ordersGrowth}%</span>
+                </>
+              ) : (
+                <>
+                  <ArrowDownOutlined className='text-red-500' />{" "}
+                  <span className='text-red-500 font-medium'>
+                    {Math.abs(stats?.ordersGrowth || 0)}%
+                  </span>
+                </>
+              )}{" "}
+              vs last month
             </div>
           </Card>
         </Col>
+
         <Col xs={24} sm={12} md={6}>
-          <Card variant='borderless' className='shadow-sm hover:shadow-md transition-shadow'>
+          <Card className='shadow-sm hover:shadow-md transition-shadow'>
             <Statistic
               title='New Customers'
-              value={15}
-              styles={{ content: { color: "#cf1322" } }}
+              value={stats?.newCustomers || 0}
+              valueStyle={{ color: "#cf1322" }}
               prefix={<UserOutlined />}
             />
             <div className='mt-2 text-xs text-gray-500'>
-              <ArrowDownOutlined className='text-red-500' />{" "}
-              <span className='text-red-500 font-medium'>2%</span> vs last month
+              {stats && stats.customersGrowth >= 0 ? (
+                <>
+                  <ArrowUpOutlined className='text-green-500' />{" "}
+                  <span className='text-green-500 font-medium'>{stats.customersGrowth}%</span>
+                </>
+              ) : (
+                <>
+                  <ArrowDownOutlined className='text-red-500' />{" "}
+                  <span className='text-red-500 font-medium'>
+                    {Math.abs(stats?.customersGrowth || 0)}%
+                  </span>
+                </>
+              )}{" "}
+              vs last month
             </div>
           </Card>
         </Col>
+
         <Col xs={24} sm={12} md={6}>
-          <Card variant='borderless' className='shadow-sm hover:shadow-md transition-shadow'>
+          <Card className='shadow-sm hover:shadow-md transition-shadow'>
             <Statistic
               title='Active Sessions'
-              value={248}
-              styles={{ content: { color: "#faad14" } }}
+              value={stats?.activeSessions || 0}
+              valueStyle={{ color: "#faad14" }}
             />
             <div className='mt-2 text-xs text-gray-500'>Ongoing user activity</div>
           </Card>
@@ -150,8 +168,15 @@ export default function DashboardPage() {
 
       <Row gutter={[16, 16]} className='mt-6'>
         <Col span={24}>
-          <Card title='Recent Orders' variant='borderless' className='shadow-sm'>
-            <Table columns={columns} dataSource={recentOrders} pagination={false} size='middle' />
+          <Card title='Recent Orders' className='shadow-sm'>
+            <Table
+              columns={columns}
+              dataSource={recentOrders}
+              rowKey='id'
+              loading={ordersLoading}
+              pagination={false}
+              size='middle'
+            />
           </Card>
         </Col>
       </Row>

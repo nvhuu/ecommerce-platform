@@ -1,83 +1,75 @@
 "use client";
 
-import api from "@/lib/api";
-import { DeleteOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Form, Input, Modal, Select, Space, Table, Tag, message } from "antd";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { Button, Card, Input, message, Modal, Space, Table, Tag, Typography } from "antd";
 import { useState } from "react";
+import type { User } from "@/domain/entities/user.entity";
+import { UserRole } from "@/domain/entities/user.entity";
+import { UserFormModal } from "@/presentation/features/users/UserFormModal";
+import { useDeleteUser, useUsers } from "@/presentation/hooks/useUsers";
+
+const { Title } = Typography;
 
 export default function UsersPage() {
-  const [searchText, setSearchText] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<any>(null);
-  const [form] = Form.useForm();
-  const queryClient = useQueryClient();
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [searchText, setSearchText] = useState("");
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["users", searchText],
-    queryFn: async () => {
-      const res = await api.get("/users", {
-        params: { search: searchText, limit: 100 },
-      });
-      return res.data;
-    },
-  });
+  const { data, isLoading } = useUsers({ search: searchText, limit: 100 });
+  const deleteMutation = useDeleteUser();
 
-  const updateMutation = useMutation({
-    mutationFn: (values: any) => api.patch(`/users/${editingUser.id}`, values),
-    onSuccess: () => {
-      message.success("User updated successfully");
-      setIsModalOpen(false);
-      setEditingUser(null);
-      form.resetFields();
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-    },
-    onError: () => {
-      message.error("Failed to update user");
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => api.delete(`/users/${id}`),
-    onSuccess: () => {
-      message.success("User deleted successfully");
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-    },
-    onError: () => {
-      message.error("Failed to delete user");
-    },
-  });
-
-  const handleEdit = (record: any) => {
+  const handleEdit = (record: User) => {
     setEditingUser(record);
-    form.setFieldsValue({ role: record.role });
     setIsModalOpen(true);
   };
 
   const handleDelete = (id: string) => {
     Modal.confirm({
-      title: "Are you sure you want to delete this user?",
-      onOk: () => deleteMutation.mutate(id),
+      title: "Are you sure?",
+      content: "This action cannot be undone.",
+      onOk: async () => {
+        try {
+          await deleteMutation.mutateAsync(id);
+          message.success("User deleted successfully");
+        } catch (error: any) {
+          message.error(error.message || "Failed to delete user");
+        }
+      },
     });
   };
 
-  const onFinish = (values: any) => {
-    if (editingUser) {
-      updateMutation.mutate(values);
-    }
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setEditingUser(null);
+  };
+
+  const getRoleColor = (role: UserRole) => {
+    const colors: Record<UserRole, string> = {
+      [UserRole.SUPERADMIN]: "red",
+      [UserRole.ADMIN]: "blue",
+      [UserRole.USER]: "green",
+    };
+    return colors[role] || "default";
   };
 
   const columns = [
     {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+      render: (text: string) => <span className='font-medium'>{text}</span>,
+    },
+    {
       title: "Email",
       dataIndex: "email",
       key: "email",
+      render: (text: string) => <span className='text-gray-600'>{text}</span>,
     },
     {
       title: "Role",
       dataIndex: "role",
       key: "role",
-      render: (role: string) => <Tag color={role === "ADMIN" ? "red" : "blue"}>{role}</Tag>,
+      render: (role: UserRole) => <Tag color={getRoleColor(role)}>{role}</Tag>,
     },
     {
       title: "Created At",
@@ -88,52 +80,64 @@ export default function UsersPage() {
     {
       title: "Actions",
       key: "actions",
-      render: (_: any, record: any) => (
+      render: (_: any, record: User) => (
         <Space>
-          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          <Button icon={<DeleteOutlined />} danger onClick={() => handleDelete(record.id)} />
+          <Button size='small' onClick={() => handleEdit(record)}>
+            Edit
+          </Button>
+          <Button
+            size='small'
+            danger
+            onClick={() => handleDelete(record.id)}
+            disabled={record.role === UserRole.SUPERADMIN}
+          >
+            Delete
+          </Button>
         </Space>
       ),
     },
   ];
 
   return (
-    <div className='p-6'>
-      <h1 className='text-2xl font-bold mb-4'>Users</h1>
-
-      <div className='mb-4'>
-        <Input
-          placeholder='Search users by email'
-          prefix={<SearchOutlined />}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchText(e.target.value)}
-          style={{ width: 300 }}
-        />
+    <div className='p-6 max-w-[1600px] mx-auto'>
+      <div className='flex justify-between items-center mb-6'>
+        <div>
+          <Title level={2} style={{ margin: 0 }}>
+            Users
+          </Title>
+          <p className='text-gray-500 mt-1'>Manage system users and permissions</p>
+        </div>
+        <Button
+          type='primary'
+          icon={<PlusOutlined />}
+          onClick={() => setIsModalOpen(true)}
+          size='large'
+        >
+          Add User
+        </Button>
       </div>
 
-      <Table dataSource={data?.data || []} columns={columns} rowKey='id' loading={isLoading} />
+      <Card>
+        <div className='mb-4'>
+          <Input
+            placeholder='Search users...'
+            prefix={<SearchOutlined />}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchText(e.target.value)}
+            size='large'
+            className='max-w-md'
+          />
+        </div>
 
-      <Modal
-        title='Edit User'
-        open={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
-        footer={null}
-      >
-        <Form form={form} onFinish={onFinish} layout='vertical'>
-          <Form.Item name='role' label='Role' rules={[{ required: true }]}>
-            <Select
-              options={[
-                { label: "USER", value: "USER" },
-                { label: "ADMIN", value: "ADMIN" },
-              ]}
-            />
-          </Form.Item>
-          <Form.Item>
-            <Button type='primary' htmlType='submit' className='w-full'>
-              Update
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
+        <Table
+          columns={columns}
+          dataSource={data?.data || []}
+          rowKey='id'
+          loading={isLoading}
+          pagination={{ pageSize: 10 }}
+        />
+      </Card>
+
+      <UserFormModal open={isModalOpen} user={editingUser} onClose={handleModalClose} />
     </div>
   );
 }

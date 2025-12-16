@@ -1,294 +1,267 @@
 "use client";
 
-import api from "@/lib/api";
+import type { MediaFile, MediaFolder } from "@/domain/entities/media.entity";
 import {
-  CloudUploadOutlined,
-  DeleteOutlined,
-  FileOutlined,
-  FolderAddOutlined,
-  FolderOutlined,
-  HomeOutlined,
-} from "@ant-design/icons";
-import {
-  Breadcrumb,
-  Button,
-  Card,
-  Col,
-  Empty,
-  Form,
-  Input,
-  message,
-  Modal,
-  Row,
-  Spin,
-  Typography,
-  Upload,
-} from "antd";
-import type { UploadFile } from "antd/es/upload/interface";
-import { useEffect, useState } from "react";
+  useCreateFolder,
+  useDeleteFile,
+  useDeleteFolder,
+  useMedia,
+  useUploadFile,
+} from "@/presentation/hooks/useMedia";
+import { FolderAddOutlined, InboxOutlined, UploadOutlined } from "@ant-design/icons";
+import type { UploadProps } from "antd";
+import { Button, Card, Input, message, Modal, Space, Table, Typography, Upload } from "antd";
+import { useState } from "react";
 
 const { Title, Text } = Typography;
 const { Dragger } = Upload;
 
-import { ElementType } from "react";
-
-// Cast Card to ElementType to fix React 19 / Antd 6 type mismatch
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-const MediaCard = Card as ElementType;
-const { Meta } = Card;
-
-interface MediaFile {
-  id: string;
-  fileName: string;
-  fileUrl: string;
-  fileType: string;
-  fileSize: number;
-}
-
-interface MediaFolder {
-  id: string;
-  name: string;
-}
-
 export default function MediaPage() {
-  const [loading, setLoading] = useState(false);
-  const [files, setFiles] = useState<MediaFile[]>([]);
-  const [folders, setFolders] = useState<MediaFolder[]>([]);
-  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
-  const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; name: string }[]>([
-    { id: null, name: "Home" },
-  ]);
+  const [currentFolder, setCurrentFolder] = useState<string | undefined>();
+  const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
 
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
-  const [uploadFileList, setUploadFileList] = useState<UploadFile[]>([]);
-  const [form] = Form.useForm();
+  const { data, isLoading } = useMedia(currentFolder);
+  const uploadFileMutation = useUploadFile();
+  const createFolderMutation = useCreateFolder();
+  const deleteFileMutation = useDeleteFile();
+  const deleteFolderMutation = useDeleteFolder();
 
-  const fetchMedia = async (folderId: string | null) => {
-    setLoading(true);
+  const uploadProps: UploadProps = {
+    name: "file",
+    multiple: true,
+    customRequest: async ({ file, onSuccess, onError }) => {
+      try {
+        await uploadFileMutation.mutateAsync({
+          file: file as File,
+          folderId: currentFolder,
+        });
+        message.success(`${(file as File).name} uploaded successfully`);
+        onSuccess?.(file);
+      } catch (error: any) {
+        message.error(`${(file as File).name} upload failed: ${error.message}`);
+        onError?.(error);
+      }
+    },
+    showUploadList: false,
+  };
+
+  const handleCreateFolder = async () => {
+    if (!newFolderName.trim()) {
+      message.error("Please enter folder name");
+      return;
+    }
+
     try {
-      const response = await api.get("/media", {
-        params: { folderId },
+      await createFolderMutation.mutateAsync({
+        name: newFolderName,
+        parentId: currentFolder || null,
       });
-      setFiles(response.data.files);
-      setFolders(response.data.folders);
-    } catch (error) {
-      console.error(error);
-      message.error("Failed to load media");
-    } finally {
-      setLoading(false);
+      message.success("Folder created successfully");
+      setIsCreateFolderModalOpen(false);
+      setNewFolderName("");
+    } catch (error: any) {
+      message.error(error.message || "Failed to create folder");
     }
   };
 
-  useEffect(() => {
-    fetchMedia(currentFolderId);
-  }, [currentFolderId]);
-
-  const handleFolderClick = (folder: MediaFolder) => {
-    setCurrentFolderId(folder.id);
-    setBreadcrumbs([...breadcrumbs, { id: folder.id, name: folder.name }]);
-  };
-
-  const handleBreadcrumbClick = (index: number) => {
-    const newBreadcrumbs = breadcrumbs.slice(0, index + 1);
-    setBreadcrumbs(newBreadcrumbs);
-    setCurrentFolderId(newBreadcrumbs[index].id);
-  };
-
-  const handleDelete = async (id: string, type: "file" | "folder") => {
+  const handleDeleteFile = (id: string, filename: string) => {
     Modal.confirm({
-      title: `Delete ${type}?`,
-      content: "Are you sure you want to delete this item? This action cannot be undone.",
-      okText: "Yes, Delete",
-      okType: "danger",
+      title: "Delete File",
+      content: `Are you sure you want to delete "${filename}"?`,
       onOk: async () => {
         try {
-          await api.delete(`/media/${type}/${id}`);
-          message.success("Deleted successfully");
-          fetchMedia(currentFolderId);
-        } catch (error) {
-          message.error("Failed to delete item. Ensure folder is empty.");
+          await deleteFileMutation.mutateAsync(id);
+          message.success("File deleted successfully");
+        } catch (error: any) {
+          message.error(error.message || "Failed to delete file");
         }
       },
     });
   };
 
-  const handleCreateFolder = async (values: { name: string }) => {
-    try {
-      await api.post("/media/folder", {
-        name: values.name,
-        parentId: currentFolderId,
-      });
-      message.success("Folder created");
-      setIsFolderModalOpen(false);
-      form.resetFields();
-      fetchMedia(currentFolderId);
-    } catch (error) {
-      message.error("Failed to create folder");
-    }
-  };
-
-  const handleUpload = async () => {
-    const formData = new FormData();
-    uploadFileList.forEach((file) => {
-      formData.append("file", file.originFileObj as Blob);
+  const handleDeleteFolder = (id: string, folderName: string) => {
+    Modal.confirm({
+      title: "Delete Folder",
+      content: `Are you sure you want to delete "${folderName}" and all its contents?`,
+      onOk: async () => {
+        try {
+          await deleteFolderMutation.mutateAsync(id);
+          message.success("Folder deleted successfully");
+        } catch (error: any) {
+          message.error(error.message || "Failed to delete folder");
+        }
+      },
     });
-    if (currentFolderId) {
-      formData.append("folderId", currentFolderId);
-    }
-
-    try {
-      await api.post("/media/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      message.success("Files uploaded successfully");
-      setIsUploadModalOpen(false);
-      setUploadFileList([]);
-      fetchMedia(currentFolderId);
-    } catch (error) {
-      message.error("Upload failed");
-    }
   };
 
-  const uploadProps = {
-    onRemove: (file: UploadFile) => {
-      const index = uploadFileList.indexOf(file);
-      const newFileList = uploadFileList.slice();
-      newFileList.splice(index, 1);
-      setUploadFileList(newFileList);
+  const folderColumns = [
+    {
+      title: "Folder Name",
+      dataIndex: "name",
+      key: "name",
+      render: (text: string, record: MediaFolder) => (
+        <div
+          className='flex items-center cursor-pointer hover:text-blue-600'
+          onClick={() => setCurrentFolder(record.id)}
+        >
+          <FolderAddOutlined className='mr-2 text-lg text-yellow-600' />
+          <span className='font-medium'>{text}</span>
+        </div>
+      ),
     },
-    beforeUpload: (file: UploadFile) => {
-      setUploadFileList([...uploadFileList, file]);
-      return false;
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_: any, record: MediaFolder) => (
+        <Button size='small' danger onClick={() => handleDeleteFolder(record.id, record.name)}>
+          Delete
+        </Button>
+      ),
     },
-    fileList: uploadFileList,
-  };
+  ];
+
+  const fileColumns = [
+    {
+      title: "Preview",
+      dataIndex: "url",
+      key: "preview",
+      render: (url: string, record: MediaFile) => {
+        if (record.mimeType?.startsWith("image/")) {
+          return (
+            <img
+              src={url}
+              alt={record.filename}
+              className='w-16 h-16 object-cover rounded border'
+            />
+          );
+        }
+        return <InboxOutlined className='text-2xl text-gray-400' />;
+      },
+    },
+    {
+      title: "Filename",
+      dataIndex: "filename",
+      key: "filename",
+      render: (text: string) => <span className='font-medium'>{text}</span>,
+    },
+    {
+      title: "Size",
+      dataIndex: "size",
+      key: "size",
+      render: (size: number) => {
+        if (size < 1024) return `${size} B`;
+        if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+        return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+      },
+    },
+    {
+      title: "Type",
+      dataIndex: "mimeType",
+      key: "mimeType",
+      render: (type: string) => <Text type='secondary'>{type}</Text>,
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_: any, record: MediaFile) => (
+        <Space>
+          <Button size='small' onClick={() => window.open(record.url, "_blank")}>
+            View
+          </Button>
+          <Button size='small' danger onClick={() => handleDeleteFile(record.id, record.filename)}>
+            Delete
+          </Button>
+        </Space>
+      ),
+    },
+  ];
 
   return (
-    <div className='p-6'>
-      <div className='flex justify-between items-center mb-4'>
-        <Title level={2}>Media Manager</Title>
-        <div className='space-x-2'>
-          <Button icon={<FolderAddOutlined />} onClick={() => setIsFolderModalOpen(true)}>
+    <div className='p-6 max-w-[1600px] mx-auto'>
+      <div className='flex justify-between items-center mb-6'>
+        <div>
+          <Title level={2} style={{ margin: 0 }}>
+            Media Library
+          </Title>
+          <p className='text-gray-500 mt-1'>Manage your files and folders</p>
+        </div>
+        <Space>
+          <Button
+            icon={<FolderAddOutlined />}
+            onClick={() => setIsCreateFolderModalOpen(true)}
+            size='large'
+          >
             New Folder
           </Button>
-          <Button
-            type='primary'
-            icon={<CloudUploadOutlined />}
-            onClick={() => setIsUploadModalOpen(true)}
-          >
-            Upload
-          </Button>
-        </div>
+          <Upload {...uploadProps}>
+            <Button type='primary' icon={<UploadOutlined />} size='large'>
+              Upload Files
+            </Button>
+          </Upload>
+        </Space>
       </div>
 
-      <Breadcrumb className='mb-6'>
-        {breadcrumbs.map((item, index) => (
-          <Breadcrumb.Item key={item.id || "root"} onClick={() => handleBreadcrumbClick(index)}>
-            <a className='cursor-pointer text-blue-600 hover:underline'>
-              {index === 0 ? <HomeOutlined /> : null} {item.name}
-            </a>
-          </Breadcrumb.Item>
-        ))}
-      </Breadcrumb>
-
-      {loading ? (
-        <div className='flex justify-center p-12'>
-          <Spin size='large' />
+      {currentFolder && (
+        <div className='mb-4'>
+          <Button onClick={() => setCurrentFolder(undefined)}>← Back to Root</Button>
         </div>
-      ) : (
-        <>
-          {folders.length === 0 && files.length === 0 ? (
-            <Empty description='No files or folders found' />
-          ) : (
-            <Row gutter={[16, 16]}>
-              {folders.map((folder) => (
-                <Col xs={24} sm={12} md={8} lg={6} xl={4} key={folder.id}>
-                  <MediaCard
-                    hoverable
-                    className='text-center'
-                    onDoubleClick={() => handleFolderClick(folder)}
-                    actions={[
-                      <DeleteOutlined
-                        key='delete'
-                        className='text-red-500'
-                        onClick={() => handleDelete(folder.id, "folder")}
-                      />,
-                    ]}
-                  >
-                    <FolderOutlined style={{ fontSize: "48px", color: "#faad14" }} />
-                    <div className='mt-2 truncate font-medium'>{folder.name}</div>
-                  </MediaCard>
-                </Col>
-              ))}
-              {files.map((file) => (
-                <Col xs={24} sm={12} md={8} lg={6} xl={4} key={file.id}>
-                  <MediaCard
-                    hoverable
-                    cover={
-                      file.fileType.startsWith("image/") ? (
-                        <img alt={file.fileName} src={file.fileUrl} className='h-32 object-cover' />
-                      ) : (
-                        <div className='h-32 flex items-center justify-center bg-gray-100'>
-                          <FileOutlined style={{ fontSize: "48px" }} />
-                        </div>
-                      )
-                    }
-                    actions={[
-                      <DeleteOutlined
-                        key='delete'
-                        className='text-red-500'
-                        onClick={() => handleDelete(file.id, "file")}
-                      />,
-                    ]}
-                  >
-                    <Meta
-                      title={file.fileName}
-                      description={(file.fileSize / 1024).toFixed(2) + " KB"}
-                    />
-                  </MediaCard>
-                </Col>
-              ))}
-            </Row>
-          )}
-        </>
       )}
 
-      {/* Upload Modal */}
-      <Modal
-        title='Upload Files'
-        open={isUploadModalOpen}
-        onOk={handleUpload}
-        onCancel={() => setIsUploadModalOpen(false)}
-        okText='Upload'
-        confirmLoading={loading}
-      >
-        <Dragger {...uploadProps} multiple>
-          <p className='ant-upload-drag-icon'>
-            <CloudUploadOutlined />
-          </p>
-          <p className='ant-upload-text'>Click or drag file to this area to upload</p>
-        </Dragger>
-      </Modal>
+      <Card className='mb-4'>
+        <Title level={4}>Folders</Title>
+        <Table
+          columns={folderColumns}
+          dataSource={data?.folders || []}
+          rowKey='id'
+          loading={isLoading}
+          pagination={false}
+          locale={{ emptyText: "No folders" }}
+        />
+      </Card>
 
-      {/* Create Folder Modal */}
+      <Card>
+        <Title level={4}>Files</Title>
+        <div className='mb-4'>
+          <Dragger {...uploadProps} style={{ padding: "20px" }}>
+            <p className='ant-upload-drag-icon'>
+              <InboxOutlined />
+            </p>
+            <p className='ant-upload-text'>Click or drag file to this area to upload</p>
+            <p className='ant-upload-hint'>
+              Support for single or bulk upload. Strictly prohibit from uploading company data or
+              other banned files.
+            </p>
+          </Dragger>
+        </div>
+
+        <Table
+          columns={fileColumns}
+          dataSource={data?.files || []}
+          rowKey='id'
+          loading={isLoading}
+          pagination={{ pageSize: 10 }}
+          locale={{ emptyText: "No files" }}
+        />
+      </Card>
+
       <Modal
         title='Create New Folder'
-        open={isFolderModalOpen}
-        onOk={form.submit}
-        onCancel={() => setIsFolderModalOpen(false)}
-        okText='Create'
+        open={isCreateFolderModalOpen}
+        onCancel={() => {
+          setIsCreateFolderModalOpen(false);
+          setNewFolderName("");
+        }}
+        onOk={handleCreateFolder}
+        confirmLoading={createFolderMutation.isPending}
       >
-        <Form form={form} onFinish={handleCreateFolder} layout='vertical'>
-          <Form.Item
-            name='name'
-            label='Folder Name'
-            rules={[{ required: true, message: "Please enter folder name" }]}
-          >
-            <Input placeholder='Enter folder name' />
-          </Form.Item>
-        </Form>
+        <Input
+          placeholder='Folder name'
+          value={newFolderName}
+          onChange={(e) => setNewFolderName(e.target.value)}
+          onPressEnter={handleCreateFolder}
+          autoFocus
+        />
       </Modal>
     </div>
   );

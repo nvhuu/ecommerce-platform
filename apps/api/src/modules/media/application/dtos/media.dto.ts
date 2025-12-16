@@ -4,7 +4,7 @@ import { IsOptional, IsString } from 'class-validator';
 export class CreateFolderDto {
   @ApiProperty({ example: 'My Folder', description: 'Name of the folder' })
   @IsString()
-  name: string;
+  name!: string;
 
   @ApiProperty({ required: false, description: 'ID of the parent folder' })
   @IsString()

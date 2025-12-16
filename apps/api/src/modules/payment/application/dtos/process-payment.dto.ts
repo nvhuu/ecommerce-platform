@@ -9,11 +9,11 @@ import {
 export class ProcessPaymentDto {
   @IsString()
   @IsNotEmpty()
-  orderId: string;
+  orderId!: string;
 
   @IsNumber()
   @Min(0)
-  amount: number;
+  amount!: number;
 
   @IsString()
   @IsOptional()

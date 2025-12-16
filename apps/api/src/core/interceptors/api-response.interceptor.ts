@@ -22,13 +22,15 @@ export class ApiResponseInterceptor<T> implements NestInterceptor<
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<ApiResponse<T>> {
-    const response = context.switchToHttp().getResponse();
+    const response = context
+      .switchToHttp()
+      .getResponse<{ statusCode?: number }>();
 
     return next.handle().pipe(
       map((serviceResponse) => {
-        const statusCode = response.statusCode || 200;
+        const statusCode = response.statusCode ?? 200;
         let message = 'Success';
-        let data = serviceResponse;
+        let data: unknown = serviceResponse;
 
         // Extract message and data if service returns { message, data, ...}
         if (
@@ -54,7 +56,7 @@ export class ApiResponseInterceptor<T> implements NestInterceptor<
             typeof typedResponse.total === 'number'
           ) {
             return ApiResponse.successWithPaging(
-              data,
+              data as T,
               {
                 page: typedResponse.page,
                 limit: typedResponse.limit,
@@ -82,7 +84,7 @@ export class ApiResponseInterceptor<T> implements NestInterceptor<
           };
 
           return ApiResponse.successWithPaging(
-            paginatedData.data,
+            paginatedData.data as T,
             {
               page: paginatedData.page,
               limit: paginatedData.limit,
@@ -94,7 +96,7 @@ export class ApiResponseInterceptor<T> implements NestInterceptor<
         }
 
         // Regular response
-        return ApiResponse.success(data, message, statusCode);
+        return ApiResponse.success(data as T, message, statusCode);
       }),
     );
   }

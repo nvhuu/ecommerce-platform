@@ -1,8 +1,12 @@
 "use client";
-/* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useCart } from "@/providers/CartProvider";
+import type { CartItem } from "@/domain/entities/cart.entity";
+import {
+  useCart,
+  useClearCart,
+  useRemoveCartItem,
+  useUpdateCartItem,
+} from "@/presentation/hooks/useCart";
 import {
   DeleteOutlined,
   MinusOutlined,
@@ -21,27 +25,39 @@ import {
   Table,
   Typography,
 } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const { Title, Text } = Typography;
 
 export default function CartPage() {
-  const { cart, updateQuantity, removeFromCart, cartTotal, clearCart } = useCart();
+  const router = useRouter();
+  const { data: cart, isLoading } = useCart();
+  const { mutate: updateQuantity } = useUpdateCartItem();
+  const { mutate: removeItem } = useRemoveCartItem();
+  const { mutate: clearCart } = useClearCart();
 
-  const columns: ColumnsType<any> = [
+  const cartItems = cart?.items || [];
+  const cartTotal = cart?.total || 0;
+
+  const columns: ColumnsType<CartItem> = [
     {
       title: "Product",
-      dataIndex: "name",
-      key: "name",
-      render: (text, record) => (
+      dataIndex: "product",
+      key: "product",
+      render: (product) => (
         <Space>
           <div className='w-16 h-16 bg-gray-100 rounded overflow-hidden'>
-            {record.image ? (
-              <img src={record.image} alt={text} className='w-full h-full object-cover' />
-            ) : null}
+            {product.imageUrls?.[0] && (
+              <img
+                src={product.imageUrls[0]}
+                alt={product.name}
+                className='w-full h-full object-cover'
+              />
+            )}
           </div>
-          <Text strong>{text}</Text>
+          <Text strong>{product.name}</Text>
         </Space>
       ),
     },
@@ -60,20 +76,26 @@ export default function CartPage() {
           <Button
             size='small'
             icon={<MinusOutlined />}
-            onClick={() => updateQuantity(record.id, record.quantity - 1)}
+            onClick={() =>
+              updateQuantity({ itemId: record.id, dto: { quantity: record.quantity - 1 } })
+            }
             disabled={record.quantity <= 1}
           />
           <InputNumber
             min={1}
             value={record.quantity}
-            onChange={(val: any) => updateQuantity(record.id, val || 1)}
+            onChange={(val: number | null) =>
+              updateQuantity({ itemId: record.id, dto: { quantity: val || 1 } })
+            }
             style={{ width: 60, textAlign: "center" }}
             controls={false}
           />
           <Button
             size='small'
             icon={<PlusOutlined />}
-            onClick={() => updateQuantity(record.id, record.quantity + 1)}
+            onClick={() =>
+              updateQuantity({ itemId: record.id, dto: { quantity: record.quantity + 1 } })
+            }
           />
         </Space>
       ),
@@ -91,20 +113,28 @@ export default function CartPage() {
           type='text'
           danger
           icon={<DeleteOutlined />}
-          onClick={() => removeFromCart(record.id)}
+          onClick={() => removeItem(record.id)}
         />
       ),
     },
   ];
 
-  if (cart.length === 0) {
+  if (isLoading) {
+    return (
+      <div className='container mx-auto px-4 py-16 text-center'>
+        <Text>Loading cart...</Text>
+      </div>
+    );
+  }
+
+  if (cartItems.length === 0) {
     return (
       <div className='container mx-auto px-4 py-16 text-center'>
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={<Text type='secondary'>Your cart is currently empty.</Text>}
         >
-          <Link href='/'>
+          <Link href='/products'>
             <Button type='primary' size='large' icon={<ShoppingCartOutlined />}>
               Start Shopping
             </Button>
@@ -124,18 +154,18 @@ export default function CartPage() {
         <Col xs={24} lg={16}>
           <Table
             columns={columns}
-            dataSource={cart}
+            dataSource={cartItems}
             rowKey='id'
             pagination={false}
             className='mb-8 bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100'
           />
-          <Button danger onClick={clearCart}>
+          <Button danger onClick={() => clearCart()}>
             Clear Cart
           </Button>
         </Col>
 
         <Col xs={24} lg={8}>
-          {/* @ts-expect-error -- Antd Card type mismatch in current setup */}
+          {/* @ts-expect-error - Ant Design Card type compatibility with React 19 */}
           <Card
             title={
               <Title level={4} style={{ margin: 0 }}>
@@ -163,7 +193,13 @@ export default function CartPage() {
                 </Text>
               </div>
 
-              <Button type='primary' size='large' block style={{ height: 48 }}>
+              <Button
+                type='primary'
+                size='large'
+                block
+                style={{ height: 48 }}
+                onClick={() => router.push("/checkout")}
+              >
                 Proceed to Checkout
               </Button>
             </Space>

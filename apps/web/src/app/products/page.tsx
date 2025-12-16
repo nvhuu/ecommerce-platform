@@ -1,29 +1,24 @@
 "use client";
-/* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import api from "@/lib/api";
+import type { Product } from "@/domain/entities/product.entity";
+import { useProducts } from "@/presentation/hooks/useProducts";
 import { DownOutlined, FilterOutlined, UnorderedListOutlined } from "@ant-design/icons";
-import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
-  const category = searchParams.get("category");
+  const categoryId = searchParams.get("categoryId");
   const search = searchParams.get("search");
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["products", category, search],
-    queryFn: async () => {
-      const params: any = { limit: 50 };
-      if (category) params.category = category; // Assuming API supports filter by category ID/slug
-      if (search) params.search = search;
-
-      const res = await api.get("/products", { params });
-      return res.data.data;
-    },
+  const { data, isLoading } = useProducts({
+    categoryId: categoryId || undefined,
+    search: search || undefined,
+    limit: 50,
   });
+
+  const products = data?.data || [];
+  const totalCount = data?.metadata?.total || 0;
 
   return (
     <div className='container mx-auto px-4 py-8'>
@@ -31,11 +26,9 @@ export default function ProductsPage() {
       <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4'>
         <div>
           <h1 className='text-3xl font-bold'>
-            {category ? `${category.charAt(0).toUpperCase() + category.slice(1)}` : "All Products"}
+            {categoryId ? "Category Products" : "All Products"}
           </h1>
-          <p className='text-gray-500 mt-1'>
-            {isLoading ? "Loading..." : `${data?.length || 0} items`}
-          </p>
+          <p className='text-gray-500 mt-1'>{isLoading ? "Loading..." : `${totalCount} items`}</p>
         </div>
 
         <div className='flex gap-2'>
@@ -59,19 +52,17 @@ export default function ProductsPage() {
                 <div className='h-4 bg-gray-200 rounded w-1/4' />
               </div>
             ))
-          : data?.map((product: any) => (
+          : products.map((product: Product) => (
               <Link
                 href={`/products/${product.id}`}
                 key={product.id}
                 className='group cursor-pointer block'
               >
                 <div className='relative aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden mb-4'>
-                  {/* Image Placeholder */}
-                  {product.images && product.images[0] ? (
+                  {product.imageUrls && product.imageUrls[0] ? (
                     <div className='relative w-full h-full'>
-                      {/* Using standard img for now to verify functionality quickly without domain config */}
                       <img
-                        src={product.images[0]}
+                        src={product.imageUrls[0]}
                         alt={product.name}
                         className='object-cover w-full h-full group-hover:scale-105 transition-transform duration-500'
                       />
@@ -82,7 +73,7 @@ export default function ProductsPage() {
                     </div>
                   )}
 
-                  {/* Quick Add Button (Optional on hover) */}
+                  {/* Quick Add Button */}
                   <div className='absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity'>
                     <button className='bg-white p-3 rounded-full shadow-lg hover:bg-black hover:text-white transition-colors'>
                       <span className='sr-only'>Quick View</span>
@@ -101,7 +92,7 @@ export default function ProductsPage() {
             ))}
       </div>
 
-      {!isLoading && (!data || data.length === 0) && (
+      {!isLoading && products.length === 0 && (
         <div className='text-center py-20 text-gray-500'>No products found.</div>
       )}
     </div>

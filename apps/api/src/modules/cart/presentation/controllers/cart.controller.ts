@@ -1,3 +1,4 @@
+import { RequestWithUser } from '@/modules/auth/types/request.types';
 import {
   Body,
   Controller,
@@ -15,15 +16,6 @@ import {
 } from '../../application/dtos/cart.dto';
 import { CartService } from '../../application/services/cart.service';
 // import { JwtAuthGuard } from '../../infrastructure/guards/jwt-auth.guard'; // Assuming existence
-
-// Define custom request interface to avoid any
-interface RequestWithUser extends Request {
-  user?: {
-    id: string;
-    email: string;
-    role: string;
-  };
-}
 
 @ApiTags('Cart')
 @Controller('cart')

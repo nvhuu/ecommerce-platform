@@ -5,14 +5,10 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Request } from 'express';
 import { Role } from '../../../users/domain/entities/user.entity';
 import { IUserRepository } from '../../../users/domain/repositories/user.repository.interface';
+import { RequestWithUser } from '../../types/request.types';
 import { ROLES_KEY } from '../decorators/roles.decorator';
-
-interface RequestWithUser extends Request {
-  user?: { id: string };
-}
 
 @Injectable()
 export class RolesGuard implements CanActivate {

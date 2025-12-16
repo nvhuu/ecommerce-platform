@@ -22,14 +22,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../../modules/auth/infrastructure/guards/jwt-auth.guard';
+import { RequestWithUser } from '../../../../modules/auth/types/request.types';
 import { CreateFolderDto } from '../../application/dtos/media.dto';
 import { MediaService } from '../../application/services/media.service';
-
-interface RequestWithUser extends Request {
-  user: {
-    id: string;
-  };
-}
 
 @ApiTags('Media')
 @Controller('media')

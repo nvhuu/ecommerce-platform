@@ -2,6 +2,7 @@ import { Serialize } from '@/core/decorators/serialize.decorator';
 import { Roles } from '@/modules/auth/infrastructure/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/modules/auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '@/modules/auth/infrastructure/guards/roles.guard';
+import { RequestWithUser } from '@/modules/auth/types/request.types';
 import { PaginationQueryDto } from '@/shared/dtos/query/pagination-query.dto';
 import {
   Body,
@@ -21,10 +22,6 @@ import { OrderResponseDto } from '../../application/dtos/response/order.response
 import { OrdersService } from '../../application/services/orders.service';
 import { OrderStatus } from '../../domain/entities/order.entity';
 
-interface RequestWithUser {
-  user: { sub: string };
-}
-
 @ApiTags('orders')
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
@@ -36,7 +33,7 @@ export class OrdersController {
   @ApiOperation({ summary: 'Create a new order' })
   @Serialize(OrderResponseDto)
   create(@Req() req: RequestWithUser, @Body() dto: CreateOrderDto) {
-    return this.ordersService.create(req.user.sub, dto);
+    return this.ordersService.create(req.user.id, dto);
   }
 
   @Get()
@@ -53,7 +50,7 @@ export class OrdersController {
     @Req() req: RequestWithUser,
     @Query() query: PaginationQueryDto,
   ) {
-    return this.ordersService.findByUser(req.user.sub, query.page, query.limit);
+    return this.ordersService.findByUser(req.user.id, query.page, query.limit);
   }
 
   @Get(':id')

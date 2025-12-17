@@ -4,7 +4,7 @@ import type { Category } from "@/domain/entities/category.entity";
 import { useCategories } from "@/presentation/hooks/useCategories";
 import { useFeaturedProducts } from "@/presentation/hooks/useProducts";
 import { ArrowRightOutlined } from "@ant-design/icons";
-import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
@@ -21,12 +21,7 @@ export default function Home() {
         </div>
 
         <div className='relative z-20 container mx-auto px-4'>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className='max-w-2xl'
-          >
+          <div className='max-w-2xl'>
             <h1 className='text-5xl md:text-7xl font-bold mb-6 tracking-tight leading-tight'>
               Elevate Your <br />
               <span className='text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600'>
@@ -51,7 +46,7 @@ export default function Home() {
                 Our Story
               </Link>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -77,13 +72,7 @@ export default function Home() {
             <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
               {categories?.slice(0, 3).map((category: Category, index: number) => (
                 <Link key={category.id} href={`/products?categoryId=${category.id}`}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
-                    className='group relative h-80 rounded-2xl overflow-hidden cursor-pointer'
-                  >
+                  <div className='group relative h-80 rounded-2xl overflow-hidden cursor-pointer'>
                     <div className='absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors z-10' />
                     <div className={`absolute inset-0 bg-gradient-to-br ${getGradient(index)}`} />
 
@@ -95,7 +84,7 @@ export default function Home() {
                         </span>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 </Link>
               ))}
             </div>
@@ -114,12 +103,13 @@ export default function Home() {
               {featuredProducts.map((product) => (
                 <Link key={product.id} href={`/products/${product.id}`}>
                   <div className='bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow'>
-                    <div className='aspect-square bg-gray-100'>
+                    <div className='aspect-square bg-gray-100 relative'>
                       {product.imageUrls?.[0] && (
-                        <img
+                        <Image
                           src={product.imageUrls[0]}
                           alt={product.name}
-                          className='w-full h-full object-cover'
+                          fill
+                          className='object-cover'
                         />
                       )}
                     </div>

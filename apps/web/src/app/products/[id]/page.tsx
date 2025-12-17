@@ -15,8 +15,6 @@ import {
   StarOutlined,
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-// @ts-expect-error -- framer-motion types missing
-import { motion } from "framer-motion";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
@@ -56,11 +54,7 @@ export default function ProductDetailPage() {
       <div className='grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20'>
         {/* Gallery */}
         <div className='space-y-4'>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className='aspect-square bg-gray-100 rounded-2xl overflow-hidden relative'
-          >
+          <div className='aspect-square bg-gray-100 rounded-2xl overflow-hidden relative'>
             {product.images?.[selectedImage] ? (
               <img
                 src={product.images[selectedImage]}
@@ -72,7 +66,7 @@ export default function ProductDetailPage() {
                 No Image
               </div>
             )}
-          </motion.div>
+          </div>
 
           <div className='grid grid-cols-4 gap-4'>
             {product.images?.map((img: string, idx: number) => (

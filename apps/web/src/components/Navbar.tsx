@@ -3,8 +3,6 @@
 import { useCart } from "@/providers/CartProvider";
 import { useAuth } from "@/providers/auth-provider";
 import { MenuOutlined, SearchOutlined, ShoppingOutlined, UserOutlined } from "@ant-design/icons";
-// @ts-expect-error -- framer-motion types missing
-import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -89,41 +87,30 @@ export function Navbar() {
           >
             <ShoppingOutlined style={{ fontSize: 20 }} />
             {cartCount > 0 && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className='absolute top-0 right-0 bg-blue-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full'
-              >
+              <span className='absolute top-0 right-0 bg-blue-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full'>
                 {cartCount}
-              </motion.span>
+              </span>
             )}
           </button>
         </div>
       </div>
 
       {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className='md:hidden bg-white border-b overflow-hidden'
-          >
-            <div className='flex flex-col p-4 space-y-4 text-sm font-medium'>
-              <Link href='/' onClick={() => setIsMobileMenuOpen(false)}>
-                Home
-              </Link>
-              <Link href='/products' onClick={() => setIsMobileMenuOpen(false)}>
-                Shop
-              </Link>
-              <Link href='/about' onClick={() => setIsMobileMenuOpen(false)}>
-                About
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {isMobileMenuOpen && (
+        <div className='md:hidden bg-white border-b overflow-hidden'>
+          <div className='flex flex-col p-4 space-y-4 text-sm font-medium'>
+            <Link href='/' onClick={() => setIsMobileMenuOpen(false)}>
+              Home
+            </Link>
+            <Link href='/products' onClick={() => setIsMobileMenuOpen(false)}>
+              Shop
+            </Link>
+            <Link href='/about' onClick={() => setIsMobileMenuOpen(false)}>
+              About
+            </Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

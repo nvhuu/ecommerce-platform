@@ -50,7 +50,7 @@ export function CartDrawer() {
       placement='right'
       onClose={() => setIsCartOpen(false)}
       open={isCartOpen}
-      width={450}
+      size='large'
       footer={cart.length > 0 ? footer : null}
     >
       {cart.length === 0 ? (

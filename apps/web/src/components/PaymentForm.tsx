@@ -1,12 +1,7 @@
 import { CreditCardOutlined } from "@ant-design/icons";
-import type { FormInstance } from "antd";
 import { Card, Form, Input, Radio } from "antd";
 
-interface PaymentFormProps {
-  form: FormInstance;
-}
-
-export function PaymentForm({ form }: PaymentFormProps) {
+export function PaymentForm() {
   return (
     <div>
       {/* @ts-expect-error -- antd Card type mismatch */}

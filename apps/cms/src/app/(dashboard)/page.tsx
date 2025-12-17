@@ -1,5 +1,8 @@
 "use client";
 
+import type { Order } from "@/domain/entities/order.entity";
+import { useDashboardStats } from "@/presentation/hooks/useDashboard";
+import { useOrders } from "@/presentation/hooks/useOrders";
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
@@ -8,9 +11,6 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { Card, Col, Row, Skeleton, Statistic, Table, Tag } from "antd";
-import type { Order } from "@/domain/entities/order.entity";
-import { useDashboardStats } from "@/presentation/hooks/useDashboard";
-import { useOrders } from "@/presentation/hooks/useOrders";
 
 export default function DashboardPage() {
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
@@ -78,7 +78,7 @@ export default function DashboardPage() {
               title='Total Sales'
               value={stats?.totalSales || 0}
               precision={2}
-              valueStyle={{ color: "#3f8600" }}
+              styles={{ value: { color: "#3f8600" } }}
               prefix={<DollarOutlined />}
             />
             <div className='mt-2 text-xs text-gray-500'>
@@ -105,7 +105,7 @@ export default function DashboardPage() {
             <Statistic
               title='Total Orders'
               value={stats?.totalOrders || 0}
-              valueStyle={{ color: "#1677ff" }}
+              styles={{ value: { color: "#1677ff" } }}
               prefix={<ShoppingCartOutlined />}
             />
             <div className='mt-2 text-xs text-gray-500'>
@@ -132,7 +132,7 @@ export default function DashboardPage() {
             <Statistic
               title='New Customers'
               value={stats?.newCustomers || 0}
-              valueStyle={{ color: "#cf1322" }}
+              styles={{ value: { color: "#cf1322" } }}
               prefix={<UserOutlined />}
             />
             <div className='mt-2 text-xs text-gray-500'>

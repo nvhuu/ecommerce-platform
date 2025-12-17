@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { CheckCircleFilled } from "@ant-design/icons";
 import Link from "next/link";

@@ -1,6 +1,7 @@
 import api from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Form, Input, Rate } from "antd";
+import { type AxiosError } from "axios";
 import { useState } from "react";
 
 interface ReviewFormProps {
@@ -27,14 +28,14 @@ export function ReviewForm({ productId }: ReviewFormProps) {
       queryClient.invalidateQueries({ queryKey: ["reviews", productId] });
       setSubmitting(false);
     },
-    onError: (err: any) => {
+    onError: (err: AxiosError<{ message?: string }>) => {
       const msg = err.response?.data?.message || "Failed to submit review";
       message.error(msg);
       setSubmitting(false);
     },
   });
 
-  const onFinish = (values: any) => {
+  const onFinish = (values: { rating: number; comment: string }) => {
     setSubmitting(true);
     mutation.mutate(values);
   };

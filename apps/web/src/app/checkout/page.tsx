@@ -1,40 +1,51 @@
 "use client";
 
-import api from "@/lib/api";
-/* eslint-disable @next/next/no-img-element */
 import { PaymentForm } from "@/components/PaymentForm";
+import type { CreateOrderDto } from "@/domain/entities/order.entity";
+import api from "@/lib/api";
 import { useCart } from "@/providers/CartProvider";
 import { ArrowRightOutlined } from "@ant-design/icons";
 import { useMutation } from "@tanstack/react-query";
 import { App, Button, Card, Col, Form, Input, Row, Steps, Typography } from "antd";
+import { type AxiosError } from "axios";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 const { Title, Text } = Typography;
 
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart } = useCart();
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(0);
   const [form] = Form.useForm();
   const { message: antdMessage } = App.useApp();
 
+  interface CheckoutFormValues {
+    fullName: string;
+    email: string;
+    address: string;
+    city: string;
+    zip: string;
+    paymentMethod: string;
+  }
+
   const checkoutMutation = useMutation({
-    mutationFn: async (values: any) => {
+    mutationFn: async (values: CheckoutFormValues) => {
       // 1. Create Order
-      const shippingAddress = `${values.fullName}, ${values.address}, ${values.city}, ${values.zip}`;
-      const orderPayload = {
-        shippingAddress,
+      const orderPayload: CreateOrderDto = {
+        items: cart.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        shippingAddress: {
+          fullName: values.fullName,
+          phone: "", // Phone not collected in form, using empty string
+          address: values.address,
+          city: values.city,
+          postalCode: values.zip,
+          country: "US", // Default country
+        },
         paymentMethod: values.paymentMethod || "CARD",
-        // items are handled by backend via cart or we send them?
-        // Checking backend: OrdersService.create uses user's cart or passed items?
-        // Assuming current logic uses CartService via backend or expects items?
-        // Current CheckoutPage didn't send items, so likely backend pulls from cart or previous logic was incomplete.
-        // Wait, looking at previous CheckoutPage: `const payload = { shippingAddress, paymentMethod: "COD" };`
-        // Backend `create` method likely takes items from request IF not using cart-based order creation.
-        // Let's assume the previous logic worked or backend handles it.
-        // Actually, backend `create` typically expects items if strict, or uses a Cart.
-        // Let's stick to what was there: just address and method.
       };
 
       const orderRes = await api.post("/orders", orderPayload);
@@ -46,7 +57,6 @@ export default function CheckoutPage() {
           orderId,
           amount: cartTotal,
           currency: "USD",
-          // Mock card details handling - simplified for demo
         });
       }
 
@@ -57,14 +67,14 @@ export default function CheckoutPage() {
       antdMessage.success("Order placed successfully!");
       router.push("/checkout/success");
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       console.error("Checkout failed", error);
       const msg = error.response?.data?.message || "Checkout failed. Please try again.";
       antdMessage.error(msg);
     },
   });
 
-  const onFinish = (values: any) => {
+  const onFinish = (values: CheckoutFormValues) => {
     checkoutMutation.mutate(values);
   };
 
@@ -89,7 +99,7 @@ export default function CheckoutPage() {
       <Row gutter={48}>
         <Col xs={24} lg={14}>
           <Steps
-            current={currentStep}
+            current={0}
             className='mb-8'
             items={[{ title: "Shipping" }, { title: "Payment" }, { title: "Confirmation" }]}
           />
@@ -150,7 +160,7 @@ export default function CheckoutPage() {
             </Card>
 
             {/* Payment Section */}
-            <PaymentForm form={form} />
+            <PaymentForm />
 
             <Button
               type='primary'
@@ -174,13 +184,9 @@ export default function CheckoutPage() {
               {cart.map((item) => (
                 <div key={item.id} className='flex justify-between items-center'>
                   <div className='flex items-center gap-3'>
-                    <div className='w-12 h-12 bg-gray-100 rounded overflow-hidden flex-shrink-0'>
+                    <div className='w-12 h-12 bg-gray-100 rounded overflow-hidden flex-shrink-0 relative'>
                       {item.image ? (
-                        <img
-                          src={item.image}
-                          className='w-full h-full object-cover'
-                          alt={item.name}
-                        />
+                        <Image src={item.image} fill className='object-cover' alt={item.name} />
                       ) : null}
                     </div>
                     <div>

@@ -3,6 +3,7 @@
 import type { Product } from "@/domain/entities/product.entity";
 import { useProducts } from "@/presentation/hooks/useProducts";
 import { DownOutlined, FilterOutlined, UnorderedListOutlined } from "@ant-design/icons";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
@@ -61,10 +62,11 @@ export default function ProductsPage() {
                 <div className='relative aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden mb-4'>
                   {product.imageUrls && product.imageUrls[0] ? (
                     <div className='relative w-full h-full'>
-                      <img
+                      <Image
                         src={product.imageUrls[0]}
                         alt={product.name}
-                        className='object-cover w-full h-full group-hover:scale-105 transition-transform duration-500'
+                        fill
+                        className='object-cover group-hover:scale-105 transition-transform duration-500'
                       />
                     </div>
                   ) : (

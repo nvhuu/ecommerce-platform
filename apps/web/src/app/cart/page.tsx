@@ -26,6 +26,7 @@ import {
   Typography,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -48,13 +49,9 @@ export default function CartPage() {
       key: "product",
       render: (product) => (
         <Space>
-          <div className='w-16 h-16 bg-gray-100 rounded overflow-hidden'>
+          <div className='w-16 h-16 bg-gray-100 rounded overflow-hidden relative'>
             {product.imageUrls?.[0] && (
-              <img
-                src={product.imageUrls[0]}
-                alt={product.name}
-                className='w-full h-full object-cover'
-              />
+              <Image src={product.imageUrls[0]} alt={product.name} fill className='object-cover' />
             )}
           </div>
           <Text strong>{product.name}</Text>

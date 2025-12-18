@@ -2,6 +2,7 @@ import { Serialize } from '@/core/decorators/serialize.decorator';
 import { Roles } from '@/modules/auth/infrastructure/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/modules/auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '@/modules/auth/infrastructure/guards/roles.guard';
+import { RequestWithUser } from '@/modules/auth/types/request.types';
 import { PaginationQueryDto } from '@/shared/dtos/query/pagination-query.dto';
 import {
   Body,
@@ -12,6 +13,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -42,6 +44,21 @@ export class UsersController {
   @ApiOperation({ summary: 'Get all users with pagination' })
   findAll(@Query() query: PaginationQueryDto) {
     return this.usersService.findAll(query.page, query.limit, query.search);
+  }
+
+  @Get('me')
+  @ApiOperation({ summary: 'Get current user profile' })
+  @Serialize(UserResponseDto)
+  getProfile(@Req() req: RequestWithUser) {
+    // req.user is set by JwtAuthGuard
+    return this.usersService.getCurrentUser(req.user.id);
+  }
+
+  @Patch('me')
+  @ApiOperation({ summary: 'Update current user profile' })
+  @Serialize(UserResponseDto)
+  updateProfile(@Req() req: RequestWithUser, @Body() dto: UpdateUserDto) {
+    return this.usersService.update(req.user.id, dto);
   }
 
   @Get(':id')

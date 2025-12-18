@@ -60,6 +60,10 @@ export class UsersService {
     };
   }
 
+  async getCurrentUser(id: string) {
+    return this.findOne(id);
+  }
+
   async update(id: string, dto: UpdateUserDto) {
     const user = await this.userRepository.findById(id);
     if (!user) {

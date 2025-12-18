@@ -20,12 +20,14 @@ import { CouponModule } from './modules/coupons/coupon.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { MediaModule } from './modules/media/media.module';
+import { NotificationModule } from './modules/notifications/notification.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { PaymentModule } from './modules/payments/payment.module'; // Updated path to plural 'payments'
 import { ProductsModule } from './modules/products/products.module';
 import { ReturnModule } from './modules/returns/return.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { ShipmentModule } from './modules/shipments/shipment.module';
+import { ShippingAddressModule } from './modules/users/address/shipping-address.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -60,6 +62,8 @@ import { UsersModule } from './modules/users/users.module';
     ShipmentModule,
     CouponModule,
     ReturnModule,
+    NotificationModule,
+    ShippingAddressModule,
   ],
   controllers: [],
   providers: [

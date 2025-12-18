@@ -1,7 +1,13 @@
-import { Expose, Type } from 'class-transformer';
 import { BaseEntity } from '@/shared/domain/base.entity';
+import { Expose, Type } from 'class-transformer';
 import { Product } from '../../../products/domain/entities/product.entity';
 import { User } from '../../../users/domain/entities/user.entity';
+
+export enum ReviewStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}
 
 export class Review extends BaseEntity {
   @Expose()

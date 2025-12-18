@@ -82,6 +82,13 @@ export class OrdersController {
     return this.ordersService.updateStatus(id, status, req.user.id);
   }
 
+  @Post(':id/cancel')
+  @ApiOperation({ summary: 'Cancel order (User)' })
+  @Serialize(OrderResponseDto)
+  cancel(@Param('id') id: string, @Req() req: RequestWithUser) {
+    return this.ordersService.cancel(id, req.user.id);
+  }
+
   // Order Notes endpoints
   @Post(':id/notes')
   @UseGuards(RolesGuard)

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -24,4 +25,13 @@ export class CreateReviewDto {
   @IsOptional()
   @IsString()
   comment?: string;
+}
+
+export class UpdateReviewStatusDto {
+  @ApiProperty({
+    description: 'Review status',
+    enum: ['PENDING', 'APPROVED', 'REJECTED'],
+  })
+  @IsEnum(['PENDING', 'APPROVED', 'REJECTED'])
+  status!: 'PENDING' | 'APPROVED' | 'REJECTED';
 }

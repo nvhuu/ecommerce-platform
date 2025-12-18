@@ -4,6 +4,10 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserResponseDto } from '../../../../modules/users/application/dtos/response/user.response.dto';
 import { Role } from '../../../users/domain/entities/user.entity';
 import { CreateUserDto, LoginDto } from '../../application/dtos/auth.dto';
+import {
+  ForgotPasswordDto,
+  ResetPasswordDto,
+} from '../../application/dtos/password-reset.dto';
 import { AuthService } from '../../application/services/auth.service';
 
 @ApiTags('Auth')
@@ -48,5 +52,19 @@ export class AuthController {
   @Serialize(UserResponseDto)
   async register(@Body() user: CreateUserDto) {
     return this.authService.register(user);
+  }
+
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Request password reset' })
+  @ApiResponse({ status: 200, description: 'Reset link sent if email exists' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto.email);
+  }
+
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Reset password' })
+  @ApiResponse({ status: 200, description: 'Password reset successful' })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.token, dto.newPassword);
   }
 }

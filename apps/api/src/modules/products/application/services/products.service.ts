@@ -2,6 +2,7 @@ import { MESSAGES } from '@/shared/constants/messages.constant';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { IProductRepository } from '../../domain/repositories/product.repository.interface';
+import { ProductQueryDto } from '../dtos/product-query.dto';
 import { CreateProductDto, UpdateProductDto } from '../dtos/product.dto';
 import { ProductResponseDto } from '../dtos/response/product.response.dto';
 
@@ -20,11 +21,8 @@ export class ProductsService {
     };
   }
 
-  async findAll(page?: number, limit?: number) {
-    const result = await this.productRepository.findAll({
-      page,
-      limit: limit || 10,
-    });
+  async findAll(options: ProductQueryDto) {
+    const result = await this.productRepository.findAll(options);
 
     return {
       message: MESSAGES.PRODUCT.LIST_RETRIEVED,
@@ -32,6 +30,14 @@ export class ProductsService {
       page: result.page,
       limit: result.limit,
       total: result.total,
+    };
+  }
+
+  async getRelatedProducts(id: string) {
+    const related = await this.productRepository.findRelated(id);
+    return {
+      message: MESSAGES.PRODUCT.LIST_RETRIEVED,
+      data: related.map((p) => plainToClass(ProductResponseDto, p)),
     };
   }
 

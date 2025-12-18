@@ -16,6 +16,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
+import { ProductQueryDto } from '../../application/dtos/product-query.dto';
 import {
   CreateProductVariantDto,
   UpdateProductVariantDto,
@@ -48,9 +49,16 @@ export class ProductsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all products with pagination' })
-  findAll(@Query() query: PaginationQueryDto) {
-    return this.productsService.findAll(query.page, query.limit);
+  @ApiOperation({ summary: 'Get all products with pagination and filters' })
+  findAll(@Query() query: ProductQueryDto) {
+    return this.productsService.findAll(query);
+  }
+
+  @Get(':id/related')
+  @ApiOperation({ summary: 'Get related products' })
+  @Serialize(ProductResponseDto)
+  getRelated(@Param('id') id: string) {
+    return this.productsService.getRelatedProducts(id);
   }
 
   @Get('category/:categoryId')

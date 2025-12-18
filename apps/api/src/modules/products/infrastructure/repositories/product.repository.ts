@@ -4,21 +4,36 @@ import {
   PaginationOptions,
 } from '@/shared/interfaces/repository.interface';
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { Product } from '../../domain/entities/product.entity';
-import { IProductRepository } from '../../domain/repositories/product.repository.interface';
+import {
+  IProductRepository,
+  ProductFilterOptions,
+} from '../../domain/repositories/product.repository.interface';
 
 @Injectable()
 export class ProductRepository implements IProductRepository {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(options: PaginationOptions): Promise<PaginatedResult<Product>> {
+  async findAll(
+    options: ProductFilterOptions,
+  ): Promise<PaginatedResult<Product>> {
     const page = options.page || 1;
     const limit = options.limit || 10;
     const skip = (page - 1) * limit;
 
-    const where = {
+    const where: Prisma.ProductWhereInput = {
       deletedAt: null,
       ...(options.search ? { name: { contains: options.search } } : {}),
+      ...(options.categoryId ? { categoryId: options.categoryId } : {}),
+      ...(options.minPrice !== undefined || options.maxPrice !== undefined
+        ? {
+            price: {
+              gte: options.minPrice,
+              lte: options.maxPrice,
+            },
+          }
+        : {}),
     };
 
     const [data, total] = await Promise.all([

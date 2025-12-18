@@ -141,4 +141,19 @@ export class ProductVariantRepository implements IProductVariantRepository {
       },
     });
   }
+
+  async findLowStock(threshold: number): Promise<ProductVariant[]> {
+    const variants = await this.prisma.productVariant.findMany({
+      where: {
+        stock: {
+          lte: threshold,
+        },
+      },
+      orderBy: { stock: 'asc' },
+    });
+
+    return variants
+      .map((v) => ProductVariant.toDomain(v))
+      .filter((v): v is ProductVariant => v !== null);
+  }
 }

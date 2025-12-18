@@ -70,4 +70,18 @@ export class InventoryController {
   async getStockLevels(@Param('productId') productId: string) {
     return this.inventoryService.getStockLevels(productId);
   }
+
+  @Get('low-stock')
+  @Roles(Role.SUPERADMIN)
+  @ApiOperation({ summary: 'Get low stock products' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of low stock variants',
+    type: [InventoryTransactionResponseDto], // Reusing DTO or create specific one. Actually returns VariantResponseDto
+  })
+  async getLowStock(@Query('threshold') threshold?: number) {
+    return this.inventoryService.getLowStock(
+      threshold ? Number(threshold) : undefined,
+    );
+  }
 }

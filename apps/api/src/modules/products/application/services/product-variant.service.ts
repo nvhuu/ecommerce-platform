@@ -87,4 +87,9 @@ export class ProductVariantService {
   async deductStock(variantId: string, quantity: number): Promise<void> {
     await this.variantRepository.deductStock(variantId, quantity);
   }
+
+  async findLowStock(threshold: number): Promise<ProductVariantResponseDto[]> {
+    const variants = await this.variantRepository.findLowStock(threshold);
+    return plainToInstance(ProductVariantResponseDto, variants);
+  }
 }

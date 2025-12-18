@@ -84,5 +84,10 @@ export class InventoryService {
       await this.variantService.deductStock(dto.variantId, dto.quantity);
     }
     // For PURCHASE, RETURN - can add later
+    // For PURCHASE, RETURN - can add later
+  }
+
+  async getLowStock(threshold = 5) {
+    return this.variantService.findLowStock(threshold);
   }
 }

@@ -109,4 +109,36 @@ export class OrdersService {
       data: plainToClass(OrderResponseDto, updated),
     };
   }
+
+  async cancel(id: string, userId: string) {
+    const order = await this.orderRepository.findById(id);
+    if (!order) {
+      throw new NotFoundException(MESSAGES.ORDER.NOT_FOUND);
+    }
+
+    if (order.userId !== userId) {
+      throw new NotFoundException(MESSAGES.ORDER.NOT_FOUND);
+    }
+
+    if (order.status !== OrderStatus.PENDING) {
+      throw new NotFoundException('Order cannot be cancelled'); // Using NotFound or BadRequest
+    }
+
+    const updated = await this.orderRepository.update(id, {
+      status: OrderStatus.CANCELLED,
+    });
+
+    await this.orderHistoryService.trackStatusChange(
+      id,
+      order.status,
+      OrderStatus.CANCELLED,
+      'User cancelled order',
+      userId,
+    );
+
+    return {
+      message: 'Order cancelled successfully',
+      data: plainToClass(OrderResponseDto, updated),
+    };
+  }
 }

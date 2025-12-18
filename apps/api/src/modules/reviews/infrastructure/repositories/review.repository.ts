@@ -44,4 +44,57 @@ export class ReviewRepository implements IReviewRepository {
       .map((r) => Review.toDomain(r))
       .filter((r): r is Review => r !== null);
   }
+
+  async findAll(
+    page = 1,
+    limit = 20,
+    status?: string,
+  ): Promise<{ data: Review[]; total: number }> {
+    // ReviewStatus enum in schema: PENDING, APPROVED, REJECTED
+    const whereClause: any = {};
+    if (status) {
+      whereClause.status = status;
+    }
+
+    const [reviews, total] = await Promise.all([
+      this.prisma.review.findMany({
+        where: whereClause,
+        skip: (page - 1) * limit,
+        take: limit,
+        include: { user: true, product: true },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.review.count({ where: whereClause }),
+    ]);
+
+    return {
+      data: reviews
+        .map((r) => Review.toDomain(r))
+        .filter((r): r is Review => r !== null),
+      total,
+    };
+  }
+
+  async findById(id: string): Promise<Review | null> {
+    const review = await this.prisma.review.findUnique({
+      where: { id },
+    });
+    return review ? Review.toDomain(review) : null;
+  }
+
+  async updateStatus(
+    id: string,
+    status: 'PENDING' | 'APPROVED' | 'REJECTED',
+  ): Promise<Review> {
+    const updated = await this.prisma.review.update({
+      where: { id },
+      data: { status },
+      include: { user: true, product: true },
+    });
+    return Review.toDomain(updated) as Review;
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.review.delete({ where: { id } });
+  }
 }

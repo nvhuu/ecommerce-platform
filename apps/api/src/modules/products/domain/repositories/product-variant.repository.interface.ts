@@ -10,4 +10,5 @@ export interface IProductVariantRepository {
   reserveStock(variantId: string, quantity: number): Promise<void>;
   releaseStock(variantId: string, quantity: number): Promise<void>;
   deductStock(variantId: string, quantity: number): Promise<void>;
+  findLowStock(threshold: number): Promise<ProductVariant[]>;
 }

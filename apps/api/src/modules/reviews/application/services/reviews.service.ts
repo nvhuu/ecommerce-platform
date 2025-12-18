@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { IOrderRepository } from '../../../orders/domain/repositories/order.repository.interface';
-import { Review } from '../../domain/entities/review.entity';
+import { Review, ReviewStatus } from '../../domain/entities/review.entity';
 import { IReviewRepository } from '../../domain/repositories/review.repository.interface';
 import { CreateReviewDto } from '../dtos/create-review.dto';
 import { ReviewResponseDto } from '../dtos/response/review.response.dto';
@@ -45,5 +45,42 @@ export class ReviewsService {
         excludeExtraneousValues: true,
       }),
     );
+  }
+
+  async findAll(page = 1, limit = 20, status?: string) {
+    const result = await this.reviewRepository.findAll(page, limit, status);
+    return {
+      data: result.data.map((r) =>
+        plainToClass(ReviewResponseDto, r, { excludeExtraneousValues: true }),
+      ),
+      total: result.total,
+      page,
+      limit,
+    };
+  }
+
+  async getMyReviews(userId: string) {
+    const reviews = await this.reviewRepository.findByUser(userId);
+    return reviews.map((r) =>
+      plainToClass(ReviewResponseDto, r, { excludeExtraneousValues: true }),
+    );
+  }
+
+  async updateStatus(id: string, status: ReviewStatus) {
+    const review = await this.reviewRepository.findById(id);
+    if (!review) throw new BadRequestException('Review not found');
+
+    const updated = await this.reviewRepository.updateStatus(id, status);
+    return plainToClass(ReviewResponseDto, updated, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async delete(id: string) {
+    const review = await this.reviewRepository.findById(id);
+    if (!review) throw new BadRequestException('Review not found');
+
+    await this.reviewRepository.delete(id);
+    return { success: true };
   }
 }

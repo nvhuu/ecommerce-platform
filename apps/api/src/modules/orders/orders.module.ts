@@ -1,27 +1,35 @@
-import { Module } from '@nestjs/common';
 import { PrismaModule } from '@/core/prisma/prisma.module';
-import { ProductRepository } from '../products/infrastructure/repositories/product.repository';
+import { Module } from '@nestjs/common';
+import { ProductsModule } from '../products/products.module';
+import { UsersModule } from '../users/users.module';
+import { OrderHistoryService } from './application/services/order-history.service';
+import { OrderNoteService } from './application/services/order-note.service';
 import { OrdersService } from './application/services/orders.service';
+import { OrderHistoryRepository } from './infrastructure/repositories/order-history.repository';
+import { OrderNoteRepository } from './infrastructure/repositories/order-note.repository';
 import { OrderRepository } from './infrastructure/repositories/order.repository';
 import { OrdersController } from './presentation/controllers/orders.controller';
 
-import { CartModule } from '../cart/cart.module';
-import { UsersModule } from '../users/users.module';
-
 @Module({
-  imports: [PrismaModule, UsersModule, CartModule],
+  imports: [PrismaModule, ProductsModule, UsersModule],
   controllers: [OrdersController],
   providers: [
     OrdersService,
+    OrderHistoryService,
+    OrderNoteService,
     {
       provide: 'IOrderRepository',
       useClass: OrderRepository,
     },
     {
-      provide: 'IProductRepository',
-      useClass: ProductRepository,
+      provide: 'IOrderHistoryRepository',
+      useClass: OrderHistoryRepository,
+    },
+    {
+      provide: 'IOrderNoteRepository',
+      useClass: OrderNoteRepository,
     },
   ],
-  exports: [OrdersService, 'IOrderRepository', 'IProductRepository'],
+  exports: [OrdersService, OrderHistoryService, 'IOrderRepository'],
 })
 export class OrdersModule {}

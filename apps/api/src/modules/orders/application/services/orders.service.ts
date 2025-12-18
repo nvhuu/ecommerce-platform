@@ -6,6 +6,7 @@ import { Order, OrderStatus } from '../../domain/entities/order.entity';
 import { IOrderRepository } from '../../domain/repositories/order.repository.interface';
 import { CreateOrderDto } from '../dtos/order.dto';
 import { OrderResponseDto } from '../dtos/response/order.response.dto';
+import { OrderHistoryService } from './order-history.service';
 
 @Injectable()
 export class OrdersService {
@@ -14,20 +15,29 @@ export class OrdersService {
     private readonly orderRepository: IOrderRepository,
     @Inject('IProductRepository')
     private readonly productRepository: IProductRepository,
+    private readonly orderHistoryService: OrderHistoryService,
   ) {}
 
   async create(userId: string, dto: CreateOrderDto) {
-    // Note: This is a simplified version
-    // In a full implementation, you'd fetch items from cart
     const order = new Order();
     order.userId = userId;
     order.status = OrderStatus.PENDING;
     order.shippingAddress = dto.shippingAddress;
     order.paymentMethod = dto.paymentMethod || 'COD';
-    order.items = []; // Items would come from cart in real implementation
-    order.totalAmount = 0; // Would be calculated from cart items
+    order.items = [];
+    order.totalAmount = 0;
 
     const created = await this.orderRepository.create(order);
+
+    // Auto-track order creation
+    await this.orderHistoryService.trackStatusChange(
+      created.id,
+      undefined,
+      OrderStatus.PENDING,
+      'Order created',
+      userId,
+    );
+
     return {
       message: MESSAGES.ORDER.CREATED,
       data: plainToClass(OrderResponseDto, created),
@@ -77,15 +87,25 @@ export class OrdersService {
     };
   }
 
-  async updateStatus(id: string, status: OrderStatus) {
+  async updateStatus(id: string, status: OrderStatus, userId?: string) {
     const order = await this.orderRepository.findById(id);
     if (!order) {
       throw new NotFoundException(MESSAGES.ORDER.NOT_FOUND);
     }
 
     const updated = await this.orderRepository.update(id, { status });
+
+    // Auto-track status change
+    await this.orderHistoryService.trackStatusChange(
+      id,
+      order.status,
+      status,
+      `Status changed from ${order.status} to ${status}`,
+      userId,
+    );
+
     return {
-      message: MESSAGES.ORDER.STATUS_UPDATED,
+      message: MESSAGES.ORDER.UPDATED,
       data: plainToClass(OrderResponseDto, updated),
     };
   }

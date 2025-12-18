@@ -20,9 +20,10 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { MediaModule } from './modules/media/media.module';
 import { OrdersModule } from './modules/orders/orders.module';
-import { PaymentModule } from './modules/payment/payment.module';
+import { PaymentModule } from './modules/payments/payment.module'; // Updated path to plural 'payments'
 import { ProductsModule } from './modules/products/products.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { ShipmentModule } from './modules/shipments/shipment.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -51,9 +52,10 @@ import { UsersModule } from './modules/users/users.module';
     DashboardModule,
     MediaModule,
     CartModule,
-    PaymentModule,
     ReviewsModule,
     InventoryModule,
+    PaymentModule,
+    ShipmentModule,
   ],
   controllers: [],
   providers: [

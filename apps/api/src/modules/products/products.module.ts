@@ -23,6 +23,6 @@ import { UsersModule } from '../users/users.module';
       useClass: ProductVariantRepository,
     },
   ],
-  exports: [ProductsService, ProductVariantService],
+  exports: [ProductsService, ProductVariantService, 'IProductRepository'],
 })
 export class ProductsModule {}

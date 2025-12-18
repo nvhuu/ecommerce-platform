@@ -80,20 +80,22 @@ model User {
   deletedBy String?
 
   // Relations
-  orders            Order[]
-  createdCategories Category[]    @relation("CategoryCreator")
-  updatedCategories Category[]    @relation("CategoryUpdater")
-  deletedCategories Category[]    @relation("CategoryDeleter")
-  createdProducts   Product[]     @relation("ProductCreator")
-  updatedProducts   Product[]     @relation("ProductUpdater")
-  deletedProducts   Product[]     @relation("ProductDeleter")
-  createdOrders     Order[]       @relation("OrderCreator")
-  updatedOrders     Order[]       @relation("OrderUpdater")
-  deletedOrders     Order[]       @relation("OrderDeleter")
-  createdMedia      Media[]       @relation("MediaCreator")
-  createdFolders    MediaFolder[] @relation("FolderCreator")
-  cart              Cart?
-  reviews           Review[]
+  orders              Order[]
+  createdCategories   Category[]     @relation("CategoryCreator")
+  updatedCategories   Category[]     @relation("CategoryUpdater")
+  deletedCategories   Category[]     @relation("CategoryDeleter")
+  createdProducts     Product[]      @relation("ProductCreator")
+  updatedProducts     Product[]      @relation("ProductUpdater")
+  deletedProducts     Product[]      @relation("ProductDeleter")
+  createdOrders       Order[]        @relation("OrderCreator")
+  updatedOrders       Order[]        @relation("OrderUpdater")
+  deletedOrders       Order[]        @relation("OrderDeleter")
+  orderHistoryChanges OrderHistory[] @relation("OrderHistoryUser") // NEW
+  orderNotesCreated   OrderNote[]    @relation("OrderNoteCreator") // NEW
+  createdMedia        Media[]        @relation("MediaCreator")
+  createdFolders      MediaFolder[]  @relation("FolderCreator")
+  cart                Cart?
+  reviews             Review[]
 }
 
 model Category {
@@ -177,6 +179,27 @@ enum InventoryTransactionType {
   RELEASED // Released reservation
 }
 
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  CANCELLED
+}
+
+enum ShipmentStatus {
+  PREPARING
+  READY_TO_SHIP
+  SHIPPED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED_DELIVERY
+  RETURNED
+}
+
 model ProductVariant {
   id        String  @id @default(auto()) @map("_id") @db.ObjectId
   productId String  @db.ObjectId
@@ -243,7 +266,11 @@ model Order {
   shippingAddress Json? // Structured: {fullName, phone, address, city, country, postalCode, isDefault}
 
   // Relations
-  items OrderItem[]
+  items     OrderItem[]
+  history   OrderHistory[] @relation("OrderHistoryEntries") // NEW: Status tracking
+  notes     OrderNote[]    @relation("OrderNotes") // NEW: Internal notes  
+  payments  Payment[]      @relation("OrderPayments") // NEW: Payment records
+  shipments Shipment[]     @relation("OrderShipments") // NEW: Shipping tracking
 
   // Timestamps
   createdAt DateTime  @default(now())
@@ -270,6 +297,92 @@ model OrderItem {
 
   quantity Int
   price    Float // Price snapshot at time of order
+}
+
+// NEW: Order status change tracking
+model OrderHistory {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  orderId String @db.ObjectId
+  order   Order  @relation("OrderHistoryEntries", fields: [orderId], references: [id])
+
+  fromStatus OrderStatus?
+  toStatus   OrderStatus
+  note       String?
+
+  changedAt DateTime @default(now())
+  changedBy String?  @db.ObjectId
+  user      User?    @relation("OrderHistoryUser", fields: [changedBy], references: [id])
+
+  @@index([orderId, changedAt])
+}
+
+// NEW: Internal order notes
+model OrderNote {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  orderId String @db.ObjectId
+  order   Order  @relation("OrderNotes", fields: [orderId], references: [id])
+
+  note       String
+  isInternal Boolean @default(true) // Internal vs customer-visible
+
+  createdAt DateTime @default(now())
+  createdBy String   @db.ObjectId
+  user      User     @relation("OrderNoteCreator", fields: [createdBy], references: [id])
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+}
+
+// NEW: Payment transactions
+model Payment {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  orderId String @db.ObjectId
+  order   Order  @relation("OrderPayments", fields: [orderId], references: [id])
+
+  amount   Float
+  currency String        @default("VND")
+  method   PaymentMethod
+  status   PaymentStatus @default(PENDING)
+
+  // Gateway info
+  gatewayTransactionId String? // External payment gateway ID
+  gatewayResponse      Json? // Full response from gateway
+
+  // Refund tracking
+  refundedAmount Float     @default(0)
+  refundedAt     DateTime?
+  refundReason   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([gatewayTransactionId])
+}
+
+// NEW: Shipment tracking  
+model Shipment {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  orderId String @db.ObjectId
+  order   Order  @relation("OrderShipments", fields: [orderId], references: [id])
+
+  carrier        String // Giao Hàng Nhanh, Giao Hàng Tiết Kiệm, etc.
+  trackingNumber String?
+  status         ShipmentStatus @default(PREPARING)
+
+  // Shipping details
+  shippingAddress   Json // Same structure as Order.shippingAddress
+  estimatedDelivery DateTime?
+  actualDelivery    DateTime?
+
+  // Tracking history
+  trackingHistory Json[] @default([]) // [{status, timestamp, location, note}]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([trackingNumber])
 }
 
 model MediaFolder {

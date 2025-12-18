@@ -1,6 +1,5 @@
-import { Role } from '@prisma/client';
-import { Roles } from '@/modules/auth/infrastructure/decorators/roles.decorator';
 import { Serialize } from '@/core/decorators/serialize.decorator';
+import { Roles } from '@/modules/auth/infrastructure/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/modules/auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '@/modules/auth/infrastructure/guards/roles.guard';
 import { PaginationQueryDto } from '@/shared/dtos/query/pagination-query.dto';
@@ -16,17 +15,27 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Role } from '@prisma/client';
+import {
+  CreateProductVariantDto,
+  UpdateProductVariantDto,
+} from '../../application/dtos/product-variant.dto';
 import {
   CreateProductDto,
   UpdateProductDto,
 } from '../../application/dtos/product.dto';
+import { ProductVariantResponseDto } from '../../application/dtos/response/product-variant.response.dto';
 import { ProductResponseDto } from '../../application/dtos/response/product.response.dto';
+import { ProductVariantService } from '../../application/services/product-variant.service';
 import { ProductsService } from '../../application/services/products.service';
 
 @ApiTags('products')
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly productVariantService: ProductVariantService,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -81,5 +90,52 @@ export class ProductsController {
   @ApiOperation({ summary: 'Delete product' })
   remove(@Param('id') id: string) {
     return this.productsService.remove(id);
+  }
+
+  // ==================== PRODUCT VARIANTS ====================
+
+  @Post(':id/variants')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPERADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a product variant' })
+  @Serialize(ProductVariantResponseDto)
+  async createVariant(
+    @Param('id') productId: string,
+    @Body() createDto: CreateProductVariantDto,
+  ): Promise<ProductVariantResponseDto> {
+    createDto.productId = productId;
+    return this.productVariantService.create(createDto);
+  }
+
+  @Get(':id/variants')
+  @ApiOperation({ summary: 'Get all variants for a product' })
+  @Serialize(ProductVariantResponseDto)
+  async getProductVariants(
+    @Param('id') productId: string,
+  ): Promise<ProductVariantResponseDto[]> {
+    return this.productVariantService.findAllByProduct(productId);
+  }
+
+  @Patch('variants/:variantId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPERADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update a product variant' })
+  @Serialize(ProductVariantResponseDto)
+  async updateVariant(
+    @Param('variantId') variantId: string,
+    @Body() updateDto: UpdateProductVariantDto,
+  ): Promise<ProductVariantResponseDto> {
+    return this.productVariantService.update(variantId, updateDto);
+  }
+
+  @Delete('variants/:variantId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPERADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete a product variant' })
+  async deleteVariant(@Param('variantId') variantId: string): Promise<void> {
+    await this.productVariantService.remove(variantId);
   }
 }

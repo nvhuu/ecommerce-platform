@@ -3,26 +3,14 @@ import { Injectable } from '@nestjs/common';
 import { MediaFolder } from '../../domain/entities/media-folder.entity';
 import { Media } from '../../domain/entities/media.entity';
 import { IMediaRepository } from '../../domain/repositories/media.repository.interface';
-import {
-  ExtendedPrismaService,
-  MediaDelegate,
-  MediaFolderDelegate,
-} from '../types/prisma-delegates.types';
 
 @Injectable()
 export class MediaRepository implements IMediaRepository {
-  private readonly prismaMedia: MediaDelegate;
-  private readonly prismaFolder: MediaFolderDelegate;
-
-  constructor(private readonly prisma: PrismaService) {
-    const extendedPrisma = this.prisma as unknown as ExtendedPrismaService;
-    this.prismaMedia = extendedPrisma.media;
-    this.prismaFolder = extendedPrisma.mediaFolder;
-  }
+  constructor(private readonly prisma: PrismaService) {}
 
   async findAllFiles(folderId?: string): Promise<Media[]> {
     const whereCondition = folderId ? { folderId } : { folderId: null };
-    const filesData = await this.prismaMedia.findMany({
+    const filesData = await this.prisma.media.findMany({
       where: whereCondition,
       orderBy: { createdAt: 'desc' },
     });
@@ -33,14 +21,14 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async findFileById(id: string): Promise<Media | null> {
-    const data = await this.prismaMedia.findUnique({
+    const data = await this.prisma.media.findUnique({
       where: { id },
     });
     return data ? Media.toDomain(data) : null;
   }
 
   async createFile(media: Media): Promise<Media> {
-    const created = await this.prismaMedia.create({
+    const created = await this.prisma.media.create({
       data: {
         fileName: media.fileName,
         fileType: media.fileType,
@@ -59,11 +47,11 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async deleteFile(id: string): Promise<void> {
-    await this.prismaMedia.delete({ where: { id } });
+    await this.prisma.media.delete({ where: { id } });
   }
 
   async findAllFolders(parentId?: string): Promise<MediaFolder[]> {
-    const foldersData = await this.prismaFolder.findMany({
+    const foldersData = await this.prisma.mediaFolder.findMany({
       where: { parentId: parentId || null },
       orderBy: { createdAt: 'desc' },
     });
@@ -74,14 +62,14 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async findFolderById(id: string): Promise<MediaFolder | null> {
-    const data = await this.prismaFolder.findUnique({
+    const data = await this.prisma.mediaFolder.findUnique({
       where: { id },
     });
     return data ? MediaFolder.toDomain(data) : null;
   }
 
   async createFolder(folder: MediaFolder): Promise<MediaFolder> {
-    const created = await this.prismaFolder.create({
+    const created = await this.prisma.mediaFolder.create({
       data: {
         name: folder.name,
         parentId: folder.parentId || null,
@@ -97,11 +85,11 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async deleteFolder(id: string): Promise<void> {
-    await this.prismaFolder.delete({ where: { id } });
+    await this.prisma.mediaFolder.delete({ where: { id } });
   }
 
   async isFolderEmpty(id: string): Promise<boolean> {
-    const folder = await this.prismaFolder.findUnique({
+    const folder = await this.prisma.mediaFolder.findUnique({
       where: { id },
       include: { children: true, media: true },
     });

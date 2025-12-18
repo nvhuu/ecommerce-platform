@@ -17,6 +17,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CartModule } from './modules/cart/cart.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
 import { MediaModule } from './modules/media/media.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { PaymentModule } from './modules/payment/payment.module';
@@ -52,6 +53,7 @@ import { UsersModule } from './modules/users/users.module';
     CartModule,
     PaymentModule,
     ReviewsModule,
+    InventoryModule,
   ],
   controllers: [],
   providers: [

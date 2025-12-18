@@ -101,6 +101,10 @@ export class OrderRepository implements IOrderRepository {
         userId: order.userId,
         status: order.status as OrderStatus,
         totalAmount: order.totalAmount,
+        subtotal: order.totalAmount, // For now, same as totalAmount
+        discountAmount: 0,
+        shippingFee: 0,
+        tax: 0,
         items: {
           create: order.items?.map((item) => ({
             productId: item.productId,

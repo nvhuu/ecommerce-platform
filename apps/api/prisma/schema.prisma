@@ -12,99 +12,249 @@ enum Role {
   SUPERADMIN
 }
 
-model User {
-  id                    String     @id @default(auto()) @map("_id") @db.ObjectId
-  email                 String     @unique
-  password              String
-  role                  Role       @default(USER)
-  createdAt             DateTime   @default(now())
-  createdBy             String?
-  updatedAt             DateTime   @updatedAt
-  updatedBy             String?
-  deletedAt             DateTime?
-  deletedBy             String?
-  orders                Order[]
-  createdCategories     Category[] @relation("CategoryCreator")
-  updatedCategories     Category[] @relation("CategoryUpdater")
-  deletedCategories     Category[] @relation("CategoryDeleter")
-  createdProducts       Product[]  @relation("ProductCreator")
-  updatedProducts       Product[]  @relation("ProductUpdater")
-  deletedProducts       Product[]  @relation("ProductDeleter")
-  createdOrders         Order[]    @relation("OrderCreator")
-  updatedOrders         Order[]    @relation("OrderUpdater")
-  deletedOrders         Order[]    @relation("OrderDeleter")
-  createdMedia          Media[]    @relation("MediaCreator")
-  createdFolders        MediaFolder[] @relation("FolderCreator")
-  cart                  Cart?
-  reviews               Review[]
-}
-
-model Category {
-  id         String     @id @default(auto()) @map("_id") @db.ObjectId
-  name       String
-  slug       String     @unique
-  parentId   String?    @db.ObjectId
-  parent     Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children   Category[] @relation("CategoryHierarchy")
-  products   Product[]
-  createdAt  DateTime   @default(now())
-  createdBy  String?    @db.ObjectId
-  creator    User?      @relation("CategoryCreator", fields: [createdBy], references: [id])
-  updatedAt  DateTime   @updatedAt
-  updatedBy  String?    @db.ObjectId
-  updater    User?      @relation("CategoryUpdater", fields: [updatedBy], references: [id])
-  deletedAt  DateTime?
-  deletedBy  String?    @db.ObjectId
-  deleter    User?      @relation("CategoryDeleter", fields: [deletedBy], references: [id])
-}
-
-model Product {
-  id          String      @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  description String
-  price       Float
-  stock       Int
-  images      String[]
-  categoryId  String      @db.ObjectId
-  category    Category    @relation(fields: [categoryId], references: [id])
-  orderItems  OrderItem[]
-  createdAt   DateTime    @default(now())
-  createdBy   String?     @db.ObjectId
-  creator     User?       @relation("ProductCreator", fields: [createdBy], references: [id])
-  updatedAt   DateTime    @updatedAt
-  updatedBy   String?     @db.ObjectId
-  updater     User?       @relation("ProductUpdater", fields: [updatedBy], references: [id])
-  deletedAt   DateTime?
-  deletedBy   String?     @db.ObjectId
-  deleter     User?       @relation("ProductDeleter", fields: [deletedBy], references: [id])
-  cartItems   CartItem[]
-  reviews     Review[]
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  FLAGGED
 }
 
 enum OrderStatus {
   PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
   COMPLETED
   CANCELLED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  COD
+  BANK_TRANSFER
+  MOMO
+  VNPAY
+  STRIPE
+  PAYPAL
+}
+
+model User {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  email    String @unique
+  password String
+  role     Role   @default(USER)
+
+  // Profile fields
+  firstName   String?
+  lastName    String?
+  phone       String?
+  avatar      String?
+  dateOfBirth DateTime?
+
+  // Loyalty & Points
+  loyaltyPoints     Int @default(0)
+  totalPointsEarned Int @default(0)
+
+  // Security fields
+  lastLoginAt         DateTime?
+  lastLoginIp         String?
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+
+  // Preferences
+  emailVerified         Boolean @default(false)
+  emailOptIn            Boolean @default(true)
+  pushOptIn             Boolean @default(true)
+  marketingConsent      Boolean @default(false)
+  dataProcessingConsent Boolean @default(false)
+  preferredLanguage     String  @default("vi")
+  preferredCurrency     String  @default("VND")
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  orders            Order[]
+  createdCategories Category[]    @relation("CategoryCreator")
+  updatedCategories Category[]    @relation("CategoryUpdater")
+  deletedCategories Category[]    @relation("CategoryDeleter")
+  createdProducts   Product[]     @relation("ProductCreator")
+  updatedProducts   Product[]     @relation("ProductUpdater")
+  deletedProducts   Product[]     @relation("ProductDeleter")
+  createdOrders     Order[]       @relation("OrderCreator")
+  updatedOrders     Order[]       @relation("OrderUpdater")
+  deletedOrders     Order[]       @relation("OrderDeleter")
+  createdMedia      Media[]       @relation("MediaCreator")
+  createdFolders    MediaFolder[] @relation("FolderCreator")
+  cart              Cart?
+  reviews           Review[]
+}
+
+model Category {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  slug      String     @unique
+  parentId  String?    @db.ObjectId
+  parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children  Category[] @relation("CategoryHierarchy")
+  products  Product[]
+  createdAt DateTime   @default(now())
+  createdBy String?    @db.ObjectId
+  creator   User?      @relation("CategoryCreator", fields: [createdBy], references: [id])
+  updatedAt DateTime   @updatedAt
+  updatedBy String?    @db.ObjectId
+  updater   User?      @relation("CategoryUpdater", fields: [updatedBy], references: [id])
+  deletedAt DateTime?
+  deletedBy String?    @db.ObjectId
+  deleter   User?      @relation("CategoryDeleter", fields: [deletedBy], references: [id])
+}
+
+model Product {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  slug        String @unique
+  description String
+
+  // Pricing & Inventory
+  price    Float
+  stock    Int   @default(0)
+  reserved Int   @default(0) // Reserved for pending orders
+
+  // Product Info
+  brand  String?
+  sku    String?  @unique
+  tags   String[] @default([])
+  images String[] @default([])
+
+  // Status & Features
+  isActive   Boolean @default(true)
+  isFeatured Boolean @default(false)
+
+  // Cached aggregates
+  averageRating Float @default(0)
+  reviewCount   Int   @default(0)
+
+  // SEO fields
+  seoTitle       String?
+  seoDescription String?
+  seoKeywords    String[] @default([])
+  ogImage        String?
+
+  // Relations
+  categoryId            String                 @db.ObjectId
+  category              Category               @relation(fields: [categoryId], references: [id])
+  orderItems            OrderItem[]
+  cartItems             CartItem[]
+  reviews               Review[]
+  variants              ProductVariant[] // NEW: Product variants
+  inventoryTransactions InventoryTransaction[] //NEW: Inventory tracking
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  createdBy String?   @db.ObjectId
+  creator   User?     @relation("ProductCreator", fields: [createdBy], references: [id])
+  updatedAt DateTime  @updatedAt
+  updatedBy String?   @db.ObjectId
+  updater   User?     @relation("ProductUpdater", fields: [updatedBy], references: [id])
+  deletedAt DateTime?
+  deletedBy String?   @db.ObjectId
+  deleter   User?     @relation("ProductDeleter", fields: [deletedBy], references: [id])
+}
+
+enum InventoryTransactionType {
+  PURCHASE // Stock in
+  SALE // Stock out
+  RETURN // Customer return
+  ADJUSTMENT // Manual adjustment
+  DAMAGE // Damaged goods
+  RESERVED // Reserved for order
+  RELEASED // Released reservation
+}
+
+model ProductVariant {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Variant details
+  sku        String @unique
+  name       String // e.g. "Red - Large", "128GB"
+  attributes Json // {color: "red", size: "L"} or {storage: "128GB"}
+
+  // Pricing & Stock
+  price    Float
+  stock    Int     @default(0)
+  reserved Int     @default(0)
+  isActive Boolean @default(true)
+
+  // Relations
+  inventoryTransactions InventoryTransaction[]
+  cartItems             CartItem[]             @relation("VariantCartItems")
+  orderItems            OrderItem[]            @relation("VariantOrderItems")
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model InventoryTransaction {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Product/Variant
+  productId String          @db.ObjectId
+  product   Product         @relation(fields: [productId], references: [id])
+  variantId String?         @db.ObjectId
+  variant   ProductVariant? @relation(fields: [variantId], references: [id])
+
+  // Transaction details
+  type      InventoryTransactionType
+  quantity  Int // Positive for in, negative for out
+  reference String? // Order ID, PO number, etc.
+  note      String?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  createdBy String?  @db.ObjectId
 }
 
 model Order {
-  id              String      @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String      @db.ObjectId
-  user            User        @relation(fields: [userId], references: [id])
-  totalAmount     Float
-  status          OrderStatus @default(PENDING)
-  items           OrderItem[]
-  shippingAddress String?     // Stores address as JSON string
-  paymentMethod   String?     // e.g. "COD", "STRIPE"
-  createdAt       DateTime    @default(now())
-  createdBy       String?     @db.ObjectId
-  creator         User?       @relation("OrderCreator", fields: [createdBy], references: [id])
-  updatedAt       DateTime    @updatedAt
-  updatedBy       String?     @db.ObjectId
-  updater         User?       @relation("OrderUpdater", fields: [updatedBy], references: [id])
-  deletedAt       DateTime?
-  deletedBy       String?     @db.ObjectId
-  deleter         User?       @relation("OrderDeleter", fields: [deletedBy], references: [id])
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Pricing breakdown
+  subtotal       Float
+  discountAmount Float @default(0)
+  shippingFee    Float @default(0)
+  tax            Float @default(0)
+  totalAmount    Float
+
+  // Status
+  status OrderStatus @default(PENDING)
+
+  // Payment & Shipping
+  paymentMethod   PaymentMethod?
+  shippingAddress Json? // Structured: {fullName, phone, address, city, country, postalCode, isDefault}
+
+  // Relations
+  items OrderItem[]
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  createdBy String?   @db.ObjectId
+  creator   User?     @relation("OrderCreator", fields: [createdBy], references: [id])
+  updatedAt DateTime  @updatedAt
+  updatedBy String?   @db.ObjectId
+  updater   User?     @relation("OrderUpdater", fields: [updatedBy], references: [id])
+  deletedAt DateTime?
+  deletedBy String?   @db.ObjectId
+  deleter   User?     @relation("OrderDeleter", fields: [deletedBy], references: [id])
 }
 
 model OrderItem {
@@ -113,8 +263,13 @@ model OrderItem {
   order     Order   @relation(fields: [orderId], references: [id])
   productId String  @db.ObjectId
   product   Product @relation(fields: [productId], references: [id])
-  quantity  Int
-  price     Float
+
+  // Variant support
+  variantId String?         @db.ObjectId
+  variant   ProductVariant? @relation("VariantOrderItems", fields: [variantId], references: [id])
+
+  quantity Int
+  price    Float // Price snapshot at time of order
 }
 
 model MediaFolder {
@@ -130,16 +285,32 @@ model MediaFolder {
 }
 
 model Media {
-  id        String       @id @default(auto()) @map("_id") @db.ObjectId
-  fileName  String
-  fileType  String
-  fileSize  Int
-  fileUrl   String
-  folderId  String?      @db.ObjectId
-  folder    MediaFolder? @relation(fields: [folderId], references: [id])
-  createdAt DateTime     @default(now())
-  createdBy String?      @db.ObjectId
-  creator   User?        @relation("MediaCreator", fields: [createdBy], references: [id])
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  fileName String
+  fileType String // MIME type: image/jpeg, video/mp4, etc.
+  fileSize Int // Size in bytes
+  fileUrl  String
+
+  // Metadata
+  altText String? // SEO alt text
+  title   String? // Image title
+  caption String? // Description/caption
+  tags    String[] @default([]) // Searchable tags
+
+  // Dimensions (for images/videos)
+  width    Int?
+  height   Int?
+  duration Int? // Video duration in seconds
+
+  // Relations
+  folderId String?      @db.ObjectId
+  folder   MediaFolder? @relation(fields: [folderId], references: [id])
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  createdBy String?  @db.ObjectId
+  creator   User?    @relation("MediaCreator", fields: [createdBy], references: [id])
+  updatedAt DateTime @updatedAt
 }
 
 model Cart {
@@ -152,21 +323,42 @@ model Cart {
 }
 
 model CartItem {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  cartId    String   @db.ObjectId
-  cart      Cart     @relation(fields: [cartId], references: [id])
-  productId String   @db.ObjectId
-  product   Product  @relation(fields: [productId], references: [id])
-  quantity  Int
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  cartId    String  @db.ObjectId
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id])
+
+  // Variant support
+  variantId String?         @db.ObjectId
+  variant   ProductVariant? @relation("VariantCartItems", fields: [variantId], references: [id])
+
+  quantity Int
 }
 
 model Review {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  rating    Int
-  comment   String?
-  userId    String   @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id])
-  productId String   @db.ObjectId
-  product   Product  @relation(fields: [productId], references: [id])
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  rating  Int // 1-5 stars
+  comment String?
+  images  String[] @default([]) // Review photos
+
+  // Verification & Moderation
+  verified    Boolean      @default(false) // Purchase verified
+  status      ReviewStatus @default(PENDING)
+  isModerated Boolean      @default(false)
+  reportCount Int          @default(0)
+
+  // Helpfulness votes
+  helpfulCount   Int @default(0)
+  unhelpfulCount Int @default(0)
+
+  // Relations
+  userId    String  @db.ObjectId
+  user      User    @relation(fields: [userId], references: [id])
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id])
+
+  // Timestamps
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

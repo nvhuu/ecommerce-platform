@@ -93,6 +93,10 @@ export class ProductRepository implements IProductRepository {
     const created = await this.prisma.product.create({
       data: {
         name: product.name!,
+        slug: product
+          .name!.toLowerCase()
+          .replace(/\s+/g, '-')
+          .replace(/[^a-z0-9-]/g, ''),
         description: product.description!,
         price: product.price!,
         stock: product.stock!,

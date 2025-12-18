@@ -16,12 +16,14 @@ import { PrismaModule } from './core/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CartModule } from './modules/cart/cart.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { CouponModule } from './modules/coupons/coupon.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { MediaModule } from './modules/media/media.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { PaymentModule } from './modules/payments/payment.module'; // Updated path to plural 'payments'
 import { ProductsModule } from './modules/products/products.module';
+import { ReturnModule } from './modules/returns/return.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { ShipmentModule } from './modules/shipments/shipment.module';
 import { UsersModule } from './modules/users/users.module';
@@ -56,6 +58,8 @@ import { UsersModule } from './modules/users/users.module';
     InventoryModule,
     PaymentModule,
     ShipmentModule,
+    CouponModule,
+    ReturnModule,
   ],
   controllers: [],
   providers: [

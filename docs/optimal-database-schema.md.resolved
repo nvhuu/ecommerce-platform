@@ -1,0 +1,773 @@
+# E-Commerce Database Schema - Optimal Complete Version
+
+> [!NOTE]
+> **The Ultimate Schema** - Tổng hợp tốt nhất từ tất cả các phiên bản (v1.0 → v4.0)  
+> **65 entities** | **23 enums** | Production + Enterprise + CMS Ready
+
+---
+
+## 📊 Executive Summary
+
+**Phân tích**: Sau khi review tất cả 5 phiên bản schema documentation và so sánh với hiện trạng trong API, đây là bản schema **toàn diện và tối ưu nhất**.
+
+### Version Comparison
+
+| Version | Entities | Focus | Status |
+|---------|----------|-------|--------|
+| **Current API** | **11** | MVP Basic | ✅ Implemented |
+| v1.0 (docs) | 24 | MVP E-commerce | 📋 Documented |
+| v2.0 (docs) | 34 | Enhanced E-commerce | 📋 Documented |
+| v3.0 (docs) | 52 | + CMS & Scheduling | 📋 Documented |
+| v3.5 (docs) | 60 | + Security/Loyalty/Email/Mobile | 📋 Documented |
+| **v4.0 (docs)** | **65** | **+ Forms/Landing/Settings/ActivityLog** | **📋 Documented** |
+| **⭐ Optimal** | **65** | **All Features Combined** | **🎯 This Document** |
+
+### Gap Analysis
+
+**Current Implementation**: 11/65 entities (17% chỉ)
+- ✅ User, Category, Product, Order, OrderItem
+- ✅ MediaFolder, Media, Cart, CartItem, Review
+
+**Missing**: 54 entities (83%)
+- Core E-commerce enhancements: 23 entities
+- CMS Content: 14 entities  
+- Scheduling: 4 entities
+- Security: 2 entities
+- Loyalty: 2 entities
+- Email: 2 entities
+- Mobile: 2 entities
+- CMS Advanced (v4.0): 5 entities
+
+---
+
+## 🗂️ Complete Entity Catalog (65  Entities)
+
+### Group 1: 🔐 Authentication & User Management (4)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 1 | User | ✅ Basic | User accounts with GDPR, loyalty, security | 🔴 Core |
+| 2 | VerificationToken | ❌ | Email/phone/password verification | 🔴 High |
+| 3 | ShippingAddress | ❌ | Delivery addresses | 🔴 High |
+| 4 | Notification | ❌ | User notifications system | 🟡 Medium |
+
+### Group 2: 📦 Product Catalog (9)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 5 | Category | ✅ Complete | Hierarchical categories | 🔴 Core |
+| 6 | Product | ✅ Basic | Product with SEO, variants | 🔴 Core |
+| 7 | ProductVariant | ❌ | Size, color variations | 🔴 High |
+| 8 | ProductAttribute | ❌ | Attribute definitions | 🟡 Medium |
+| 9 | ProductTranslation | ❌ | Multi-language support | 🟢 Low |
+| 10 | Review | ✅ Basic | Product reviews with moderation | 🔴 Core |
+| 11 | ReviewReport | ❌ | Review moderation system | 🟡 Medium |
+| 12 | InventoryTransaction | ❌ | Stock movement tracking | 🔴 High |
+| 13 | MediaTag | ❌ | Media organization (v2.0) | 🟢 Low |
+
+### Group 3: 🛒 Shopping & Cart (5)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 14 | Cart | ✅ Complete | Shopping cart | 🔴 Core |
+| 15 | CartItem | ✅ Complete | Cart items with variants | 🔴 Core |
+| 16 | Wishlist | ❌ | Saved items for later | 🟡 Medium |
+| 17 | WishlistItem | ❌ | Wishlist entries | 🟡 Medium |
+| 18 | CartAbandonment | ❌ | Recovery tracking & emails | 🟡 Medium |
+
+### Group 4: 📦 Orders & Fulfillment (10)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 19 | Order | ✅ Basic | Customer orders | 🔴 Core |
+| 20 | OrderItem | ✅ Complete | Order line items | 🔴 Core |
+| 21 | OrderHistory | ❌ | Status change tracking | 🔴 Critical |
+| 22 | OrderNote | ❌ | Internal & customer notes | 🔴 High |
+| 23 | Payment | ❌ | Payment records | 🔴 Critical |
+| 24 | PaymentEvent | ❌ | Webhook logs | 🟡 Medium |
+| 25 | Shipment | ❌ | Shipping tracking | 🔴 High |
+| 26 | Return | ❌ | Return requests | 🔴 High |
+| 27 | ReturnItem | ❌ | Return line items | 🔴 High |
+| 28 | Invoice | ❌ | Order invoices (v2.0) | 🟡 Medium |
+
+### Group 5: 🎫 Promotions & Marketing (5)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 29 | Coupon | ❌ | Discount codes | 🔴 High |
+| 30 | CouponUsage | ❌ | Usage tracking per user | 🔴 High |
+| 31 | FlashSale | ❌ | Time-limited sales | 🟡 Medium |
+| 32 | Banner | ❌ | Promotional banners | 🟡 Medium |
+| 33 | Popup | ❌ | Popup campaigns (v3.0) | 🟡 Medium |
+
+### Group 6: 💬 Customer Support (2)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 34 | Ticket | ❌ | Support tickets | 🟡 Medium |
+| 35 | TicketMessage | ❌ | Ticket conversations | 🟡 Medium |
+
+### Group 7: 📊 Analytics & Tracking (3)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 36 | ProductView | ❌ | Product view tracking | 🟢 Low |
+| 37 | SearchLog | ❌ | Search query analytics | 🟢 Low |
+| 38 | CheckoutStep | ❌ | Funnel conversion tracking | 🟢 Low |
+
+### Group 8: 📁 Media Management (3)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 39 | MediaFolder | ✅ Complete | Hierarchical folder structure | 🔴 Core |
+| 40 | Media | ✅ Basic | Uploaded files with metadata | 🔴 Core |
+| 41 | MediaTag | ❌ | Media tagging system | 🟢 Low |
+
+### Group 9: 📝 CMS - Content (7)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 42 | BlogPost | ❌ | Blog posts with scheduling | 🔴 High |
+| 43 | BlogCategory | ❌ | Blog categories | 🔴 High |
+| 44 | BlogTag | ❌ | Blog tagging (v3.0) | 🟡 Medium |
+| 45 | BlogComment | ❌ | Comment system (v3.0) | 🟡 Medium |
+| 46 | Page | ❌ | Static pages | 🔴 High |
+| 47 | Menu | ❌ | Navigation menus | 🔴 High |
+| 48 | MenuItem | ❌ | Menu structure | 🔴 High |
+
+### Group 10: 🎨 CMS - Marketing (2)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 49 | PopupSubmission | ❌ | Lead collection (v3.0) | 🟡 Medium |
+| 50 | HomeSection | ❌ | Homepage builder (v3.0) | 🟡 Medium |
+
+### Group 11: 🔍 CMS - SEO (3)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 51 | SEO | ❌ | SEO meta management (v3.0) | 🔴 High |
+| 52 | SEORedirect | ❌ | URL redirects 301/302 | 🟡 Medium |
+| 53 | SitemapEntry | ❌ | Auto-generated sitemap | 🟢 Low |
+
+### Group 12: ⚙️ CMS - System (2)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 54 | ThemeSettings | ❌ | Theme configuration (v3.0) | 🟡 Medium |
+| 55 | Redirect | ❌ | General redirects (v2.0) | 🟡 Medium |
+
+### Group 13: ⏰ Scheduling System (4)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 56 | ScheduledContent | ❌ | Content scheduling (v4.0) | 🟡 Medium |
+| 57 | ScheduledEmail | ❌ | Email scheduling (v4.0) | 🟡 Medium |
+| 58 | CronJob | ❌ | Automated tasks (v4.0) | 🟡 Medium |
+| 59 | Webhook | ❌ | Integration events (v4.0) | 🟡 Medium |
+
+### Group 14: 🔐 Security & Audit (2)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 60 | LoginHistory | ❌ | Login tracking (v3.5) | 🔴 Critical |
+| 61 | SecurityEvent | ❌ | Security monitoring (v3.5) | 🔴 Critical |
+
+### Group 15: 🎁 Loyalty Program (2)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 62 | LoyaltyTransaction | ❌ | Points tracking (v3.5) | 🟡 High |
+| 63 | Reward | ❌ | Reward catalog (v4.0) | 🟢 Low |
+
+### Group 16: 📧 Email System (2)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 64 | EmailTemplate | ❌ | Email templates (v3.5) | 🔴 High |
+| 65 | EmailLog | ❌ | Email tracking (v3.5) | 🟡 Medium |
+
+### Group 17: 📱 Mobile Support (2)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 66 | PushNotification | ❌ | Push alerts (v4.0) | 🟡 Medium |
+| 67 | AppVersion | ❌ | Version control (v3.5) | 🟡 Medium |
+
+### Group 18: 🎨 CMS Advanced - v4.0 ⭐ (5)
+
+| # | Entity | Current | Description | Priority |
+|---|--------|---------|-------------|----------|
+| 68 | **Form** | ❌ | Dynamic form builder | 🔴 Critical |
+| 69 | **FormSubmission** | ❌ | Form responses | 🔴 Critical |
+| 70 | **LandingPage** | ❌ | Landing page builder + A/B test | 🔴 Critical |
+| 71 | **Setting** | ❌ | Global configuration | 🔴 Critical |
+| 72 | **ActivityLog** | ❌ | CMS audit trail | 🔴 Critical |
+
+---
+
+## 📋 Complete Enums (23)
+
+### Core E-commerce (11)
+
+1. **Role**: `USER`, `SUPERADMIN`
+2. **OrderStatus**: `PENDING`, `CONFIRMED`, `PROCESSING`, `SHIPPED`, `DELIVERED`, `COMPLETED`, `CANCELLED`, `REFUNDED`
+3. **PaymentStatus**: `PENDING`, `AUTHORIZED`, `CAPTURED`, `FAILED`, `REFUNDED`, `PARTIALLY_REFUNDED`
+4. **PaymentMethod**: `COD`, `BANK_TRANSFER`, `MOMO`, `VNPAY`, `STRIPE`, `PAYPAL`
+5. **ShipmentStatus**: `PENDING`, `PICKED_UP`, `IN_TRANSIT`, `OUT_FOR_DELIVERY`, `DELIVERED`, `FAILED`, `RETURNED`
+6. **DiscountType**: `PERCENTAGE`, `FIXED_AMOUNT`, `FREE_SHIPPING`
+7. **InventoryTransactionType**: `PURCHASE`, `SALE`, `RETURN`, `ADJUSTMENT`, `DAMAGE`
+8. **TokenType**: `EMAIL_VERIFICATION`, `PASSWORD_RESET`, `PHONE_VERIFICATION`
+9. **NotificationType**: `ORDER_CONFIRMED`, `ORDER_SHIPPED`, `ORDER_DELIVERED`, `PAYMENT_SUCCESS`, etc.
+10. **TicketStatus**: `OPEN`, `IN_PROGRESS`, `WAITING_CUSTOMER`, `RESOLVED`, `CLOSED`
+11. **Priority**: `LOW`, `NORMAL`, `HIGH`, `URGENT`
+
+### Enhanced Features (4)
+
+12. **ReviewStatus**: `PENDING`, `APPROVED`, `REJECTED`, `FLAGGED`
+13. **ReturnReason**: `DAMAGED`, `WRONG_ITEM`, `NOT_AS_DESCRIBED`, `CHANGED_MIND`, `DEFECTIVE`, `OTHER`
+14. **ReturnStatus**: `REQUESTED`, `APPROVED`, `REJECTED`, `SHIPPED_BACK`, `RECEIVED`, `REFUNDED`, `COMPLETED`
+15. **AttributeType**: `SELECT`, `MULTISELECT`, `TEXT`, `NUMBER`, `COLOR`
+
+### CMS & Content (3)
+
+16. **PostStatus**: `DRAFT`, `PUBLISHED`, `SCHEDULED`, `ARCHIVED`
+17. **CommentStatus**: `PENDING`, `APPROVED`, `REJECTED`, `SPAM`
+18. **PageStatus**: `DRAFT`, `PUBLISHED`, `ARCHIVED`
+
+### Security & System (5)
+
+19. **LoginStatus**: `SUCCESS`, `FAILED`, `BLOCKED`, `SUSPICIOUS` (v3.5)
+20. **SecurityEventType**: `BRUTE_FORCE_ATTEMPT`, `SUSPICIOUS_LOGIN`, `PASSWORD_CHANGED`, etc. (v3.5)
+21. **Severity**: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL` (v3.5)
+22. **EmailStatus**: `QUEUED`, `SENT`, `DELIVERED`, `OPENED`, `CLICKED`, `BOUNCED`, `FAILED` (v3.5)
+23. **Platform**: `IOS`, `ANDROID`, `WEB`, `HUAWEI` (v3.5)
+
+### v4.0 CMS (Included in above categories)
+
+- **FormType**: `CONTACT`, `SURVEY`, `NEWSLETTER`, `EVENT_REGISTRATION`, etc.
+- **FieldType**: `TEXT`, `EMAIL`, `PHONE`, `TEXTAREA`, etc.
+- **FormTheme**: `DEFAULT`, `INLINE`, `POPUP`, `FULLPAGE`
+- **SectionType**: `HERO`, `FEATURES`, `TESTIMONIALS`, `PRICING`, etc.
+- **ConversionGoal**: `FORM_SUBMISSION`, `SIGNUP`, `PURCHASE`, etc.
+- **SettingType**: `STRING`, `NUMBER`, `BOOLEAN`, `JSON`, etc.
+- **SettingGroup**: `GENERAL`, `SEO`, `SOCIAL_MEDIA`, `EMAIL`, etc.
+- **CMSAction**: `CREATED`, `UPDATED`, `DELETED`, `PUBLISHED`, etc.
+- **EntityType**: `BLOG_POST`, `PAGE`, `PRODUCT`, `CATEGORY`, etc.
+
+---
+
+## 🎯 Priority Classification
+
+### P0 - Critical (Must Have) - 20 entities 🔴
+
+**E-commerce Core**
+1. User (enhance existing)
+2. VerificationToken
+3. ShippingAddress
+4. Product (enhance existing)
+5. ProductVariant
+6. InventoryTransaction
+7. Order (enhance existing)
+8. OrderHistory
+9. OrderNote
+10. Payment
+11. Shipment
+12. Coupon
+13. CouponUsage
+
+**CMS Essentials**
+14. BlogPost
+15. BlogCategory
+16. Page
+17. Menu
+18. MenuItem
+19. SEO
+
+**Security**
+20. LoginHistory
+21. SecurityEvent
+
+**v4.0 Critical**
+22. Form ⭐
+23. FormSubmission ⭐
+24. LandingPage ⭐
+25. Setting ⭐
+26. ActivityLog ⭐
+
+### P1 - High (Should Have) - 18 entities 🟡
+
+**E-commerce Enhanced**
+1. Return
+2. ReturnItem
+3. Wishlist
+4. WishlistItem
+5. ReviewReport
+6. FlashSale
+7. Banner
+8. notification
+
+**CMS Extended**
+9. BlogComment
+10. EmailTemplate
+11. EmailLog
+12. Popup
+13. PopupSubmission
+
+**Loyalty**
+14. LoyaltyTransaction
+
+**Mobile**
+15. AppVersion
+
+### P2 - Medium (Nice to Have) - 15 entities 🟢
+
+**Marketing & Analytics**
+1. CartAbandonment
+2. ProductView
+3. HomeSection
+4. SearchLog
+5. CheckoutStep
+
+**CMS Advanced**
+6. BlogTag
+7. ThemeSettings
+8. SEORedirect
+9. Redirect
+
+**Scheduling**
+10. ScheduledContent
+11. ScheduledEmail
+12. CronJob
+13. Webhook
+
+**Mobile & Others**
+14. PushNotification
+15. PaymentEvent
+
+### P3 - Low (Future) - 7 entities 🔵
+
+1. ProductTranslation
+2. ProductAttribute
+3. MediaTag
+4. Ticket
+5. TicketMessage
+6. SitemapEntry
+7. Reward
+
+---
+
+## 🔧 Implementation Differences vs Current
+
+### Currently Implemented (11 models)
+
+| Model | Status | Issues to Fix |
+|-------|--------|---------------|
+| User | ✅ Basic | Missing: profile fields, loyalty, security tracking |
+| Category | ✅ Complete | Good - has hierarchy support |
+| Product | ✅ Basic | Missing: variants, SKU, tags, isFeatured, averageRating |
+| Order | ✅ Basic | Missing: detailed status tracking, coupon support |
+| OrderItem | ✅ Complete | Good |
+| MediaFolder | ✅ Complete | Good - has hierarchy |
+| Media | ✅ Basic | Missing: tags, alt text, metadata |
+| Cart | ✅ Complete | Good |
+| CartItem | ✅ Complete | Good |
+| Review | ✅ Basic | Missing: status, moderation, isVerified |
+
+### Key Enhancements Needed
+
+```diff
+User model enhancements:
++ firstName, lastName, phone
++ avatar, dateOfBirth
++ loyaltyPoints, loyaltyTierId, totalPointsEarned
++ lastLoginAt, lastLoginIp 
++ failedLoginAttempts, lockedUntil
++ emailVerified, emailOptIn, pushOptIn
++ marketingConsent, dataProcessingConsent
++ preferredLanguage, preferredCurrency
+
+Product model enhancements:
++ slug (unique)
++ brand, sku (unique), tags[]
++ isActive, isFeatured
++ averageRating, reviewCount (cached)
++ stock, reserved (inventory tracking)
++ seoTitle, seoDescription, seoKeywords[], ogImage
+
+Order model enhancements:
++ subtotal, discountAmount, shippingFee, tax
++ shippingAddressId (FK), couponId (FK)
++ paymentMethod (enum)
++ Structured shippingAddress object (not string)
+
+Review model enhancements:
++ verified (purchase verified)
++ images[] (review photos)
++ reportCount, isModerated
++ status (ReviewStatus enum)
++ helpfulCount, unhelpfulCount
+```
+
+---
+
+## 🚀 Optimal Implementation Roadmap
+
+Based on analysis of all versions, here's the recommended phased approach:
+
+### **Phase 0: Foundation** (Week 1) 🔧
+
+**Goal**: Fix current issues and prepare infrastructure
+
+- [ ] Enhance existing User model (security, preferences)
+- [ ] Enhance existing Product model (SEO, features)
+- [ ] Enhance existing Order model (structured address)
+- [ ] Enhance existing Review model (moderation)
+- [ ] Enhance existing Media model (metadata)
+- [ ] Setup migration framework
+- [ ] Create test environments
+- [ ] Document API changes
+
+**Deliverables**: Fixed base models, migration strategy
+
+---
+
+### **Phase 1: Critical E-commerce** (Weeks 2-5) 🔴
+
+#### Sprint 1.1: Product System (Week 2)
+- [ ] ProductVariant - Enable product differentiation variations
+- [ ] InventoryTransaction - Stock tracking
+- [ ] Enhance Product with variants support
+- [ ] API endpoints for variants
+- [ ] Tests
+
+#### Sprint 1.2: Order & Payment (Week 3)
+- [ ] OrderHistory - Critical for tracking
+- [ ] OrderNote - Internal communication
+- [ ] Payment - Payment records
+- [ ] Shipment - Shipping tracking
+- [ ] Update Order model
+
+#### Sprint 1.3: Returns & Promotions (Week 4)
+- [ ] Return + ReturnItem - Return management
+- [ ] Coupon - Discount codes
+- [ ] CouponUsage - Usage tracking
+- [ ] Discount calculation logic
+
+#### Sprint 1.4: User Management (Week 5)
+- [ ] VerificationToken - Email/phone verification
+- [ ] ShippingAddress - Delivery addresses
+- [ ] Notification - User notifications
+- [ ] User profile completion
+
+**Verification**:
+```bash
+npm run test -- products.service.spec.ts
+npm run test -- orders.service.spec.ts
+npm run test -- payment.service.spec.ts
+npm run build
+npm run lint
+```
+
+---
+
+### **Phase 2: CMS Essentials** (Weeks 6-8) 🔴
+
+#### Sprint 2.1: Blog System (Week 6)
+- [ ] BlogPost - Content marketing
+- [ ] BlogCategory - Organization
+- [ ] BlogComment - Engagement
+- [ ] Blog API endpoints
+- [ ] CMS UI for blog
+
+#### Sprint 2.2: Pages & Navigation (Week 7)
+- [ ] Page - Static pages
+- [ ] Menu + MenuItem - Navigation
+- [ ] SEO - Meta management
+- [ ] Page builder basics
+
+#### Sprint 2.3: v4.0 Critical Features (Week 8) ⭐
+- [ ] Setting - Global configuration
+- [ ] Form + FormSubmission - Form builder
+- [ ] Form email notifications
+- [ ] Settings API
+
+**Verification**:
+```bash
+npm run test -- blog.service.spec.ts
+npm run test -- pages.service.spec.ts
+npm run test -- settings.service.spec.ts
+# Manual: Create blog post, create form
+```
+
+---
+
+### **Phase 3: Security & Audit** (Week 9) 🔴
+
+#### Sprint 3.1: Security Implementation
+- [ ] LoginHistory - Login tracking
+- [ ] SecurityEvent - Security monitoring
+- [ ] Brute force protection
+- [ ] Security dashboard
+- [ ] ActivityLog - CMS audit trail
+
+**Verification**:
+```bash
+npm run test -- security.service.spec.ts
+npm run test -- activity-log.service.spec.ts
+# Manual: Test login attempts, view activity logs
+```
+
+---
+
+### **Phase 4: Enhanced Features** (Weeks 10-12) 🟡
+
+#### Sprint 4.1: Customer Features (Week 10)
+- [ ] Wishlist + WishlistItem
+- [ ] ReviewReport - Moderation
+- [ ] Banner - Marketing
+- [ ] Popup + PopupSubmission
+
+#### Sprint 4.2: Email System (Week 11)
+- [ ] EmailTemplate - Email design
+- [ ] EmailLog - Delivery tracking
+- [ ] Email service integration
+- [ ] Transactional emails
+
+#### Sprint 4.3: Loyalty Program (Week 12)
+- [ ] LoyaltyTransaction - Points system
+- [ ] Points earning rules
+- [ ] Points redemption
+- [ ] Loyalty dashboard
+
+**Verification**:
+```bash
+npm run test -- wishlist.service.spec.ts
+npm run test -- email.service.spec.ts
+npm run test -- loyalty.service.spec.ts
+```
+
+---
+
+### **Phase 5: CMS Advanced - v4.0** (Weeks 13-14) ⭐
+
+#### Sprint 5.1: Landing Page Builder (Week 13)
+- [ ] LandingPage - Page builder
+- [ ] Section components library
+- [ ] Drag & drop builder UI
+- [ ] A/B testing logic
+- [ ] Analytics integration
+
+#### Sprint 5.2: Polish & Integration (Week 14)
+- [ ] Integration testing
+- [ ] Performance optimization
+- [ ] Documentation updates
+- [ ] Training materials
+
+**Verification**:
+```bash
+npm run test -- landing-page.service.spec.ts
+# Manual: Build landing page, test A/B variants
+```
+
+---
+
+###**Phase 6: Marketing & Analytics** (Weeks 15-16) 🟢
+
+#### Sprint 6.1: Analytics
+- [ ] ProductView - Tracking
+- [ ] SearchLog - Search analytics
+- [ ] CheckoutStep - Funnel optimization
+- [ ] CartAbandonment - Recovery
+
+#### Sprint 6.2: Content Scheduling
+- [ ] ScheduledContent
+- [ ] ScheduledEmail
+- [ ] CronJob
+- [ ] Webhook
+
+**Verification**:
+```bash
+npm run test -- analytics.service.spec.ts
+npm run test -- scheduler.service.spec.ts
+```
+
+---
+
+### **Phase 7: Mobile & Remaining** (Weeks 17-18) 🟢
+
+#### Sprint 7.1: Mobile Support
+- [ ] AppVersion - Version control
+- [ ] PushNotification - Push system
+- [ ] Mobile API optimization
+
+#### Sprint 7.2: Final Features
+- [ ] FlashSale
+- [ ] ThemeSettings
+- [ ] SEORedirect, SitemapEntry
+- [ ] Remaining P3 entities
+- [ ] Full regression testing
+
+**Verification**:
+```bash
+npm run test  # Full test suite
+npm run test:e2e
+npm run lint
+npm run build
+# Manual: Complete feature walkthrough
+```
+
+---
+
+## 📊 Feature Comparison Matrix
+
+| Feature | Current API | v2.0 | v3.0 | v3.5 | v4.0 | Optimal |
+|---------|-------------|------|------|------|------|---------|
+| **Entities** | 11 | 34 | 52 | 60 | 65 | **65** |
+| **Enums** | 2 | 15 | 18 | 22 | 23 | **23** |
+| **User Management** | ✅ Basic | ✅ Enhanced | ✅ | ✅ Security | ✅ | ✅ Complete |
+| **Product Variants** | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Order Tracking** | ❌ | ✅ History | ✅ | ✅ | ✅ | ✅ |
+| **Returns** | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **CMS** | ❌ | ❌ | ✅ Full | ✅ | ✅ | ✅ Complete |
+| **Blog System** | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| **SEO** | ❌ | Basic | ✅ Advanced | ✅ | ✅ | ✅ Complete |
+| **Security** | ❌ | ❌ | ❌ | ✅ Full | ✅ | ✅ Enterprise |
+| **Loyalty** | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| **Email Automation** | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| **Mobile Support** | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| **Form Builder** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **Landing Pages** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **Settings System** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **Activity Log** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **Scheduling** | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+
+**Legend**: ❌ Missing | ✅ Implemented/Documented
+
+---
+
+## 🎯 Success Metrics
+
+### Technical Metrics
+
+- 100% P0 entities implemented
+- 90%+ P1 entities implemented
+- Test coverage > 80%
+- API response time < 200ms
+- Zero critical bugs
+- Build passes with strict lint
+
+### Business Metrics
+
+| Feature | Metric | Target |
+|---------|--------|--------|
+| Forms | Submission rate | >15% |
+| Landing Pages | Conversion rate | >5% |
+| Email | Open rate | >25% |
+| Email | Click rate | >3% |
+| Loyalty | Repeat purchase | +30% |
+| Security | Blocked attacks | >99% |
+| Blog | Monthly posts | >10 |
+| SEO | Organic traffic | +50% |
+
+---
+
+## ⚠️ Critical Decisions & Trade-offs
+
+### 1. Which version to follow?
+
+**Decision**: v4.0 as base, cherry-pick best from all versions
+
+**Rationale**:
+- v4.0 has the most comprehensive feature set (65 entities)
+- Includes critical v4.0 features (Forms, Landing Pages, Settings)
+- Maintains all improvements from v2.0, v3.0, v3.5
+- Proven patterns and best practices from each version
+
+### 2. Database: MongoDB vs PostgreSQL?
+
+**Current**: MongoDB (in use)  
+**Recommendation**: Keep MongoDB
+
+**Rationale**:
+- Already using Prisma with MongoDB
+- Flexible schema for CMS content
+- Good for rapid iteration
+- Handles JSON fields well (FormSubmission data, settings values)
+
+### 3. Migration strategy?
+
+**Recommendation**: Phased migration (18 weeks)
+
+**Rationale**:
+- Lower risk than big bang
+- Continuous delivery of value
+- Easier rollback
+- Team can learn incrementally
+
+### 4. Breaking changes?
+
+**Identified Breaking Changes**:
+1. Order.shippingAddress: string → structured object
+2. Product: Adding variants changes API response
+3. User: New required fields (migration needed)
+4. API versioning required for backwards compatibility
+
+**Mitigation**: Use API versioning (`/api/v1`, `/api/v2`)
+
+---
+
+## 📚 References to Source Documents
+
+- **v2.0**: [database-schema.md](file:///home/huu/.gemini/antigravity/scratch/ecommerce-platform/docs/database-schema.md) - 34 entities, enhanced e-commerce
+- **v2.0 Quick**: [database-schema-simple.md](file:///home/huu/.gemini/antigravity/scratch/ecommerce-platform/docs/database-schema-simple.md) - Quick reference
+- **v3.0**: [database-schema-v3-final.md](file:///home/huu/.gemini/antigravity/scratch/ecommerce-platform/docs/database-schema-v3-final.md) - 52 entities, + CMS & Scheduling
+- **v3.5**: [database-schema-v3.5-final.md](file:///home/huu/.gemini/antigravity/scratch/ecommerce-platform/docs/database-schema-v3.5-final.md) - 60 entities, + Security/Loyalty/Email/Mobile
+- **v4.0**: [database-schema-v4-final.md](file:///home/huu/.gemini/antigravity/scratch/ecommerce-platform/docs/database-schema-v4-final.md) - 65 entities, + Forms/Landing/Settings/ActivityLog
+- **Current**: [schema.prisma](file:///home/huu/.gemini/antigravity/scratch/ecommerce-platform/apps/api/prisma/schema.prisma) - 11 models implemented
+
+---
+
+## 🎓 Key Learnings from All Versions
+
+### From v2.0
+✅ OrderHistory and OrderNote are **critical** for production  
+✅ CouponUsage tracking prevents abuse  
+✅ Returns/Refunds system is essential  
+✅ Review moderation prevents spam
+
+### From v3.0
+✅ Blog system drives SEO and content marketing  
+✅ Scheduling system enables automation  
+✅ Page builder empowers marketing team  
+✅ SEO redirects improve site health
+
+### From v3.5
+✅ Security monitoring is **mandatory** for enterprise  
+✅ Loyalty program significantly boosts retention  
+✅ Email automation improves engagement  
+✅ Mobile version control prevents support issues
+
+### From v4.0
+✅ Form builder is **critical** for lead generation  
+✅ Landing pages enable marketing campaigns  
+✅ Centralized settings reduce hardcoding  
+✅ Activity logging improves security **and** compliance
+
+---
+
+> [!IMPORTANT]
+> **This is the definitive database schema** - Kết hợp tốt nhất từ tất cả các versions (v1.0 → v4.0). Follow roadmap từ Phase 0 → Phase 7 để implement đầy đủ.
+
+> [!TIP]
+> **Quick Win**: Implement Phase 0-1 first (Weeks 1-5) để có core e-commerce production-ready. CMS có thể add sau.
+
+> [!WARNING]
+> **Breaking Changes**: Order.shippingAddress và Product variants sẽ require API v2. Plan API versioning strategy trước khi bắt đầu.
+
+---
+
+**Document Version**: 1.0 - Optimal  
+**Created**: 2025-12-18  
+**Based on**: v1.0, v2.0, v3.0, v3.5, v4.0 documentation  
+**Status**: ✅ Ready for review and implementation

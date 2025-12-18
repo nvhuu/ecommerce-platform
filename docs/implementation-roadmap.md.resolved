@@ -1,0 +1,895 @@
+# Database Implementation Roadmap - Migration Plan
+
+> [!NOTE]
+> **18-week phased implementation** từ 11 models hiện tại → 65 entities optimal schema  
+> Detailed sprint plan với risk mitigation và success metrics
+
+---
+
+## 📊 Overview
+
+### Current State Analysis
+
+- **Current**: 11 models in [apps/api/prisma/schema.prisma](file:///home/huu/.gemini/antigravity/scratch/ecommerce-platform/apps/api/prisma/schema.prisma)
+- **Target**: 65 entities (optimal schema)
+- **Gap**: 54 missing entities (83%)
+- **Timeline**: 18 weeks (4.5 months)
+- **Team Size**: 2-3 full-time developers recommended
+
+### Strategic Approach
+
+**Phased Migration** (Recommended over Big Bang)  
+✅ Lower risk & continuous value delivery  
+✅ Easier rollback and testing  
+✅ Team learns incrementally  
+✅ Business continuity maintained
+
+---
+
+## 🗓️ Detailed Sprint Plan
+
+### **Phase 0: Foundation & Preparation** (Week 1)
+
+**Goal**: Fix existing issues + setup infrastructure
+
+#### Tasks
+
+**Database**
+- [ ] Backup current production database
+- [ ] Setup staging/dev MongoDB instances
+- [ ] Create migration scripts framework
+- [ ] Document current data structure
+
+**Schema Enhancements**
+- [ ] Enhance User model (security fields, loyalty, preferences)
+- [ ] Enhance Product model (SKU, tags, SEO, isFeatured)
+- [ ] Fix Order model (structured shippingAddress object)
+- [ ] Enhance Review model (status, moderation fields)
+- [ ] Enhance Media model (alt text, tags, metadata)
+
+**Infrastructure**
+- [ ] Setup Prisma migration workflow
+- [ ] Configure test database
+- [ ] Create seed data scripts
+- [ ] Setup CI/CD for migrations
+- [ ] API versioning strategy (`/api/v1`, `/api/v2`)
+
+**Documentation**
+- [ ] Document current API endpoints
+- [ ] Create migration runbook
+- [ ] Define rollback procedures
+- [ ] Setup monitoring/alerting
+
+#### Success Criteria
+- ✅ All base models enhanced
+- ✅ Migration framework working
+- ✅ Test environment operational
+- ✅ Zero breaking changes to existing API v1
+
+#### Time: **5 days**
+
+---
+
+### **Phase 1: Critical E-commerce** (Weeks 2-5)
+
+#### **Sprint 1.1: Product Variants** (Week 2)
+
+**Entities**: ProductVariant, InventoryTransaction
+
+**Tasks**:
+1. [ ] Create ProductVariant schema
+2. [ ] Create InventoryTransaction schema
+3. [ ] Update Product schema (stock, reserved fields)
+4. [ ] Generate Prisma migration
+5. [ ] ProductVariantService (CRUD)
+6. [ ] InventoryService (track movements)
+7. [ ] Product-Variant relationship APIs
+8. [ ] Unit tests (variants, inventory)
+9. [ ] Integration tests
+10. [ ] API documentation (Swagger)
+
+**Breaking Changes**: Product API response includes variants
+
+**Migration**:
+```prisma
+// Add to schema.prisma
+model ProductVariant {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  productId String @db.ObjectId
+  product Product @relation(fields: [productId], references: [id])
+  sku String @unique
+  name String
+  attributes Json // {color: "red", size: "L"}
+  price Float
+  stock Int
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model InventoryTransaction {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  productId String @db.ObjectId
+  product Product @relation(fields: [productId], references: [id])
+  variantId String? @db.ObjectId
+  type InventoryTransactionType
+  quantity Int
+  reference String? // Order ID, PO number, etc.
+  createdAt DateTime @default(now())
+  createdBy String? @db.ObjectId
+}
+
+enum InventoryTransactionType {
+  PURCHASE  // Stock in
+  SALE      // Stock out
+  RETURN    // Customer return
+  ADJUSTMENT // Manual adjustment
+  DAMAGE    // Damaged goods
+}
+```
+
+**Tests**:
+```bash
+npm run test -- product-variant.service.spec.ts
+npm run test -- inventory.service.spec.ts
+npm run test:e2e -- products
+```
+
+#### **Sprint 1.2: Order & Payment** (Week 3)
+
+**Entities**: OrderHistory, OrderNote, Payment, Shipment
+
+**Tasks**:
+1. [ ] Create OrderHistory schema (track status changes)
+2. [ ] Create OrderNote schema (internal notes)
+3. [ ] Create Payment schema
+4. [ ] Create Shipment schema
+5. [ ] Update Order schema (payment/shipping relations)
+6. [ ] Generate migrations
+7. [ ] OrderHistoryService (auto-track changes)
+8. [ ] PaymentService
+9. [ ] ShipmentService
+10. [ ] Webhook handlers (payment events)
+11. [ ] Unit + integration tests
+12. [ ] Update order API endpoints
+
+**Critical**: OrderHistory tracking is MANDATORY for production
+
+**Tests**:
+```bash
+npm run test -- order-history.service.spec.ts
+npm run test -- payment.service.spec.ts
+npm run test:e2e -- orders
+```
+
+#### **Sprint 1.3: Returns & Promotions** (Week 4)
+
+**Entities**: Return, ReturnItem, Coupon, CouponUsage
+
+**Tasks**:
+1. [ ] Create Return + ReturnItem schemas
+2. [ ] Create Coupon + CouponUsage schemas
+3. [ ] Generate migrations
+4. [ ] ReturnService (approve/reject flow)
+5. [ ] CouponService (validation, usage tracking)
+6. [ ] Discount calculation logic
+7. [ ] Return workflow API
+8. [ ] Coupon API endpoints
+9. [ ] Tests
+10. [ ] Admin UI for returns + coupons
+
+**Tests**:
+```bash
+npm run test -- return.service.spec.ts
+npm run test -- coupon.service.spec.ts
+```
+
+#### **Sprint 1.4: User Management** (Week 5)
+
+**Entities**: VerificationToken, ShippingAddress, Notification
+
+**Tasks**:
+1. [ ] Create VerificationToken schema
+2. [ ] Create ShippingAddress schema
+3. [ ] Create Notification schema
+4. [ ] Generate migrations
+5. [ ] Email verification service
+6. [ ] Phone verification service
+7. [ ] Address management API
+8. [ ] Notification system
+9. [ ] Tests
+
+**Tests**:
+```bash
+npm run test -- verification.service.spec.ts
+npm run test -- notification.service.spec.ts
+```
+
+#### Phase 1 Verification
+
+```bash
+# Run all tests
+npm run test
+
+# Build check
+npm run build
+
+# Lint check
+npm run lint
+
+# Start dev server
+npm run dev
+
+# Manual testing
+# - Create product with variants
+# - Place order with coupon
+# - Track order status changes
+# - Request return
+# - Verify email
+```
+
+**Success Criteria**:
+- ✅ 13 core e-commerce entities implemented
+- ✅ All tests passing
+- ✅ API v2 endpoints functional
+- ✅ Admin can manage products, orders, returns
+- ✅ Zero production issues
+
+---
+
+### **Phase 2: CMS Essentials** (Weeks 6-8)
+
+#### **Sprint 2.1: Blog System** (Week 6)
+
+**Entities**: BlogPost, BlogCategory, BlogComment
+
+**Tasks**:
+1. [ ] Create blog schemas
+2. [ ] BlogService (CRUD, publish/unpublish)
+3. [ ] BlogCategoryService
+4. [ ] CommentService (moderation)
+5. [ ] Blog API endpoints
+6. [ ] Rich text editor support (save as JSON/HTML)
+7. [ ] SEO fields for blog posts
+8. [ ] Tests
+
+**Tests**:
+```bash
+npm run test -- blog.service.spec.ts
+npm run test:e2e -- blog
+```
+
+#### **Sprint 2.2: Pages & Navigation** (Week 7)
+
+**Entities**: Page, Menu, MenuItem, SEO
+
+**Tasks**:
+1. [ ] Create Page, Menu, MenuItem, SEO schemas
+2. [ ] PageService (page builder basics)
+3. [ ] MenuService (hierarchical menus)
+4. [ ] SEOService (meta tags management)
+5. [ ] API endpoints
+6. [ ] CMS UI for pages/menus
+7. [ ] Tests
+
+#### **Sprint 2.3: v4.0 Critical - Settings & Forms** (Week 8)
+
+**Entities**: Setting, Form, FormSubmission
+
+**Tasks**:
+1. [ ] Create Setting schema
+2. [ ] Create Form + FormSubmission schemas
+3. [ ] SettingsService (get/set, validation)
+4. [ ] FormService (dynamic form builder)
+5. [ ] Form submission API
+6. [ ] Email notifications for forms
+7. [ ] Public settings API (`/api/settings/public`)
+8. [ ] Form builder UI (basic)
+9. [ ] Tests
+
+**Critical**: Settings centralizes configuration
+
+**Tests**:
+```bash
+npm run test -- settings.service.spec.ts
+npm run test -- form.service.spec.ts
+
+# Manual
+# - Create contact form
+# - Submit form
+# - Check email notification
+# - Update site settings
+```
+
+#### Phase 2 Verification
+
+**Success Criteria**:
+- ✅ Blog system functional
+- ✅ Static pages working
+- ✅ Forms collecting submissions
+- ✅ Settings API working
+- ✅ CMS UI usable
+
+---
+
+### **Phase 3: Security & Audit** (Week 9)
+
+**Entities**: LoginHistory, SecurityEvent, ActivityLog
+
+**Tasks**:
+1. [ ] Create security schemas
+2. [ ] LoginHistoryService (track all attempts)
+3. [ ] SecurityEventService (anomaly  detection)
+4. [ ] ActivityLogService (CMS actions audit)
+5. [ ] Brute force protection middleware
+6. [ ] IP blocking mechanism
+7. [ ] Security dashboard
+8. [ ] Audit log viewer
+9. [ ] Automated alerts
+10. [ ] Tests
+
+**Critical**: Security is MANDATORY before production
+
+**Tests**:
+```bash
+npm run test -- security.service.spec.ts
+npm run test -- activity-log.service.spec.ts
+
+# Manual
+# - Attempt 5 failed logins → account locked
+# - View security events dashboard
+# - Check activity log for CMS actions
+```
+
+#### Phase 3 Verification
+
+**Success Criteria**:
+- ✅ Brute force protection working
+- ✅ Security events logged
+- ✅ Activity log tracking all CMS changes
+- ✅ Admin security dashboard functional
+
+---
+
+### **Phase 4: Enhanced Features** (Weeks 10-12)
+
+#### **Sprint 4.1: Customer Experience** (Week 10)
+
+**Entities**: Wishlist, WishlistItem, ReviewReport, Banner, Popup
+
+**Tasks**:
+1. [ ] Create schemas
+2. [ ] WishlistService
+3. [ ] Review moderation system
+4. [ ] Banner management
+5. [ ] Popup system with targeting
+6. [ ] API endpoints
+7. [ ] Tests
+
+#### **Sprint 4.2: Email Automation** (Week 11)
+
+**Entities**: EmailTemplate, EmailLog
+
+**Tasks**:
+1. [ ]Create email schemas
+2. [ ] EmailTemplateService (template variables)
+3. [ ] EmailService (SendGrid/AWS SES integration)
+4. [ ] EmailLogService (delivery tracking)
+5. [ ] Transactional email triggers
+6. [ ] Email analytics dashboard
+7. [ ] Tests
+
+#### **Sprint 4.3: Loyalty Program** (Week 12)
+
+**Entities**: LoyaltyTransaction
+
+**Tasks**:
+1. [ ] Create schema
+2. [ ] LoyaltyService (earn/redeem points)
+3. [ ] Points calculation rules
+4. [ ] Integration with Order completion
+5. [ ] Customer loyalty dashboard
+6. [ ] Tests
+
+**Tests**:
+```bash
+npm run test -- wishlist.service.spec.ts
+npm run test -- email.service.spec.ts
+npm run test -- loyalty.service.spec.ts
+```
+
+#### Phase 4 Verification
+
+**Success Criteria**:
+- ✅ Wishlist functional
+- ✅ Emails sending and tracked
+- ✅ Loyalty points working
+- ✅ Customers earning/redeeming points
+
+---
+
+### **Phase 5: CMS Advanced - v4.0** (Weeks 13-14)
+
+#### **Sprint 5.1: Landing Page Builder** (Week 13)
+
+**Entity**: LandingPage
+
+**Tasks**:
+1. [ ] Create LandingPage schema
+2. [ ] Section components (Hero, Features, etc.)
+3. [ ] LandingPageService
+4. [ ] A/B testing logic (traffic split)
+5. [ ] Analytics tracking
+6. [ ] Conversion tracking
+7. [ ] Drag & drop builder UI
+8. [ ] Tests
+
+**Tests**:
+```bash
+npm run test -- landing-page.service.spec.ts
+
+# Manual
+# - Build landing page with sections
+# - Create A/B variant
+# - Track conversions
+```
+
+#### **Sprint 5.2: Integration & Polish** (Week 14)
+
+**Tasks**:
+1. [ ] Full integration testing
+2. [ ] Performance optimization
+3. [ ] Query optimization
+4. [ ] Index creation
+5. [ ] API documentation update
+6. [ ] Admin training materials
+7. [ ] Deployment checklist
+
+**Success Criteria**:
+- ✅ Landing page builder working
+- ✅ A/B testing functional
+- ✅ All integrations tested
+- ✅ Performance targets met
+
+---
+
+### **Phase 6: Marketing & Analytics** (Weeks 15-16)
+
+#### **Sprint 6.1: Analytics** (Week 15)
+
+**Entities**: ProductView, SearchLog, CheckoutStep, CartAbandonment
+
+**Tasks**:
+1. [ ] Create analytics schemas
+2. [ ] Tracking services
+3. [ ] Analytics dashboard
+4. [ ] Cart recovery emails
+5. [ ] Tests
+
+#### **Sprint 6.2: Scheduling** (Week 16)
+
+**Entities**: ScheduledContent, ScheduledEmail, CronJob, Webhook
+
+**Tasks**:
+1. [ ] Create scheduling schemas
+2. [ ] Scheduler service (cron processor)
+3. [ ] Content scheduling
+4. [ ] Email scheduling
+5. [ ] Webhook system
+6. [ ] Tests
+
+**Tests**:
+```bash
+npm run test -- analytics.service.spec.ts
+npm run test -- scheduler.service.spec.ts
+
+# Manual
+# - Schedule blog post for future publish
+# - Schedule email campaign
+# - Track product views
+```
+
+---
+
+### **Phase 7: Mobile & Remaining** (Weeks 17-18)
+
+#### **Sprint 7.1: Mobile Support** (Week 17)
+
+**Entities**: AppVersion, PushNotification
+
+**Tasks**:
+1. [ ] Create mobile schemas
+2. [ ] AppVersionService (force update logic)
+3. [ ] PushNotificationService
+4. [ ] Mobile API optimization
+5. [ ] Tests
+
+#### **Sprint 7.2: Final Features & Launch** (Week 18)
+
+**Remaining Entities**: FlashSale, ThemeSettings, SEORedirect, SitemapEntry, etc.
+
+**Tasks**:
+1. [ ] Implement all P2/P3 entities
+2. [ ] Full regression testing
+3. [ ] Load testing
+4. [ ] Security audit
+5. [ ] Documentation finalization
+6. [ ] Deployment to production
+7. [ ] Post-launch monitoring
+
+**Tests**:
+```bash
+# Full test suite
+npm run test
+npm run test:e2e
+npm run test:load
+
+# Lint
+npm run lint
+
+# Build
+npm run build
+
+# Manual: Complete feature walkthrough
+```
+
+**Success Criteria**:
+- ✅ All 65 entities implemented
+- ✅ All tests passing (>80% coverage)
+- ✅ Performance benchmarks met
+- ✅ Zero critical bugs
+- ✅ Production deployment successful
+
+---
+
+## 🛠️ Migration Strategy
+
+### Prisma Migration Workflow
+
+```bash
+# 1. Create migration (run per sprint)
+npx prisma migrate dev --name add_product_variants
+
+# 2. Review generated SQL/changes
+# Check prisma/migrations/[timestamp]_add_product_variants/
+
+# 3. Test in development
+npm run dev
+# Verify changes
+
+# 4. Deploy to staging
+npx prisma migrate deploy
+
+# 5. Test in staging
+npm run test:e2e
+
+# 6. Deploy to production (during maintenance window)
+npx prisma generate
+npx prisma migrate deploy
+npm run build
+pm2 restart api
+
+# 7. Monitor
+# Check logs, metrics, errors
+```
+
+### Data Migration Scripts
+
+For entities requiring data backfill:
+
+```typescript
+// Example: Backfill OrderHistory from existing orders
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+async function backfillOrderHistory() {
+  const orders = await prisma.order.findMany({
+    where: { createdAt: { gte: new Date('2024-01-01') } }
+  });
+
+  for (const order of orders) {
+    await prisma.orderHistory.create({
+      data: {
+        orderId: order.id,
+        fromStatus: null,
+        toStatus: order.status,
+        note: 'Initial order creation (backfilled)',
+        changedAt: order.createdAt,
+        changedBy: order.createdBy,
+      },
+    });
+  }
+
+  console.log(`Backfilled ${orders.length} order histories`);
+}
+
+backfillOrderHistory();
+```
+
+### Rollback Procedures
+
+```bash
+# 1. MongoDB backup before each phase
+mongodumpump --db ecommerce --out backup/phase1-$(date +%Y%m%d)
+
+# 2. If migration fails, revert
+npx prisma migrate resolve --rolled-back [migration_name]
+
+# 3. Restore database if needed
+mongorestore --db ecommerce backup/phase1-20251218
+
+# 4. Revert code
+git revert [commit]
+npm run build
+pm2 restart api
+```
+
+---
+
+## ⚠️ Risks & Mitigation
+
+| Risk | Impact | Probability | Mitigation |
+|------|--------|-------------|------------|
+| **Data loss during migration** | Critical | Low | Daily backups, staging tests, gradual rollout |
+| **Breaking API changes** | High | Medium | API versioning (v1/v2), deprecation notices |
+| **Performance degradation** | High | Medium | Load testing, query optimization, proper indexes |
+| **Timeline overrun** | Medium | High | Buffer time, prioritization, scope adjustment |
+| **Team capacity** | Medium | Medium | Training, documentation, pair programming |
+| **Complex relations breaking** | High | Low | Unit tests, integration tests, staging validation |
+
+### Critical Mitigation Strategies
+
+1. **API Versioning**: `/api/v1` (current) + `/api/v2` (new)
+   - Maintain v1 for 6 months
+   - Gradual client migration
+   - Deprecation warnings
+
+2. **Feature Flags**: Enable/disable new features per environment
+   ```typescript
+   if (process.env.ENABLE_PRODUCT_VARIANTS === 'true') {
+     // New variant logic
+   }
+   ```
+
+3. **Staged Rollout**: 
+   - Dev → Staging → Production (10% users) → Production (100%)
+
+4. **Monitoring & Alerts**:
+   - Error rate alerts
+   - Performance degradation alerts
+   - Database query monitoring
+
+---
+
+## 📊 Success Metrics
+
+### Per Phase KPIs
+
+| Phase | Key Metric | Target | Verification |
+|-------|------------|--------|--------------|
+| Phase 0 | Migration framework working | 100% | Manual test |
+| Phase 1 | Product variants functional | 100% | Unit tests |
+| Phase 2 | Blog posts created | >5 | Manual |
+| Phase 3 | Security events logged | 100% | Integration test |
+| Phase 4 | Email delivery rate | >95% | EmailLog data |
+| Phase 5 | Landing pages live | >3 | Manual |
+| Phase 6 | Scheduled tasks executing | >99% | Cron logs |
+| Phase 7 | All entities implemented | 65/65 | Schema count |
+
+### Overall Success Criteria
+
+- ✅ All P0 entities implemented (25/25)
+- ✅ All P1 entities implemented (18/18)
+- ✅ 80%+ P2 entities implemented (12+/15)
+- ✅ Test coverage > 80%
+- ✅ API response time < 200ms (p95)
+- ✅ Zero critical bugs
+- ✅ Build passes with strict lint
+- ✅ Documentation complete
+
+---
+
+## 💰 Resource Requirements
+
+### Team Composition
+
+**Minimum** (Slower execution):
+- 1 Senior Fullstack Developer
+- 1 Frontend Developer (CMS UI)
+- Timeline: 20-24 weeks
+
+**Recommended** (Target timeline):
+- 1 Tech Lead / Senior Backend
+- 1 Backend Developer
+- 1 Frontend Developer (CMS)
+- 1 QA Engineer (part-time)
+- Timeline: 18 weeks
+
+**Optimal** (Faster execution):
+- 1 Tech Lead
+- 2 Backend Developers
+- 1 Frontend Developer
+- 1 QA Engineer
+- Timeline: 14-16 weeks
+
+### Infrastructure Costs
+
+- Staging MongoDB instance: ~$50-100/month
+- SendGrid/AWS SES: ~$10/month (low volume)
+- Monitoring tools: ~$30/month
+- **Total**: ~$90-140/month during development
+
+---
+
+## 📝 Breaking Changes Documentation
+
+### API Breaking Changes
+
+1. **Product API** (`/api/v2/products`)
+   - Response includes `variants[]` array
+   - `stock` now reflects variant total
+   - New endpoint: `/api/v2/products/:id/variants`
+
+2. **Order API** (`/api/v2/orders`)
+   - `shippingAddress` is now object (was string)
+   - Response includes `payment` object
+   - Response includes `shipment` object
+   - New endpoint: `/api/v2/orders/:id/history`
+
+3. **User API** (`/api/v2/users`)
+   - New required fields on registration: `firstName`, `lastName`
+   - New endpoints: `/api/v2/users/me/loyalty`, `/api/v2/users/me/addresses`
+
+### Database Breaking Changes
+
+1. **Order.shippingAddress**: `string` → `object`
+   - Migration script required to parse existing addresses
+
+2. **Product**: New indexes on `sku`, `slug`, `averageRating`
+
+3. **User**: New required fields (defaults provided in migration)
+
+### Migration Path
+
+- **Old clients**: Continue using `/api/v1` (6-month sunset period)
+- **New clients**: Adopt `/api/v2` immediately
+- **Timeline**: Deprecate v1 after Phase 7 + 6 months
+
+---
+
+## 🔍 Verification Procedures
+
+### Per Sprint Verification
+
+```bash
+# 1. Unit tests
+npm run test -- [service].service.spec.ts
+
+# 2. Integration tests
+npm run test:e2e
+
+# 3. Lint check
+npm run lint
+
+# 4. Build check
+npm run build
+
+# 5. Dev server smoke test
+npm run dev
+# Manual: Test new endpoints via Swagger/Postman
+
+# 6. Database integrity
+# Check relationships, constraints, indexes
+```
+
+### Phase Gate Criteria
+
+Before moving to next phase:
+
+- [ ] All sprint tasks completed
+- [ ] All tests passing (unit + integration)
+- [ ] Code review approved
+- [ ] API documentation updated
+- [ ] Deployed to staging
+- [ ] Staging tests passed
+- [ ] Performance benchmarks met
+- [ ] Security scan passed (if applicable)
+- [ ] Product owner sign-off
+
+---
+
+## 📚 Documentation Updates Required
+
+- [ ] API documentation (Swagger/OpenAPI)
+- [ ] Database schema diagrams (ERD)
+- [ ] Migration runbooks
+- [ ] Admin user guides (CMS, forms, landing pages)
+- [ ] Developer onboarding docs
+- [ ] Testing guide
+- [ ] Deployment procedures
+- [ ] Rollback procedures
+
+---
+
+## 🎓 Training Plan
+
+### Week 1 (Phase 0)
+- Team kickoff
+- Review optimal schema document
+- Prisma & MongoDB best practices
+- Migration workflow training
+
+### Week 6 (Before Phase 2)
+- CMS concepts & architecture
+- Rich text editor integration
+- SEO best practices
+
+### Week 13 (Before Phase 5)
+- Landing page builder demo
+- A/B testing methodology
+- Analytics tracking
+
+### Week 18 (Final)
+- Complete system walkthrough
+- Admin training (CMS, settings, forms)
+- Production support handoff
+
+---
+
+## 🚀 Deployment Checklist
+
+### Pre-Deployment (Each Phase)
+
+- [ ] All tests passing
+- [ ] Code reviewed & approved
+- [ ] Database backup created
+- [ ] Staging deployment successful
+- [ ] Staging tests passed
+- [ ] Performance benchmarks met
+- [ ] Security scan clean
+- [ ] Rollback plan documented
+- [ ] Monitoring configured
+- [ ] Documentation updated
+
+### Deployment
+
+- [ ] Maintenance window scheduled (if needed)
+- [ ] Team notified
+- [ ] Deploy to production
+- [ ] Run smoke tests
+- [ ] Monitor error rates
+- [ ] Check performance metrics
+- [ ] Verify new features
+- [ ] Update status page
+
+### Post-Deployment
+
+- [ ] Monitor for 24 hours
+- [ ] Review error logs
+- [ ] Check performance metrics
+- [ ] Collect team feedback
+- [ ] Update retrospective doc
+- [ ] Plan next sprint
+
+---
+
+> [!IMPORTANT]
+> **Critical Path**: Phase 0 → Phase 1 → Phase 3 (Security) must complete successfully before production launch. Other phases can be added post-launch if needed.
+
+> [!WARNING]
+> **Breaking Changes**: Order.shippingAddress và Product API require API versioning. Implement `/api/v2` from Phase 1 Sprint 1.1.
+
+> [!TIP]
+> **Quick Win**: Complete Phase 0-1 (5 weeks) for production-ready core e-commerce. Add CMS and advanced features incrementally.
+
+---
+
+**Roadmap Version**: 1.0  
+**Created**: 2025-12-18  
+**Target Completion**: Week 18 (2025-05-05)  
+**Next Review**: After Phase 0 completion
+
+**Related Documents**:
+- [Optimal Database Schema](file:///home/huu/.gemini/antigravity/brain/c88536d0-11e5-42d1-9680-acaead31aa57/optimal-database-schema.md) - Entity details
+- [Current Prisma Schema](file:///home/huu/.gemini/antigravity/scratch/ecommerce-platform/apps/api/prisma/schema.prisma) - Current implementation

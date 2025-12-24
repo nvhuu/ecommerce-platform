@@ -37,11 +37,11 @@ export class ShippingAddressService {
   }
 
   async update(id: string, userId: string, dto: UpdateShippingAddressDto) {
-    const address = await this.findOne(id, userId); // check ownership
+    await this.findOne(id, userId); // check ownership
     if (dto.isDefault) {
       await this.repository.unsetDefault(userId);
     }
-    return this.repository.update(id, dto);
+    await this.repository.update(id, dto);
   }
 
   async remove(id: string, userId: string) {

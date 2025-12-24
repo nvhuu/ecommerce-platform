@@ -24,7 +24,7 @@ export class NotificationService {
     type: string,
     title: string,
     message: string,
-    data?: any,
+    data?: unknown,
   ) {
     return this.repository.create({
       userId,

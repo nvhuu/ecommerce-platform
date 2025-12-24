@@ -14,6 +14,7 @@ import { AuditInterceptor } from './core/interceptors/audit.interceptor';
 import { SerializeInterceptor } from './core/interceptors/serialize.interceptor';
 import { PrismaModule } from './core/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { BlogModule } from './modules/blog/blog.module';
 import { CartModule } from './modules/cart/cart.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { CouponModule } from './modules/coupons/coupon.module';
@@ -64,6 +65,7 @@ import { UsersModule } from './modules/users/users.module';
     ReturnModule,
     NotificationModule,
     ShippingAddressModule,
+    BlogModule,
   ],
   controllers: [],
   providers: [

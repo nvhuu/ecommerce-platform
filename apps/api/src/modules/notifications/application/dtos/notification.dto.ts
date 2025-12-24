@@ -14,7 +14,7 @@ export class NotificationResponseDto {
   message!: string;
 
   @ApiProperty({ required: false })
-  data?: any;
+  data?: unknown;
 
   @ApiProperty()
   isRead!: boolean;

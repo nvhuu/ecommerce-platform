@@ -1,5 +1,6 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { Notification } from '../../domain/entities/notification.entity';
 import { INotificationRepository } from '../../domain/repositories/notification.repository.interface';
 
@@ -14,7 +15,7 @@ export class NotificationRepository implements INotificationRepository {
         type: data.type!,
         title: data.title!,
         message: data.message!,
-        data: data.data || {},
+        data: (data.data || {}) as Prisma.InputJsonValue,
         isRead: data.isRead || false,
       },
     });

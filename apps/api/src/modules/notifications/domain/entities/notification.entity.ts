@@ -15,7 +15,7 @@ export class Notification extends BaseEntity {
   message!: string;
 
   @Expose()
-  data?: any;
+  data?: unknown;
 
   @Expose()
   isRead!: boolean;

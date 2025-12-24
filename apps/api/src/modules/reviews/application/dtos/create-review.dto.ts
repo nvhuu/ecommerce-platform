@@ -8,6 +8,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
+import { ReviewStatus } from '../../domain/entities/review.entity';
 
 export class CreateReviewDto {
   @ApiProperty({ example: '507f1f77bcf86cd799439011' })
@@ -30,8 +31,8 @@ export class CreateReviewDto {
 export class UpdateReviewStatusDto {
   @ApiProperty({
     description: 'Review status',
-    enum: ['PENDING', 'APPROVED', 'REJECTED'],
+    enum: ReviewStatus,
   })
-  @IsEnum(['PENDING', 'APPROVED', 'REJECTED'])
-  status!: 'PENDING' | 'APPROVED' | 'REJECTED';
+  @IsEnum(ReviewStatus)
+  status!: ReviewStatus;
 }

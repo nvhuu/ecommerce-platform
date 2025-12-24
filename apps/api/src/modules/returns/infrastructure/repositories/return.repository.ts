@@ -1,6 +1,6 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { ReturnStatus } from '@prisma/client';
+import { Prisma, ReturnStatus } from '@prisma/client';
 import { Return } from '../../domain/entities/return.entity';
 import { IReturnRepository } from '../../domain/repositories/return.repository.interface';
 
@@ -8,7 +8,17 @@ import { IReturnRepository } from '../../domain/repositories/return.repository.i
 export class ReturnRepository implements IReturnRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: Partial<Return> & { items: any[] }): Promise<Return> {
+  async create(
+    data: Partial<Return> & {
+      items: {
+        productId: string;
+        variantId: string;
+        quantity: number;
+        refundAmount: number;
+        reason: string;
+      }[];
+    },
+  ): Promise<Return> {
     const { items, ...returnData } = data;
 
     const created = await this.prisma.return.create({
@@ -38,6 +48,11 @@ export class ReturnRepository implements IReturnRepository {
     if (!result) throw new Error('Failed to create return');
     return result;
   }
+
+  // ... (keeping other methods unchanged as I can't overwrite them all blindly, using context)
+  // Wait, replace_file_content works on chunks. I need to be careful with "context" in replacement.
+  // I will split this into two calls or one big chunk if contiguous, but create and updateStatus are far apart.
+  // I should use multi_replace.
 
   async findAll(
     page = 1,
@@ -102,7 +117,7 @@ export class ReturnRepository implements IReturnRepository {
     status: ReturnStatus,
     approvedBy?: string,
   ): Promise<Return> {
-    const data: any = { status };
+    const data: Prisma.ReturnUncheckedUpdateInput = { status };
     if (status === ReturnStatus.APPROVED) {
       data.approvedAt = new Date();
       data.approvedBy = approvedBy;

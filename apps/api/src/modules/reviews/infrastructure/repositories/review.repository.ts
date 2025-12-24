@@ -1,5 +1,6 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { Review } from '../../domain/entities/review.entity';
 import { IReviewRepository } from '../../domain/repositories/review.repository.interface';
 
@@ -51,9 +52,9 @@ export class ReviewRepository implements IReviewRepository {
     status?: string,
   ): Promise<{ data: Review[]; total: number }> {
     // ReviewStatus enum in schema: PENDING, APPROVED, REJECTED
-    const whereClause: any = {};
+    const whereClause: Prisma.ReviewWhereInput = {};
     if (status) {
-      whereClause.status = status;
+      whereClause.status = status as Prisma.EnumReviewStatusFilter;
     }
 
     const [reviews, total] = await Promise.all([

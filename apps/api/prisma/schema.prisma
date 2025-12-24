@@ -101,6 +101,8 @@ model User {
   reviews             Review[]
   shippingAddresses   ShippingAddress[]
   notifications       Notification[]
+  blogPosts           BlogPost[]
+  blogComments        BlogComment[]
   verificationToken   VerificationToken?
 }
 
@@ -630,4 +632,84 @@ model VerificationToken {
   type      String   // "EMAIL_VERIFICATION", "PASSWORD_RESET"
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+// Blog System
+enum BlogPostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model BlogCategory {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  slug        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  
+  // SEO
+  seoTitle       String?
+  seoDescription String?
+  seoKeywords    String[] @default([])
+
+  // Relations
+  posts     BlogPost[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BlogPost {
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String         @unique
+  excerpt     String?
+  content     String         // HTML or JSON content
+  coverImage  String?
+  status      BlogPostStatus @default(DRAFT)
+  publishedAt DateTime?
+  
+  // SEO
+  seoTitle       String?
+  seoDescription String?
+  seoKeywords    String[] @default([])
+
+  // Author
+  authorId String @db.ObjectId
+  author   User   @relation(fields: [authorId], references: [id])
+
+  // Relations
+  categoryId String       @db.ObjectId
+  category   BlogCategory @relation(fields: [categoryId], references: [id])
+  comments   BlogComment[]
+
+  // Stats
+  viewCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BlogComment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  content   String
+  isApproved Boolean @default(true) // Auto-approve by default, change if robust moderation needed
+
+  // Relations
+  postId    String   @db.ObjectId
+  post      BlogPost @relation(fields: [postId], references: [id])
+  userId    String?  @db.ObjectId // Optional: allow guest comments? For now, let's assume registered users or store generic name if guest
+  user      User?    @relation(fields: [userId], references: [id])
+  
+  // Guest info (if userId is null)
+  guestName  String?
+  guestEmail String?
+
+  parentId  String?       @db.ObjectId
+  parent    BlogComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies   BlogComment[] @relation("CommentReplies")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

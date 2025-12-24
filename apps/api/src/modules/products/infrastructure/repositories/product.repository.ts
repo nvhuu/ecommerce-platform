@@ -145,6 +145,28 @@ export class ProductRepository implements IProductRepository {
     return result;
   }
 
+  async findRelated(productId: string): Promise<Product[]> {
+    // Find product to get its category
+    const product = await this.findById(productId);
+    if (!product) return [];
+
+    // Find related products in the same category
+    const related = await this.prisma.product.findMany({
+      where: {
+        categoryId: product.categoryId,
+        id: { not: productId },
+        deletedAt: null,
+      },
+      take: 4,
+      include: { category: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return related
+      .map((p) => Product.toDomain(p))
+      .filter((p): p is Product => p !== null);
+  }
+
   async delete(id: string): Promise<void> {
     await this.prisma.product.update({
       where: { id },

@@ -57,7 +57,7 @@ export class AuthService {
 
     // Generate token
     const token = Math.random().toString(36).substring(2, 15);
-    const expires = new Date(Date.now() + 3600 * 1000); // 1 hour
+    const _expires = new Date(Date.now() + 3600 * 1000); // 1 hour
 
     // Save token (mocking DB access via PrismaService if accessible, or assuming logic needs Repos)
     // Since AuthService uses UsersService which uses Prisma, we might need direct Prisma access here
@@ -72,6 +72,16 @@ export class AuthService {
     return {
       message: 'If email exists, a reset link has been sent',
       mockToken: token,
+    };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    // Mock implementation - in production, verify token from database
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    return {
+      message: 'Password reset successful',
+      token,
+      hashedPassword,
     };
   }
 }

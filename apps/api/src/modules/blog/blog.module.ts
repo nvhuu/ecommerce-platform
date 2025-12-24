@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { UsersModule } from '../users/users.module';
 import { BlogCategoryService } from './application/services/blog-category.service';
 import { BlogCommentService } from './application/services/blog-comment.service';
 import { BlogPostService } from './application/services/blog-post.service';
@@ -10,6 +11,7 @@ import { BlogCommentController } from './presentation/controllers/blog-comment.c
 import { BlogPostController } from './presentation/controllers/blog-post.controller';
 
 @Module({
+  imports: [UsersModule],
   controllers: [
     BlogCategoryController,
     BlogPostController,

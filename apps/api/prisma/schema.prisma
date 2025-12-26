@@ -104,6 +104,13 @@ model User {
   blogPosts           BlogPost[]
   blogComments        BlogComment[]
   verificationToken   VerificationToken?
+  
+  // Security & Audit Relations (Phase 3)
+  loginHistory        LoginHistory[]
+  securityEvents      SecurityEvent[]
+  resolvedEvents      SecurityEvent[]   @relation("ResolvedEvents")
+  activityLogs        ActivityLog[]
+  blockedIPs          IPBlacklist[]
 }
 
 model Category {
@@ -806,4 +813,201 @@ model MenuItem {
 
   @@index([menuId, order])
   @@index([parentId])
+  @@map("menu_items")
+}
+
+// ============================================
+// SETTINGS & FORMS (Sprint 2.3)
+// ============================================
+
+enum SettingType {
+  STRING
+  NUMBER
+  BOOLEAN
+  JSON
+}
+
+model Setting {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  key         String      @unique
+  value       String      // Stored as string, parsed based on type
+  type        SettingType @default(STRING)
+  category    String      @default("general")
+  label       String      // Human-readable label
+  description String?     // Help text
+  isPublic    Boolean     @default(false) // Can be accessed via public API
+  validation  String?     // JSON schema for validation
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([category])
+  @@index([isPublic])
+  @@map("settings")
+}
+
+enum FormStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+model Form {
+  id                String          @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  slug              String          @unique
+  description       String?
+  fields            String          // JSON array of field definitions
+  status            FormStatus      @default(ACTIVE)
+  notificationEmail String?         // Email to send submissions to
+  successMessage    String?         // Message shown after submission  
+  redirectUrl       String?         // Redirect after submission
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  submissions FormSubmission[]
+
+  @@index([status])
+  @@map("forms")
+}
+
+enum SubmissionStatus {
+  NEW
+  READ
+  PROCESSED
+  SPAM
+}
+
+model FormSubmission {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  formId    String           @db.ObjectId
+  data      String           // JSON object with submitted data
+  status    SubmissionStatus @default(NEW)
+  ip        String?
+  userAgent String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@index([formId, createdAt])
+  @@index([status])
+  @@map("form_submissions")
+}
+
+// ============================================
+// SECURITY & AUDIT (Phase 3)
+// ============================================
+
+enum LoginStatus {
+  SUCCESS
+  FAILED
+  BLOCKED
+}
+
+model LoginHistory {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String?     @db.ObjectId
+  email      String
+  status     LoginStatus
+  failReason String?
+  ip         String
+  userAgent  String?
+  createdAt  DateTime    @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([email, createdAt])
+  @@index([status, createdAt])
+  @@index([ip, createdAt])
+  @@map("login_history")
+}
+
+enum SecurityEventType {
+  BRUTE_FORCE
+  SUSPICIOUS_LOGIN
+  UNAUTHORIZED_ACCESS
+  ACCOUNT_LOCKOUT
+  PASSWORD_RESET
+  PRIVILEGE_ESCALATION
+  DATA_BREACH_ATTEMPT
+}
+
+enum SecurityEventSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model SecurityEvent {
+  id          String                @id @default(auto()) @map("_id") @db.ObjectId
+  type        SecurityEventType
+  severity    SecurityEventSeverity
+  userId      String?               @db.ObjectId
+  ip          String
+  userAgent   String?
+  description String
+  data        String?               // JSON metadata
+  resolved    Boolean               @default(false)
+  resolvedBy  String?               @db.ObjectId
+  resolvedAt  DateTime?
+  createdAt   DateTime              @default(now())
+
+  user     User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  resolver User? @relation("ResolvedEvents", fields: [resolvedBy], references: [id], onDelete: SetNull)
+
+  @@index([type, createdAt])
+  @@index([severity, resolved])
+  @@index([userId, createdAt])
+  @@index([ip, createdAt])
+  @@map("security_events")
+}
+
+enum ActivityAction {
+  CREATE
+  UPDATE
+  DELETE
+  VIEW
+  EXPORT
+  IMPORT
+}
+
+model ActivityLog {
+  id         String         @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String         @db.ObjectId
+  action     ActivityAction
+  resource   String
+  resourceId String?
+  changes    String?        // JSON diff
+  ip         String
+  userAgent  String?
+  createdAt  DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([resource, action, createdAt])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+enum BlockType {
+  TEMPORARY
+  PERMANENT
+}
+
+model IPBlacklist {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  ip        String    @unique
+  type      BlockType
+  reason    String
+  blockedBy String?   @db.ObjectId
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  blocker User? @relation(fields: [blockedBy], references: [id], onDelete: SetNull)
+
+  @@index([expiresAt])
+  @@map("ip_blacklist")
 }

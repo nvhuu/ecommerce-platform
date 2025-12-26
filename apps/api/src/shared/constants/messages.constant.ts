@@ -151,6 +151,43 @@ export const MESSAGES = {
     NOT_FOUND: 'Menu item not found',
     REORDERED: 'Menu items reordered successfully',
   },
+
+  // Setting messages
+  SETTING: {
+    CREATED: 'Setting created successfully',
+    UPDATED: 'Setting updated successfully',
+    DELETED: 'Setting deleted successfully',
+    RETRIEVED: 'Setting retrieved successfully',
+    LIST_RETRIEVED: 'Settings retrieved successfully',
+    NOT_FOUND: 'Setting not found',
+    KEY_EXISTS: 'Setting with this key already exists',
+    INVALID_TYPE: 'Invalid setting type',
+    INVALID_VALUE: 'Invalid value for setting type',
+  },
+
+  // Form messages
+  FORM: {
+    CREATED: 'Form created successfully',
+    UPDATED: 'Form updated successfully',
+    DELETED: 'Form deleted successfully',
+    RETRIEVED: 'Form retrieved successfully',
+    LIST_RETRIEVED: 'Forms retrieved successfully',
+    NOT_FOUND: 'Form not found',
+    SLUG_EXISTS: 'Form with this slug already exists',
+    INVALID_FIELDS: 'Invalid field definitions',
+    SUBMITTED: 'Form submitted successfully',
+  },
+
+  // Submission messages
+  SUBMISSION: {
+    CREATED: 'Submission created successfully',
+    UPDATED: 'Submission updated successfully',
+    DELETED: 'Submission deleted successfully',
+    RETRIEVED: 'Submission retrieved successfully',
+    LIST_RETRIEVED: 'Submissions retrieved successfully',
+    NOT_FOUND: 'Submission not found',
+    VALIDATION_FAILED: 'Form validation failed',
+  },
 } as const;
 
 // Type helper for autocomplete

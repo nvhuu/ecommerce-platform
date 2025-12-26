@@ -7,6 +7,9 @@ import { Role, User } from '../../../users/domain/entities/user.entity';
 import { RegisterDto } from '../dtos/auth.dto';
 
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { IPBlacklistService } from '@/modules/security/application/services/ip-blacklist.service';
+import { LoginHistoryService } from '@/modules/security/application/services/login-history.service';
+import { SecurityEventService } from '@/modules/security/application/services/security-event.service';
 
 @Injectable()
 export class AuthService {
@@ -14,16 +17,67 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
+    private readonly loginHistoryService: LoginHistoryService,
+    private readonly securityEventService: SecurityEventService,
+    private readonly ipBlacklistService: IPBlacklistService,
   ) {}
 
   async validateUser(
     email: string,
     pass: string,
+    ip: string,
+    userAgent?: string,
   ): Promise<Omit<User, 'password'> | null> {
+    // Check IP blacklist
+    const isBlocked = await this.ipBlacklistService.isBlocked(ip);
+    if (isBlocked) {
+      await this.loginHistoryService.logBlocked(
+        email,
+        ip,
+        'IP is blacklisted',
+        userAgent,
+      );
+      return null;
+    }
+
+    // Check brute force
+    const isBruteForce = await this.securityEventService.checkBruteForce(
+      email,
+      ip,
+    );
+    if (isBruteForce) {
+      await this.loginHistoryService.logBlocked(
+        email,
+        ip,
+        'Brute force attack detected',
+        userAgent,
+      );
+      // Auto-block IP after brute force
+      await this.ipBlacklistService.blockIP({
+        ip,
+        type: 'TEMPORARY' as any,
+        reason: 'Brute force attack',
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+      });
+      return null;
+    }
+
     const user = await this.usersService.findByEmail(email);
     if (user && (await bcrypt.compare(pass, user.password))) {
+      // Log successful login
+      await this.loginHistoryService.logSuccess(user.id, email, ip, userAgent);
       const { password: _password, ...result } = user;
       return result;
+    }
+
+    // Log failed login
+    if (user) {
+      await this.loginHistoryService.logFailed(
+        email,
+        ip,
+        'Invalid password',
+        userAgent,
+      );
     }
     return null;
   }

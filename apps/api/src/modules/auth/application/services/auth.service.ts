@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { UserResponseDto } from '../../../users/application/dtos/response/user.response.dto';
 import { UsersService } from '../../../users/application/services/users.service';
 import { Role, User } from '../../../users/domain/entities/user.entity';
-import { CreateUserDto } from '../dtos/auth.dto';
+import { RegisterDto } from '../dtos/auth.dto';
 
 import { PrismaService } from '@/core/prisma/prisma.service';
 
@@ -35,7 +35,7 @@ export class AuthService {
     };
   }
 
-  async register(data: CreateUserDto): Promise<UserResponseDto> {
+  async register(data: RegisterDto): Promise<UserResponseDto> {
     const existingUser = await this.usersService.findByEmail(data.email);
     if (existingUser) {
       throw new ConflictException('Email already exists');

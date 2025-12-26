@@ -713,3 +713,97 @@ model BlogComment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// CMS Pages System
+enum PageStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MenuLocation {
+  HEADER
+  FOOTER
+  SIDEBAR
+  MOBILE
+}
+
+model Page {
+  id      String     @id @default(auto()) @map("_id") @db.ObjectId
+  title   String
+  slug    String     @unique
+  content String     // JSON or HTML content
+  excerpt String?    // Short description
+  status  PageStatus @default(DRAFT)
+
+  // Template
+  template String @default("default") // default, landing, contact, etc.
+
+  // SEO fields
+  seoTitle       String?
+  seoDescription String?
+  seoKeywords    String[] @default([])
+  ogImage        String?
+
+  // Publishing
+  publishedAt DateTime?
+
+  // Relations
+  createdBy String? @db.ObjectId
+  updatedBy String? @db.ObjectId
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([status])
+}
+
+// Navigation Menus
+model Menu {
+  id       String       @id @default(auto()) @map("_id") @db.ObjectId
+  name     String       // Display name (e.g., "Main Menu", "Footer Links")
+  location MenuLocation @unique // One menu per location
+  isActive Boolean      @default(true)
+
+  // Relations
+  items MenuItem[]
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+// Menu Items (Hierarchical)
+model MenuItem {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  menuId String @db.ObjectId
+  menu   Menu   @relation(fields: [menuId], references: [id], onDelete: Cascade)
+
+  // Item details
+  label    String
+  url      String  // Can be internal (/about) or external (https://...)
+  icon     String? // Icon name or URL
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  // Target
+  openInNewTab Boolean @default(false)
+
+  // Hierarchical structure
+  parentId String?    @db.ObjectId
+  parent   MenuItem?  @relation("MenuItemHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children MenuItem[] @relation("MenuItemHierarchy")
+
+  // Permissions (optional)
+  requiredRole String? // USER, ADMIN, etc.
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([menuId, order])
+  @@index([parentId])
+}

@@ -3,7 +3,7 @@ import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserResponseDto } from '../../../../modules/users/application/dtos/response/user.response.dto';
 import { Role } from '../../../users/domain/entities/user.entity';
-import { CreateUserDto, LoginDto } from '../../application/dtos/auth.dto';
+import { LoginDto, RegisterDto } from '../../application/dtos/auth.dto';
 import {
   ForgotPasswordDto,
   ResetPasswordDto,
@@ -50,7 +50,7 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid input data' })
   @ApiResponse({ status: 409, description: 'Email already exists' })
   @Serialize(UserResponseDto)
-  async register(@Body() user: CreateUserDto) {
+  async register(@Body() user: RegisterDto) {
     return this.authService.register(user);
   }
 

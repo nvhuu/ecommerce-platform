@@ -21,8 +21,10 @@ import { CouponModule } from './modules/coupons/coupon.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { MediaModule } from './modules/media/media.module';
+import { MenusModule } from './modules/menus/menus.module';
 import { NotificationModule } from './modules/notifications/notification.module';
 import { OrdersModule } from './modules/orders/orders.module';
+import { PagesModule } from './modules/pages/pages.module';
 import { PaymentModule } from './modules/payments/payment.module'; // Updated path to plural 'payments'
 import { ProductsModule } from './modules/products/products.module';
 import { ReturnModule } from './modules/returns/return.module';
@@ -66,6 +68,8 @@ import { UsersModule } from './modules/users/users.module';
     NotificationModule,
     ShippingAddressModule,
     BlogModule,
+    PagesModule,
+    MenusModule,
   ],
   controllers: [],
   providers: [

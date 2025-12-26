@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 import { Role } from '../../../users/domain/entities/user.entity';
 
-export class CreateUserDto {
+export class RegisterDto {
   @ApiProperty({
     description: 'User email address',
     example: 'user@example.com',

@@ -118,6 +118,39 @@ export const MESSAGES = {
     LIST_RETRIEVED: 'Reviews retrieved successfully',
     NOT_FOUND: 'Review not found',
   },
+
+  // Page messages
+  PAGE: {
+    CREATED: 'Page created successfully',
+    UPDATED: 'Page updated successfully',
+    DELETED: 'Page deleted successfully',
+    RETRIEVED: 'Page retrieved successfully',
+    LIST_RETRIEVED: 'Pages retrieved successfully',
+    PUBLISHED: 'Page published successfully',
+    UNPUBLISHED: 'Page unpublished successfully',
+    NOT_FOUND: 'Page not found',
+    SLUG_EXISTS: 'Page with this slug already exists',
+  },
+
+  // Menu messages
+  MENU: {
+    CREATED: 'Menu created successfully',
+    UPDATED: 'Menu updated successfully',
+    DELETED: 'Menu deleted successfully',
+    RETRIEVED: 'Menu retrieved successfully',
+    LIST_RETRIEVED: 'Menus retrieved successfully',
+    NOT_FOUND: 'Menu not found',
+    LOCATION_EXISTS: 'Menu for this location already exists',
+  },
+
+  // Menu Item messages
+  MENU_ITEM: {
+    CREATED: 'Menu item created successfully',
+    UPDATED: 'Menu item updated successfully',
+    DELETED: 'Menu item deleted successfully',
+    NOT_FOUND: 'Menu item not found',
+    REORDERED: 'Menu items reordered successfully',
+  },
 } as const;
 
 // Type helper for autocomplete

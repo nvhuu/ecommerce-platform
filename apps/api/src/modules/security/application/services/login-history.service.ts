@@ -66,4 +66,14 @@ export class LoginHistoryService {
   async getEmailHistory(email: string, limit = 20) {
     return this.repository.findByEmail(email, limit);
   }
+
+  async findAll(filters?: {
+    status?: LoginStatus;
+    email?: string;
+    ip?: string;
+    skip?: number;
+    take?: number;
+  }) {
+    return this.repository.findAll(filters);
+  }
 }

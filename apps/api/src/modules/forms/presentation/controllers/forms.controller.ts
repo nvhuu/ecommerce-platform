@@ -16,6 +16,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
 import { CreateFormDto } from '../../application/dtos/create-form.dto';
 import { FormResponseDto } from '../../application/dtos/form-response.dto';
@@ -60,6 +61,7 @@ export class FormsController {
   }
 
   @Post(':slug/submit')
+  @Throttle({ default: { limit: 20, ttl: 60000 } }) // 20 submissions per minute
   @ApiOperation({ summary: MESSAGES.FORM.SUBMITTED })
   async submit(
     @Param('slug') slug: string,

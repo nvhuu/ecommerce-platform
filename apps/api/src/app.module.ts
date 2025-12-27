@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { join } from 'path';
 import appConfig from './core/config/app.config';
@@ -30,6 +31,7 @@ import { PaymentModule } from './modules/payments/payment.module'; // Updated pa
 import { ProductsModule } from './modules/products/products.module';
 import { ReturnModule } from './modules/returns/return.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { SecurityModule } from './modules/security/security.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { ShipmentModule } from './modules/shipments/shipment.module';
 import { ShippingAddressModule } from './modules/users/address/shipping-address.module';
@@ -47,6 +49,12 @@ import { UsersModule } from './modules/users/users.module';
         sentryConfig,
       ],
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 60 seconds
+        limit: 100, // 100 requests per TTL (generous default for admin)
+      },
+    ]),
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
@@ -74,6 +82,7 @@ import { UsersModule } from './modules/users/users.module';
     MenusModule,
     SettingsModule,
     FormsModule,
+    SecurityModule,
   ],
   controllers: [],
   providers: [
@@ -81,7 +90,10 @@ import { UsersModule } from './modules/users/users.module';
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
     },
-
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    } as const,
     {
       provide: APP_INTERCEPTOR,
       useClass: AuditInterceptor,

@@ -62,4 +62,23 @@ export class LoginHistoryRepository implements ILoginHistoryRepository {
       take,
     });
   }
+
+  async findAll(filters?: {
+    status?: LoginStatus;
+    email?: string;
+    ip?: string;
+    skip?: number;
+    take?: number;
+  }): Promise<LoginHistory[]> {
+    return this.prisma.loginHistory.findMany({
+      where: {
+        status: filters?.status,
+        email: filters?.email,
+        ip: filters?.ip,
+      },
+      orderBy: { createdAt: SortOrder.DESC },
+      skip: filters?.skip || 0,
+      take: filters?.take || 50,
+    });
+  }
 }

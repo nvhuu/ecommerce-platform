@@ -58,6 +58,10 @@ export class IPBlacklistService {
     return this.repository.findAll(type);
   }
 
+  async getAllBlocked() {
+    return this.repository.findAll();
+  }
+
   async cleanExpired() {
     return this.repository.cleanExpired();
   }

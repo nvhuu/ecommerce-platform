@@ -20,4 +20,5 @@ export abstract class IActivityLogRepository {
     skip?: number;
     take?: number;
   }): Promise<ActivityLog[]>;
+  abstract findById(id: string): Promise<ActivityLog | null>;
 }

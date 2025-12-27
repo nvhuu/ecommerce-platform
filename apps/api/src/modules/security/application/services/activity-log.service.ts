@@ -51,4 +51,26 @@ export class ActivityLogService {
   }) {
     return this.repository.findAll(filters);
   }
+
+  async findAll(filters?: {
+    userId?: string;
+    resource?: string;
+    action?: ActivityAction;
+    skip?: number;
+    take?: number;
+  }) {
+    return this.repository.findAll(filters);
+  }
+
+  async findByUser(userId: string, limit = 50) {
+    return this.repository.findByUserId(userId, 0, limit);
+  }
+
+  async findByResource(resource: string, limit = 50) {
+    return this.repository.findByResource(resource, undefined, 0, limit);
+  }
+
+  async findById(id: string) {
+    return this.repository.findById(id);
+  }
 }

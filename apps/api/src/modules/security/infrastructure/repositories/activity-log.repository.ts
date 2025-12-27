@@ -60,4 +60,10 @@ export class ActivityLogRepository implements IActivityLogRepository {
       take: filters?.take || 50,
     });
   }
+
+  async findById(id: string): Promise<ActivityLog | null> {
+    return this.prisma.activityLog.findUnique({
+      where: { id },
+    });
+  }
 }

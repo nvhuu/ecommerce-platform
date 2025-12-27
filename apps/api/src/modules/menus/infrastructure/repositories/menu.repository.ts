@@ -1,7 +1,8 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
 import { SortOrder } from '@/shared/constants/sort.constant';
 import { Injectable } from '@nestjs/common';
-import { Menu, MenuLocation, Prisma } from '@prisma/client';
+import { MenuLocation, Prisma } from '@prisma/client';
+import { Menu } from '../../domain/entities/menu.entity';
 import { IMenuRepository } from '../../domain/repositories/menu.repository.interface';
 
 @Injectable()
@@ -9,11 +10,12 @@ export class MenuRepository implements IMenuRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: Prisma.MenuCreateInput): Promise<Menu> {
-    return this.prisma.menu.create({ data });
+    const result = await this.prisma.menu.create({ data });
+    return Menu.toDomain(result)!;
   }
 
   async findAll(): Promise<Menu[]> {
-    return this.prisma.menu.findMany({
+    const results = await this.prisma.menu.findMany({
       include: {
         items: {
           where: { parentId: null },
@@ -32,10 +34,11 @@ export class MenuRepository implements IMenuRepository {
       },
       orderBy: { createdAt: SortOrder.DESC },
     });
+    return results.map((r) => Menu.toDomain(r)!);
   }
 
-  async findById(id: string) {
-    return this.prisma.menu.findUnique({
+  async findById(id: string): Promise<Menu | null> {
+    const result = await this.prisma.menu.findUnique({
       where: { id },
       include: {
         items: {
@@ -54,6 +57,7 @@ export class MenuRepository implements IMenuRepository {
         },
       },
     });
+    return result ? Menu.toDomain(result) : null;
   }
 
   // Alias for findById - both return items
@@ -62,7 +66,7 @@ export class MenuRepository implements IMenuRepository {
   }
 
   async findByLocation(location: string): Promise<Menu | null> {
-    return this.prisma.menu.findUnique({
+    const result = await this.prisma.menu.findUnique({
       where: { location: location as MenuLocation },
       include: {
         items: {
@@ -83,16 +87,20 @@ export class MenuRepository implements IMenuRepository {
         },
       },
     });
+    return result ? Menu.toDomain(result) : null;
   }
 
   async update(id: string, data: Prisma.MenuUpdateInput): Promise<Menu> {
-    return this.prisma.menu.update({ where: { id }, data });
+    const result = await this.prisma.menu.update({ where: { id }, data });
+    return Menu.toDomain(result)!;
   }
 
   async delete(id: string): Promise<Menu> {
-    return this.prisma.menu.update({
+    // Soft delete
+    const result = await this.prisma.menu.update({
       where: { id },
       data: { deletedAt: new Date() },
     });
+    return Menu.toDomain(result)!;
   }
 }

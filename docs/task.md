@@ -133,10 +133,10 @@
   - [x] Add fields: title, slug, content, status, template
   - [x] Add SEO fields (seoTitle, seoDescription, seoKeywords)
   - [x] Add timestamps and audit fields
-- [x] Create Menu schema
+- [x] Create Menu schema (Verified & Refactored)
   - [x] Add fields: name, location, isActive
   - [x] Support multiple menu locations (HEADER, FOOTER, SIDEBAR)
-- [x] Create MenuItem schema
+- [x] Create MenuItem schema (Verified & Refactored)
   - [x] Add fields: label, url, icon, order
   - [x] Support hierarchical structure (parent/children)
   - [x] Add visibility rules

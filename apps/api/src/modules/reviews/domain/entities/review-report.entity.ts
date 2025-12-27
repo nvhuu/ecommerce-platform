@@ -1,8 +1,7 @@
 import { Expose } from 'class-transformer';
+import { BaseEntity } from '@/shared/domain/base.entity';
 
-export class ReviewReport {
-  @Expose()
-  id!: string;
+export class ReviewReport extends BaseEntity {
 
   @Expose()
   reviewId!: string;
@@ -28,11 +27,7 @@ export class ReviewReport {
   @Expose()
   adminNotes?: string;
 
-  @Expose()
-  createdAt!: Date;
 
-  @Expose()
-  updatedAt!: Date;
 
   static toDomain(input: unknown): ReviewReport | null {
     if (!input || typeof input !== 'object') return null;

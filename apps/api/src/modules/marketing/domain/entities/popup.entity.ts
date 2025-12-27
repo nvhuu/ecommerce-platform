@@ -1,8 +1,7 @@
 import { Expose } from 'class-transformer';
+import { BaseEntity } from '@/shared/domain/base.entity';
 
-export class Popup {
-  @Expose()
-  id!: string;
+export class Popup extends BaseEntity {
 
   @Expose()
   name!: string;
@@ -58,14 +57,8 @@ export class Popup {
   @Expose()
   conversions!: number;
 
-  @Expose()
-  createdAt!: Date;
 
-  @Expose()
-  createdBy?: string;
 
-  @Expose()
-  updatedAt!: Date;
 
   static toDomain(input: unknown): Popup | null {
     if (!input || typeof input !== 'object') return null;

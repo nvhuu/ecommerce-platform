@@ -1,6 +1,7 @@
 import { Expose } from 'class-transformer';
+import { BaseEntity } from '@/shared/domain/base.entity';
 
-export class IPBlacklist {
+export class IPBlacklist extends BaseEntity {
   @Expose()
   ip!: string;
 
@@ -13,11 +14,7 @@ export class IPBlacklist {
   @Expose()
   expiresAt?: Date;
 
-  @Expose()
-  createdAt!: Date;
 
-  @Expose()
-  createdBy?: string;
 
   static toDomain(input: unknown): IPBlacklist | null {
     if (!input || typeof input !== 'object') return null;

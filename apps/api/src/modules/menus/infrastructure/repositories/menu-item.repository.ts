@@ -1,7 +1,8 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
 import { SortOrder } from '@/shared/constants/sort.constant';
 import { Injectable } from '@nestjs/common';
-import { MenuItem, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import { MenuItem } from '../../domain/entities/menu-item.entity';
 import { IMenuItemRepository } from '../../domain/repositories/menu.repository.interface';
 
 @Injectable()
@@ -9,11 +10,12 @@ export class MenuItemRepository implements IMenuItemRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: Prisma.MenuItemCreateInput): Promise<MenuItem> {
-    return this.prisma.menuItem.create({ data });
+    const result = await this.prisma.menuItem.create({ data });
+    return MenuItem.toDomain(result)!;
   }
 
   async findById(id: string): Promise<MenuItem | null> {
-    return this.prisma.menuItem.findUnique({
+    const result = await this.prisma.menuItem.findUnique({
       where: { id },
       include: {
         children: {
@@ -21,24 +23,28 @@ export class MenuItemRepository implements IMenuItemRepository {
         },
       },
     });
+    return result ? MenuItem.toDomain(result) : null;
   }
 
   async findByMenuId(menuId: string): Promise<MenuItem[]> {
-    return this.prisma.menuItem.findMany({
+    const results = await this.prisma.menuItem.findMany({
       where: { menuId },
       orderBy: { order: SortOrder.ASC },
     });
+    return results.map((r) => MenuItem.toDomain(r)!);
   }
 
   async update(
     id: string,
     data: Prisma.MenuItemUpdateInput,
   ): Promise<MenuItem> {
-    return this.prisma.menuItem.update({ where: { id }, data });
+    const result = await this.prisma.menuItem.update({ where: { id }, data });
+    return MenuItem.toDomain(result)!;
   }
 
   async delete(id: string): Promise<MenuItem> {
-    return this.prisma.menuItem.delete({ where: { id } });
+    const result = await this.prisma.menuItem.delete({ where: { id } });
+    return MenuItem.toDomain(result)!;
   }
 
   async reorderItems(

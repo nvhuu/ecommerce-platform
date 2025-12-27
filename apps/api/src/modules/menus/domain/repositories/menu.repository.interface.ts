@@ -1,5 +1,8 @@
-import { Menu, MenuItem, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import { MenuItem } from '../entities/menu-item.entity';
+import { Menu } from '../entities/menu.entity';
 
+// Menu repository interface
 export interface IMenuRepository {
   create(data: Prisma.MenuCreateInput): Promise<Menu>;
   findAll(): Promise<Menu[]>;
@@ -12,6 +15,7 @@ export interface IMenuRepository {
 
 export const IMenuRepository = Symbol('IMenuRepository');
 
+// MenuItem repository interface
 export interface IMenuItemRepository {
   create(data: Prisma.MenuItemCreateInput): Promise<MenuItem>;
   findById(id: string): Promise<MenuItem | null>;

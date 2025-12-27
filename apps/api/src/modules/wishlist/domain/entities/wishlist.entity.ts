@@ -1,9 +1,8 @@
 import { Expose } from 'class-transformer';
+import { BaseEntity } from '@/shared/domain/base.entity';
 import { WishlistItem } from './wishlist-item.entity';
 
-export class Wishlist {
-  @Expose()
-  id!: string;
+export class Wishlist extends BaseEntity {
 
   @Expose()
   userId!: string;
@@ -17,11 +16,7 @@ export class Wishlist {
   @Expose()
   items?: WishlistItem[];
 
-  @Expose()
-  createdAt!: Date;
 
-  @Expose()
-  updatedAt!: Date;
 
   static toDomain(input: unknown): Wishlist | null {
     if (!input || typeof input !== 'object') return null;

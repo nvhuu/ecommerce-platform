@@ -1,8 +1,7 @@
 import { Expose } from 'class-transformer';
+import { BaseEntity } from '@/shared/domain/base.entity';
 
-export class WishlistItem {
-  @Expose()
-  id!: string;
+export class WishlistItem extends BaseEntity {
 
   @Expose()
   wishlistId!: string;

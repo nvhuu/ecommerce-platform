@@ -1,8 +1,7 @@
 import { Expose } from 'class-transformer';
+import { BaseEntity } from '@/shared/domain/base.entity';
 
-export class Banner {
-  @Expose()
-  id!: string;
+export class Banner extends BaseEntity {
 
   @Expose()
   title!: string;
@@ -43,14 +42,8 @@ export class Banner {
   @Expose()
   clicks!: number;
 
-  @Expose()
-  createdAt!: Date;
 
-  @Expose()
-  createdBy?: string;
 
-  @Expose()
-  updatedAt!: Date;
 
   static toDomain(input: unknown): Banner | null {
     if (!input || typeof input !== 'object') return null;

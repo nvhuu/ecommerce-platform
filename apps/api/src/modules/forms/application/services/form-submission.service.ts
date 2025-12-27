@@ -2,6 +2,7 @@ import { MESSAGES } from '@/shared/constants/messages.constant';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { IFormSubmissionRepository } from '../../domain/repositories/form-submission.repository.interface';
 import { IFormRepository } from '../../domain/repositories/form.repository.interface';
+import { FieldDefinition } from '../../domain/types/field-definition.type';
 import { SubmissionResponseDto } from '../dtos/submission-response.dto';
 import { FormValidationService } from './form-validation.service';
 
@@ -30,7 +31,7 @@ export class FormSubmissionService {
       throw new NotFoundException(MESSAGES.FORM.NOT_FOUND);
     }
 
-    const fields = JSON.parse(form.fields);
+    const fields = JSON.parse(form.fields) as FieldDefinition[];
     await this.validationService.validateSubmission(fields, data);
 
     const sanitized = this.validationService.sanitizeData(data);

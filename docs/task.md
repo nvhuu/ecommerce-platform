@@ -236,30 +236,30 @@
   - [ ] Add fields: type, severity, userId, ip, data
   - [ ] Add event types (BRUTE_FORCE, SUSPICIOUS_LOGIN, etc.)
 - [ ] Create ActivityLog schema
-  - [ ] Add fields: userId, action, resource, changes (JSON)
-  - [ ] Add IP and metadata
-- [ ] Generate Prisma migrations
-- [ ] LoginHistoryService
-  - [ ] Track all login attempts
-  - [ ] Track successful logins
-  - [ ] Track failed logins with reason
-- [ ] SecurityEventService
-  - [ ] Anomaly detection
-  - [ ] Brute force detection
-  - [ ] Suspicious activity monitoring
-  - [ ] IP blacklist management
-- [ ] ActivityLogService
-  - [ ] Log all CMS actions
-  - [ ] Track data changes
-  - [ ] Audit trail for compliance
-- [ ] Brute force protection middleware
-  - [ ] Rate limiting
-  - [ ] Account lockout after N attempts
+  - [x] Add fields: userId, action, resource, changes (JSON)
+  - [x] Add IP and metadata
+- [x] Generate Prisma migrations
+- [x] LoginHistoryService
+  - [x] Track all login attempts
+  - [x] Track successful logins
+  - [x] Track failed logins with reason
+- [x] SecurityEventService
+  - [x] Anomaly detection
+  - [x] Brute force detection
+  - [x] Suspicious activity monitoring
+  - [x] IP blacklist management
+- [x] ActivityLogService
+  - [x] Log all CMS actions
+  - [x] Track data changes
+  - [x] Audit trail for compliance
+- [/] Brute force protection middleware
+  - [/] Rate limiting
+  - [x] Account lockout after N attempts (Basic IP block)
   - [ ] Progressive delays
-- [ ] IP blocking mechanism
-  - [ ] Temporary blocks
-  - [ ] Permanent blacklist
-  - [ ] Whitelist support
+- [x] IP blocking mechanism
+  - [x] Temporary blocks
+  - [x] Permanent blacklist
+  - [x] Whitelist support
 - [ ] Security dashboard
   - [ ] Failed login attempts chart
   - [ ] Security events timeline

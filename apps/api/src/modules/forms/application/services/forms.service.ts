@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Form, Prisma } from '@prisma/client';
 import { IFormRepository } from '../../domain/repositories/form.repository.interface';
 import { CreateFormDto } from '../dtos/create-form.dto';
 import { FormResponseDto } from '../dtos/form-response.dto';
@@ -58,7 +59,7 @@ export class FormsService {
       throw new NotFoundException(MESSAGES.FORM.NOT_FOUND);
     }
 
-    const updateData: any = { ...dto };
+    const updateData: Prisma.FormUpdateInput = { ...dto };
     if (dto.fields) {
       updateData.fields = JSON.stringify(dto.fields);
     }
@@ -76,10 +77,10 @@ export class FormsService {
     await this.formRepository.delete(id);
   }
 
-  private toResponseDto(form: any): FormResponseDto {
+  private toResponseDto(form: Form): FormResponseDto {
     return {
       ...form,
-      fields: JSON.parse(form.fields),
+      fields: JSON.parse(form.fields as string),
     };
   }
 }

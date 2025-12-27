@@ -5,7 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { SettingType } from '@prisma/client';
+import { Prisma, Setting, SettingType } from '@prisma/client';
 import { ISettingRepository } from '../../domain/repositories/setting.repository.interface';
 import { CreateSettingDto } from '../dtos/create-setting.dto';
 import { SettingResponseDto } from '../dtos/setting-response.dto';
@@ -115,7 +115,9 @@ export class SettingsService {
     }
   }
 
-  private toResponseDto(setting: any): SettingResponseDto {
+  private toResponseDto(
+    setting: Setting | (Setting & { value: string }),
+  ): SettingResponseDto {
     const dto = new SettingResponseDto();
     Object.assign(dto, setting);
 
@@ -129,7 +131,7 @@ export class SettingsService {
           dto.parsedValue = setting.value === 'true';
           break;
         case SettingType.JSON:
-          dto.parsedValue = JSON.parse(setting.value);
+          dto.parsedValue = JSON.parse(setting.value) as Prisma.JsonObject;
           break;
         default:
           dto.parsedValue = setting.value;

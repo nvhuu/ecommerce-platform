@@ -1,5 +1,6 @@
 import { MESSAGES } from '@/shared/constants/messages.constant';
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import {
   FieldDefinition,
   FieldType,

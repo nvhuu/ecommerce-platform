@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+import { Request } from 'express';
 import { Strategy } from 'passport-local';
 import { User } from '../../../users/domain/entities/user.entity';
 import { AuthService } from '../../application/services/auth.service';
@@ -14,12 +15,13 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(
-    req: any,
+    req: Request,
     email: string,
     pass: string,
   ): Promise<Omit<User, 'password'>> {
-    const ip = req.ip || req.connection.remoteAddress || 'unknown';
-    const userAgent = req.headers['user-agent'];
+    const reqAny = req as any;
+    const ip = reqAny.ip || reqAny.connection?.remoteAddress || 'unknown';
+    const userAgent = reqAny.headers?.['user-agent'] || 'unknown';
 
     const user = await this.authService.validateUser(
       email,

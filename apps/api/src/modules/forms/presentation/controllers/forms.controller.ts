@@ -16,6 +16,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
 import { CreateFormDto } from '../../application/dtos/create-form.dto';
 import { FormResponseDto } from '../../application/dtos/form-response.dto';
 import { SubmitFormDto } from '../../application/dtos/submit-form.dto';
@@ -63,11 +64,12 @@ export class FormsController {
   async submit(
     @Param('slug') slug: string,
     @Body() dto: SubmitFormDto,
-    @Req() req: any,
+    @Req() req: Request,
   ) {
+    const reqAny = req as any;
     return this.submissionService.submit(slug, dto.data, {
-      ip: req.ip,
-      userAgent: req.headers['user-agent'],
+      ip: reqAny.ip,
+      userAgent: reqAny.headers?.['user-agent'],
     });
   }
 

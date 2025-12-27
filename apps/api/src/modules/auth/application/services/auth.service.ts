@@ -55,7 +55,7 @@ export class AuthService {
       // Auto-block IP after brute force
       await this.ipBlacklistService.blockIP({
         ip,
-        type: 'TEMPORARY' as any,
+        type: BlockType.TEMPORARY,
         reason: 'Brute force attack',
         expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
       });

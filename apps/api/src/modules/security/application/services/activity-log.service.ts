@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ActivityAction } from '@prisma/client';
+import { ActivityAction, Prisma } from '@prisma/client';
 import { IActivityLogRepository } from '../../domain/repositories/activity-log.repository.interface';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class ActivityLogService {
     action: ActivityAction;
     resource: string;
     resourceId?: string;
-    changes?: Record<string, any>;
+    changes?: Prisma.JsonObject;
     ip: string;
     userAgent?: string;
   }) {

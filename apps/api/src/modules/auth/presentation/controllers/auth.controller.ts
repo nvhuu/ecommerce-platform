@@ -7,6 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
 import { UserResponseDto } from '../../../../modules/users/application/dtos/response/user.response.dto';
 import { Role } from '../../../users/domain/entities/user.entity';
 import { LoginDto, RegisterDto } from '../../application/dtos/auth.dto';

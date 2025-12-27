@@ -1,7 +1,8 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
 import { SortOrder } from '@/shared/constants/sort.constant';
 import { Injectable } from '@nestjs/common';
-import { FormSubmission, Prisma } from '@prisma/client';
+import { FormSubmission, Prisma, SubmissionStatus } from '@prisma/client';
+
 import {
   IFormSubmissionRepository,
   SubmissionFilters,
@@ -25,7 +26,7 @@ export class FormSubmissionRepository implements IFormSubmissionRepository {
     return this.prisma.formSubmission.findMany({
       where: {
         formId: filters.formId,
-        status: filters.status as any,
+        status: filters.status as SubmissionStatus,
       },
       orderBy: { createdAt: SortOrder.DESC },
       skip: filters.skip,
@@ -36,7 +37,7 @@ export class FormSubmissionRepository implements IFormSubmissionRepository {
   async updateStatus(id: string, status: string): Promise<FormSubmission> {
     return this.prisma.formSubmission.update({
       where: { id },
-      data: { status: status as any },
+      data: { status: status as SubmissionStatus },
     });
   }
 

@@ -1,7 +1,8 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
 import { SortOrder } from '@/shared/constants/sort.constant';
 import { Injectable } from '@nestjs/common';
-import { Form, Prisma } from '@prisma/client';
+import { Form, FormStatus, Prisma } from '@prisma/client';
+
 import { IFormRepository } from '../../domain/repositories/form.repository.interface';
 
 @Injectable()
@@ -14,7 +15,9 @@ export class FormRepository implements IFormRepository {
 
   async findAll(filters?: { status?: string }): Promise<Form[]> {
     return this.prisma.form.findMany({
-      where: filters?.status ? { status: filters.status as any } : undefined,
+      where: filters?.status
+        ? { status: filters.status as FormStatus }
+        : undefined,
       orderBy: { createdAt: SortOrder.DESC },
     });
   }

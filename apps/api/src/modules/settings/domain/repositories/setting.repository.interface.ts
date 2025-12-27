@@ -1,4 +1,5 @@
-import { Prisma, Setting } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import { Setting } from '../entities/setting.entity';
 
 export abstract class ISettingRepository {
   abstract create(data: Prisma.SettingCreateInput): Promise<Setting>;

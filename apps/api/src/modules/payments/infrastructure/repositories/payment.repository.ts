@@ -1,4 +1,5 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import { Injectable } from '@nestjs/common';
 import { PaymentStatus } from '@prisma/client';
 import { Payment } from '../../domain/entities/payment.entity';
@@ -34,7 +35,7 @@ export class PaymentRepository implements IPaymentRepository {
   async findByOrderId(orderId: string): Promise<Payment[]> {
     const payments = await this.prisma.payment.findMany({
       where: { orderId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: SortOrder.DESC },
     });
 
     return payments

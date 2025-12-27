@@ -1,4 +1,5 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import { Injectable } from '@nestjs/common';
 import { ShipmentStatus } from '@prisma/client';
 import { Shipment } from '../../domain/entities/shipment.entity';
@@ -33,7 +34,7 @@ export class ShipmentRepository implements IShipmentRepository {
   async findByOrderId(orderId: string): Promise<Shipment[]> {
     const shipments = await this.prisma.shipment.findMany({
       where: { orderId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: SortOrder.DESC },
     });
 
     return shipments

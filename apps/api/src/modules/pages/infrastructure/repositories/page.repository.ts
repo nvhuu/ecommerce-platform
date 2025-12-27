@@ -76,7 +76,7 @@ export class PageRepository {
         where,
         skip,
         take: limit,
-        orderBy: { publishedAt: 'desc' },
+        orderBy: { publishedAt: SortOrder.DESC },
       }),
       this.prisma.page.count({ where }),
     ]);

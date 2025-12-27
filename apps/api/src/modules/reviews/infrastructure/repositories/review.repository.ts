@@ -1,4 +1,5 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Review } from '../../domain/entities/review.entity';
@@ -26,7 +27,7 @@ export class ReviewRepository implements IReviewRepository {
     const reviews = await this.prisma.review.findMany({
       where: { productId },
       include: { user: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: SortOrder.DESC },
     });
 
     return reviews
@@ -38,7 +39,7 @@ export class ReviewRepository implements IReviewRepository {
     const reviews = await this.prisma.review.findMany({
       where: { userId },
       include: { product: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: SortOrder.DESC },
     });
 
     return reviews
@@ -63,7 +64,7 @@ export class ReviewRepository implements IReviewRepository {
         skip: (page - 1) * limit,
         take: limit,
         include: { user: true, product: true },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: SortOrder.DESC },
       }),
       this.prisma.review.count({ where: whereClause }),
     ]);

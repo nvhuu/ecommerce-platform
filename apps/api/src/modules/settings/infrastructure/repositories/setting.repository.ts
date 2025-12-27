@@ -1,6 +1,8 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import { Injectable } from '@nestjs/common';
-import { Prisma, Setting } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import { Setting } from '../../domain/entities/setting.entity';
 import { ISettingRepository } from '../../domain/repositories/setting.repository.interface';
 
 @Injectable()
@@ -8,45 +10,52 @@ export class SettingRepository implements ISettingRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: Prisma.SettingCreateInput): Promise<Setting> {
-    return this.prisma.setting.create({ data });
+    const result = await this.prisma.setting.create({ data });
+    return Setting.toDomain(result)!;
   }
 
   async findAll(): Promise<Setting[]> {
-    return this.prisma.setting.findMany({
-      orderBy: { category: 'asc' },
+    const results = await this.prisma.setting.findMany({
+      orderBy: { category: SortOrder.ASC },
     });
+    return results.map((r) => Setting.toDomain(r)!);
   }
 
   async findByCategory(category: string): Promise<Setting[]> {
-    return this.prisma.setting.findMany({
+    const results = await this.prisma.setting.findMany({
       where: { category },
-      orderBy: { key: 'asc' },
+      orderBy: { key: SortOrder.ASC },
     });
+    return results.map((r) => Setting.toDomain(r)!);
   }
 
   async findByKey(key: string): Promise<Setting | null> {
-    return this.prisma.setting.findUnique({
+    const result = await this.prisma.setting.findUnique({
       where: { key },
     });
+    return result ? Setting.toDomain(result) : null;
   }
 
   async findPublic(): Promise<Setting[]> {
-    return this.prisma.setting.findMany({
+    const results = await this.prisma.setting.findMany({
       where: { isPublic: true },
-      orderBy: { category: 'asc' },
+      orderBy: { category: SortOrder.ASC },
     });
+    return results.map((r) => Setting.toDomain(r)!);
   }
 
   async update(key: string, data: Prisma.SettingUpdateInput): Promise<Setting> {
-    return this.prisma.setting.update({
+    const result = await this.prisma.setting.update({
       where: { key },
       data,
     });
+    return Setting.toDomain(result)!;
   }
 
   async delete(key: string): Promise<Setting> {
-    return this.prisma.setting.delete({
+    const result = await this.prisma.setting.delete({
       where: { key },
     });
+    return Setting.toDomain(result)!;
   }
 }

@@ -1,4 +1,5 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import {
   PaginatedResult,
   PaginationOptions,
@@ -31,7 +32,7 @@ export class UserRepository implements IUserRepository {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: SortOrder.DESC },
       }),
       this.prisma.user.count({ where }),
     ]);

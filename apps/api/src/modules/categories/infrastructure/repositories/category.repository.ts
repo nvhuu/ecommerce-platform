@@ -1,4 +1,5 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import {
   PaginatedResult,
   PaginationOptions,
@@ -28,7 +29,7 @@ export class CategoryRepository implements ICategoryRepository {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: SortOrder.DESC },
       }),
       this.prisma.category.count({ where }),
     ]);
@@ -55,7 +56,7 @@ export class CategoryRepository implements ICategoryRepository {
   async findByParentId(parentId: string | null): Promise<Category[]> {
     const data = await this.prisma.category.findMany({
       where: { parentId, deletedAt: null },
-      orderBy: { name: 'asc' },
+      orderBy: { name: SortOrder.ASC },
     });
     return data
       .map((c) => Category.toDomain(c))

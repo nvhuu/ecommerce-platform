@@ -1,4 +1,5 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import {
   PaginatedResult,
   PaginationOptions,
@@ -54,7 +55,7 @@ export class BlogCategoryRepository implements IBlogCategoryRepository {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: SortOrder.DESC },
       }),
       this.prisma.blogCategory.count({ where }),
     ]);

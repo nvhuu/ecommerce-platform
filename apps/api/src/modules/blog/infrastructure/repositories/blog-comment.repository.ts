@@ -1,4 +1,5 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import { PaginatedResult } from '@/shared/interfaces/repository.interface';
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
@@ -54,7 +55,7 @@ export class BlogCommentRepository implements IBlogCommentRepository {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' }, // newest first
+        orderBy: { createdAt: SortOrder.DESC }, // newest first
         include: { user: true },
       }),
       this.prisma.blogComment.count({ where }),

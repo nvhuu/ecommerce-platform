@@ -1,4 +1,5 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import { Injectable } from '@nestjs/common';
 import { ShippingAddress } from '../../domain/entities/shipping-address.entity';
 import { IShippingAddressRepository } from '../../domain/repositories/shipping-address.repository.interface';
@@ -30,7 +31,7 @@ export class ShippingAddressRepository implements IShippingAddressRepository {
   async findAllByUserId(userId: string): Promise<ShippingAddress[]> {
     const addresses = await this.prisma.shippingAddress.findMany({
       where: { userId },
-      orderBy: { isDefault: 'desc' }, // Defaults first
+      orderBy: { isDefault: SortOrder.DESC }, // Defaults first
     });
     return addresses
       .map((a) => ShippingAddress.toDomain(a))

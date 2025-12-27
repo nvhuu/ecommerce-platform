@@ -1,4 +1,5 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import { Injectable } from '@nestjs/common';
 import { Coupon } from '../../domain/entities/coupon.entity';
 import { ICouponRepository } from '../../domain/repositories/coupon.repository.interface';
@@ -49,7 +50,7 @@ export class CouponRepository implements ICouponRepository {
       this.prisma.coupon.findMany({
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: SortOrder.DESC },
       }),
       this.prisma.coupon.count(),
     ]);

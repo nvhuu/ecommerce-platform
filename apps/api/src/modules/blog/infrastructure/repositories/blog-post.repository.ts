@@ -1,4 +1,5 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import { PaginatedResult } from '@/shared/interfaces/repository.interface';
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
@@ -61,7 +62,7 @@ export class BlogPostRepository implements IBlogPostRepository {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: SortOrder.DESC },
         include: { author: true, category: true },
       }),
       this.prisma.blogPost.count({ where }),

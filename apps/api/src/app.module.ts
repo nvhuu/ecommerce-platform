@@ -22,6 +22,7 @@ import { CouponModule } from './modules/coupons/coupon.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { FormsModule } from './modules/forms/forms.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
+import { MarketingModule } from './modules/marketing/marketing.module';
 import { MediaModule } from './modules/media/media.module';
 import { MenusModule } from './modules/menus/menus.module';
 import { NotificationModule } from './modules/notifications/notification.module';
@@ -36,6 +37,7 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { ShipmentModule } from './modules/shipments/shipment.module';
 import { ShippingAddressModule } from './modules/users/address/shipping-address.module';
 import { UsersModule } from './modules/users/users.module';
+import { WishlistModule } from './modules/wishlist/wishlist.module';
 
 @Module({
   imports: [
@@ -83,6 +85,8 @@ import { UsersModule } from './modules/users/users.module';
     SettingsModule,
     FormsModule,
     SecurityModule,
+    WishlistModule,
+    MarketingModule,
   ],
   controllers: [],
   providers: [

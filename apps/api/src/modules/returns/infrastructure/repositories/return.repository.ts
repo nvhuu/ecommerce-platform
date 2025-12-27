@@ -1,4 +1,5 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import { Injectable } from '@nestjs/common';
 import { Prisma, ReturnStatus } from '@prisma/client';
 import { Return } from '../../domain/entities/return.entity';
@@ -64,7 +65,7 @@ export class ReturnRepository implements IReturnRepository {
       this.prisma.return.findMany({
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: SortOrder.DESC },
         include: { items: true },
       }),
       this.prisma.return.count(),
@@ -90,7 +91,7 @@ export class ReturnRepository implements IReturnRepository {
         where: { userId },
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: SortOrder.DESC },
         include: { items: true },
       }),
       this.prisma.return.count({ where: { userId } }),

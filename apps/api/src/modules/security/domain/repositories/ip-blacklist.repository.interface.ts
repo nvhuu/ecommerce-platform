@@ -1,4 +1,5 @@
-import { BlockType, IPBlacklist, Prisma } from '@prisma/client';
+import { BlockType, Prisma } from '@prisma/client';
+import { IPBlacklist } from '../entities/ip-blacklist.entity';
 
 export abstract class IIPBlacklistRepository {
   abstract create(data: Prisma.IPBlacklistCreateInput): Promise<IPBlacklist>;

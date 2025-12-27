@@ -1,4 +1,5 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import { Injectable } from '@nestjs/common';
 import { InventoryTransaction } from '../../domain/entities/inventory-transaction.entity';
 import { IInventoryTransactionRepository } from '../../domain/repositories/inventory-transaction.repository.interface';
@@ -36,7 +37,7 @@ export class InventoryTransactionRepository implements IInventoryTransactionRepo
         productId,
         ...(variantId && { variantId }),
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: SortOrder.DESC },
     });
 
     return transactions

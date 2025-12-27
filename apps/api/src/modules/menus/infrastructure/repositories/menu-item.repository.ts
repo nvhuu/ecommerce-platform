@@ -26,7 +26,7 @@ export class MenuItemRepository implements IMenuItemRepository {
   async findByMenuId(menuId: string): Promise<MenuItem[]> {
     return this.prisma.menuItem.findMany({
       where: { menuId },
-      orderBy: { order: 'asc' },
+      orderBy: { order: SortOrder.ASC },
     });
   }
 

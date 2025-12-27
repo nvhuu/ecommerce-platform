@@ -1,4 +1,5 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import {
   ConflictException,
   Injectable,
@@ -14,7 +15,7 @@ export class ProductVariantRepository implements IProductVariantRepository {
   async findAll(productId: string): Promise<ProductVariant[]> {
     const variants = await this.prisma.productVariant.findMany({
       where: { productId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: SortOrder.DESC },
     });
 
     return variants
@@ -149,7 +150,7 @@ export class ProductVariantRepository implements IProductVariantRepository {
           lte: threshold,
         },
       },
-      orderBy: { stock: 'asc' },
+      orderBy: { stock: SortOrder.ASC },
     });
 
     return variants

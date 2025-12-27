@@ -1,4 +1,5 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import { Injectable } from '@nestjs/common';
 import { OrderNote } from '../../domain/entities/order-note.entity';
 import { IOrderNoteRepository } from '../../domain/repositories/order-note.repository.interface';
@@ -25,7 +26,7 @@ export class OrderNoteRepository implements IOrderNoteRepository {
   async findByOrderId(orderId: string): Promise<OrderNote[]> {
     const notes = await this.prisma.orderNote.findMany({
       where: { orderId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: SortOrder.DESC },
     });
 
     return notes

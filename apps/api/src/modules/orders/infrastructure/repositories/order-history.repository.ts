@@ -1,4 +1,5 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import { Injectable } from '@nestjs/common';
 import { OrderStatus } from '@prisma/client';
 import { OrderHistory } from '../../domain/entities/order-history.entity';
@@ -27,7 +28,7 @@ export class OrderHistoryRepository implements IOrderHistoryRepository {
   async findByOrderId(orderId: string): Promise<OrderHistory[]> {
     const histories = await this.prisma.orderHistory.findMany({
       where: { orderId },
-      orderBy: { changedAt: 'asc' },
+      orderBy: { changedAt: SortOrder.ASC },
     });
 
     return histories

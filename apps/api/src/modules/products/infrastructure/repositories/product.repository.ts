@@ -1,4 +1,5 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import {
   PaginatedResult,
   PaginationOptions,
@@ -42,7 +43,7 @@ export class ProductRepository implements IProductRepository {
         skip,
         take: limit,
         include: { category: true },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: SortOrder.DESC },
       }),
       this.prisma.product.count({ where }),
     ]);
@@ -79,7 +80,7 @@ export class ProductRepository implements IProductRepository {
         skip,
         take: limit,
         include: { category: true },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: SortOrder.DESC },
       }),
       this.prisma.product.count({ where }),
     ]);
@@ -159,7 +160,7 @@ export class ProductRepository implements IProductRepository {
       },
       take: 4,
       include: { category: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: SortOrder.DESC },
     });
 
     return related

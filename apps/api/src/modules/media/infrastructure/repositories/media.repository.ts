@@ -1,4 +1,5 @@
 import { PrismaService } from '@/core/prisma/prisma.service';
+import { SortOrder } from '@/shared/constants/sort.constant';
 import { Injectable } from '@nestjs/common';
 import { MediaFolder } from '../../domain/entities/media-folder.entity';
 import { Media } from '../../domain/entities/media.entity';
@@ -12,7 +13,7 @@ export class MediaRepository implements IMediaRepository {
     const whereCondition = folderId ? { folderId } : { folderId: null };
     const filesData = await this.prisma.media.findMany({
       where: whereCondition,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: SortOrder.DESC },
     });
 
     return filesData
@@ -53,7 +54,7 @@ export class MediaRepository implements IMediaRepository {
   async findAllFolders(parentId?: string): Promise<MediaFolder[]> {
     const foldersData = await this.prisma.mediaFolder.findMany({
       where: { parentId: parentId || null },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: SortOrder.DESC },
     });
 
     return foldersData

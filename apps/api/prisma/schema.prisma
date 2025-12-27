@@ -81,22 +81,22 @@ model User {
 
   // Relations
   orders              Order[]
-  createdCategories   Category[]     @relation("CategoryCreator")
-  updatedCategories   Category[]     @relation("CategoryUpdater")
-  deletedCategories   Category[]     @relation("CategoryDeleter")
-  createdProducts     Product[]      @relation("ProductCreator")
-  updatedProducts     Product[]      @relation("ProductUpdater")
-  deletedProducts     Product[]      @relation("ProductDeleter")
-  createdOrders       Order[]        @relation("OrderCreator")
-  updatedOrders       Order[]        @relation("OrderUpdater")
-  deletedOrders       Order[]        @relation("OrderDeleter")
-  orderHistoryChanges OrderHistory[] @relation("OrderHistoryUser") // NEW
-  orderNotesCreated   OrderNote[]    @relation("OrderNoteCreator") // NEW
-  couponUsages      CouponUsage[]    @relation("UserCouponUsages") // NEW Sprint 1.3
-  returns           Return[]         @relation("UserReturns") // NEW Sprint 1.3
-  approvedReturns   Return[]         @relation("ReturnApprover") // NEW Sprint 1.3
-  createdMedia        Media[]        @relation("MediaCreator")
-  createdFolders      MediaFolder[]  @relation("FolderCreator")
+  createdCategories   Category[]         @relation("CategoryCreator")
+  updatedCategories   Category[]         @relation("CategoryUpdater")
+  deletedCategories   Category[]         @relation("CategoryDeleter")
+  createdProducts     Product[]          @relation("ProductCreator")
+  updatedProducts     Product[]          @relation("ProductUpdater")
+  deletedProducts     Product[]          @relation("ProductDeleter")
+  createdOrders       Order[]            @relation("OrderCreator")
+  updatedOrders       Order[]            @relation("OrderUpdater")
+  deletedOrders       Order[]            @relation("OrderDeleter")
+  orderHistoryChanges OrderHistory[]     @relation("OrderHistoryUser") // NEW
+  orderNotesCreated   OrderNote[]        @relation("OrderNoteCreator") // NEW
+  couponUsages        CouponUsage[]      @relation("UserCouponUsages") // NEW Sprint 1.3
+  returns             Return[]           @relation("UserReturns") // NEW Sprint 1.3
+  approvedReturns     Return[]           @relation("ReturnApprover") // NEW Sprint 1.3
+  createdMedia        Media[]            @relation("MediaCreator")
+  createdFolders      MediaFolder[]      @relation("FolderCreator")
   carts               Cart?
   reviews             Review[]
   shippingAddresses   ShippingAddress[]
@@ -104,13 +104,20 @@ model User {
   blogPosts           BlogPost[]
   blogComments        BlogComment[]
   verificationToken   VerificationToken?
-  
+
   // Security & Audit Relations (Phase 3)
-  loginHistory        LoginHistory[]
-  securityEvents      SecurityEvent[]
-  resolvedEvents      SecurityEvent[]   @relation("ResolvedEvents")
-  activityLogs        ActivityLog[]
-  blockedIPs          IPBlacklist[]
+  loginHistory   LoginHistory[]
+  securityEvents SecurityEvent[]
+  resolvedEvents SecurityEvent[] @relation("ResolvedEvents")
+  activityLogs   ActivityLog[]
+  blockedIPs     IPBlacklist[]
+
+  // Sprint 4.1: Customer Experience
+  wishlist        Wishlist?      @relation("UserWishlist")
+  reviewReports   ReviewReport[] @relation("UserReviewReports")
+  resolvedReports ReviewReport[] @relation("ReviewReportResolver")
+  createdBanners  Banner[]       @relation("BannerCreator")
+  createdPopups   Popup[]        @relation("PopupCreator")
 }
 
 model Category {
@@ -171,7 +178,8 @@ model Product {
   reviews               Review[]
   variants              ProductVariant[] // NEW: Product variants
   inventoryTransactions InventoryTransaction[] //NEW: Inventory tracking
-  returnItems           ReturnItem[]     @relation("ProductReturnItems") // NEW Sprint 1.3
+  returnItems           ReturnItem[]           @relation("ProductReturnItems") // NEW Sprint 1.3
+  wishlistItems         WishlistItem[]         @relation("ProductWishlistItems") // Sprint 4.1
 
   // Timestamps
   createdAt DateTime  @default(now())
@@ -259,7 +267,8 @@ model ProductVariant {
   inventoryTransactions InventoryTransaction[]
   cartItems             CartItem[]             @relation("VariantCartItems")
   orderItems            OrderItem[]            @relation("VariantOrderItems")
-  returnItems           ReturnItem[]     @relation("VariantReturnItems") // NEW Sprint 1.3
+  returnItems           ReturnItem[]           @relation("VariantReturnItems") // NEW Sprint 1.3
+  wishlistItems         WishlistItem[]         @relation("VariantWishlistItems") // Sprint 4.1
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -306,13 +315,13 @@ model Order {
   shippingAddress Json? // Structured: {fullName, phone, address, city, country, postalCode, isDefault}
 
   // Relations
-  items     OrderItem[]
-  history   OrderHistory[] @relation("OrderHistoryEntries") // NEW: Status tracking
-  notes     OrderNote[]    @relation("OrderNotes") // NEW: Internal notes  
-  payments  Payment[]      @relation("OrderPayments") // NEW: Payment records
-  shipments Shipment[]     @relation("OrderShipments") // NEW: Shipping tracking
-  couponUsages CouponUsage[] @relation("OrderCouponUsages") // NEW Sprint 1.3
-  returns      Return[]      @relation("OrderReturns") // NEW Sprint 1.3
+  items        OrderItem[]
+  history      OrderHistory[] @relation("OrderHistoryEntries") // NEW: Status tracking
+  notes        OrderNote[]    @relation("OrderNotes") // NEW: Internal notes  
+  payments     Payment[]      @relation("OrderPayments") // NEW: Payment records
+  shipments    Shipment[]     @relation("OrderShipments") // NEW: Shipping tracking
+  couponUsages CouponUsage[]  @relation("OrderCouponUsages") // NEW Sprint 1.3
+  returns      Return[]       @relation("OrderReturns") // NEW Sprint 1.3
 
   // Timestamps
   createdAt DateTime  @default(now())
@@ -429,64 +438,64 @@ model Shipment {
 
 // Coupon/Promotion system
 model Coupon {
-  id             String      @id @default(auto()) @map("_id") @db.ObjectId
-  code           String      @unique
+  id             String     @id @default(auto()) @map("_id") @db.ObjectId
+  code           String     @unique
   type           CouponType
   value          Float
   minOrderAmount Float?
   maxDiscount    Float?
   usageLimit     Int?
-  usageCount     Int         @default(0)
+  usageCount     Int        @default(0)
   perUserLimit   Int?
   startDate      DateTime
   endDate        DateTime
-  isActive       Boolean     @default(true)
-  
+  isActive       Boolean    @default(true)
+
   usages CouponUsage[]
-  
-  createdAt DateTime  @default(now())
-  createdBy String?   @db.ObjectId
-  updatedAt DateTime  @updatedAt
+
+  createdAt DateTime @default(now())
+  createdBy String?  @db.ObjectId
+  updatedAt DateTime @updatedAt
 }
 
 model CouponUsage {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  couponId       String   @db.ObjectId
-  coupon         Coupon   @relation(fields: [couponId], references: [id])
-  userId         String   @db.ObjectId
-  user           User     @relation("UserCouponUsages", fields: [userId], references: [id])
-  orderId        String   @db.ObjectId
-  order          Order    @relation("OrderCouponUsages", fields: [orderId], references: [id])
-  
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  couponId String @db.ObjectId
+  coupon   Coupon @relation(fields: [couponId], references: [id])
+  userId   String @db.ObjectId
+  user     User   @relation("UserCouponUsages", fields: [userId], references: [id])
+  orderId  String @db.ObjectId
+  order    Order  @relation("OrderCouponUsages", fields: [orderId], references: [id])
+
   discountAmount Float
   usedAt         DateTime @default(now())
-  
+
   @@index([couponId, userId])
 }
 
 // Return/Refund system
 model Return {
-  id     String       @id @default(auto()) @map("_id") @db.ObjectId
-  orderId String      @db.ObjectId
-  order   Order       @relation("OrderReturns", fields: [orderId], references: [id])
-  userId  String      @db.ObjectId
-  user    User        @relation("UserReturns", fields: [userId], references: [id])
-  
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  orderId String @db.ObjectId
+  order   Order  @relation("OrderReturns", fields: [orderId], references: [id])
+  userId  String @db.ObjectId
+  user    User   @relation("UserReturns", fields: [userId], references: [id])
+
   status ReturnStatus @default(PENDING)
   reason ReturnReason
   note   String?
-  
+
   items ReturnItem[]
-  
+
   totalRefund Float
-  
+
   approvedAt DateTime?
   approvedBy String?   @db.ObjectId
   approver   User?     @relation("ReturnApprover", fields: [approvedBy], references: [id])
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([orderId, userId])
 }
 
@@ -494,13 +503,13 @@ model ReturnItem {
   id       String @id @default(auto()) @map("_id") @db.ObjectId
   returnId String @db.ObjectId
   return   Return @relation(fields: [returnId], references: [id])
-  
+
   productId String  @db.ObjectId
   product   Product @relation("ProductReturnItems", fields: [productId], references: [id])
-  
+
   variantId String?         @db.ObjectId
   variant   ProductVariant? @relation("VariantReturnItems", fields: [variantId], references: [id])
-  
+
   quantity     Int
   refundAmount Float
   reason       String?
@@ -587,10 +596,11 @@ model Review {
   unhelpfulCount Int @default(0)
 
   // Relations
-  userId    String  @db.ObjectId
-  user      User    @relation(fields: [userId], references: [id])
-  productId String  @db.ObjectId
-  product   Product @relation(fields: [productId], references: [id])
+  userId    String         @db.ObjectId
+  user      User           @relation(fields: [userId], references: [id])
+  productId String         @db.ObjectId
+  product   Product        @relation(fields: [productId], references: [id])
+  reports   ReviewReport[] @relation("ReviewReports") // Sprint 4.1
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -618,15 +628,15 @@ model ShippingAddress {
 
 // System Notifications
 model Notification {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id])
-  type      String   // e.g. "ORDER_STATUS", "PROMOTION", "SYSTEM"
-  title     String
-  message   String
-  data      Json?    // Extra data like { orderId: "..." }
-  isRead    Boolean  @default(false)
-  
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId  String  @db.ObjectId
+  user    User    @relation(fields: [userId], references: [id])
+  type    String // e.g. "ORDER_STATUS", "PROMOTION", "SYSTEM"
+  title   String
+  message String
+  data    Json? // Extra data like { orderId: "..." }
+  isRead  Boolean @default(false)
+
   createdAt DateTime @default(now())
 }
 
@@ -636,7 +646,7 @@ model VerificationToken {
   userId    String   @unique @db.ObjectId
   user      User     @relation(fields: [userId], references: [id])
   token     String   @unique
-  type      String   // "EMAIL_VERIFICATION", "PASSWORD_RESET"
+  type      String // "EMAIL_VERIFICATION", "PASSWORD_RESET"
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
@@ -649,20 +659,20 @@ enum BlogPostStatus {
 }
 
 model BlogCategory {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
   name        String
-  slug        String   @unique
+  slug        String  @unique
   description String?
-  isActive    Boolean  @default(true)
-  
+  isActive    Boolean @default(true)
+
   // SEO
   seoTitle       String?
   seoDescription String?
   seoKeywords    String[] @default([])
 
   // Relations
-  posts     BlogPost[]
-  
+  posts BlogPost[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -672,11 +682,11 @@ model BlogPost {
   title       String
   slug        String         @unique
   excerpt     String?
-  content     String         // HTML or JSON content
+  content     String // HTML or JSON content
   coverImage  String?
   status      BlogPostStatus @default(DRAFT)
   publishedAt DateTime?
-  
+
   // SEO
   seoTitle       String?
   seoDescription String?
@@ -687,8 +697,8 @@ model BlogPost {
   author   User   @relation(fields: [authorId], references: [id])
 
   // Relations
-  categoryId String       @db.ObjectId
-  category   BlogCategory @relation(fields: [categoryId], references: [id])
+  categoryId String        @db.ObjectId
+  category   BlogCategory  @relation(fields: [categoryId], references: [id])
   comments   BlogComment[]
 
   // Stats
@@ -699,23 +709,23 @@ model BlogPost {
 }
 
 model BlogComment {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  content   String
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  content    String
   isApproved Boolean @default(true) // Auto-approve by default, change if robust moderation needed
 
   // Relations
-  postId    String   @db.ObjectId
-  post      BlogPost @relation(fields: [postId], references: [id])
-  userId    String?  @db.ObjectId // Optional: allow guest comments? For now, let's assume registered users or store generic name if guest
-  user      User?    @relation(fields: [userId], references: [id])
-  
+  postId String   @db.ObjectId
+  post   BlogPost @relation(fields: [postId], references: [id])
+  userId String?  @db.ObjectId // Optional: allow guest comments? For now, let's assume registered users or store generic name if guest
+  user   User?    @relation(fields: [userId], references: [id])
+
   // Guest info (if userId is null)
   guestName  String?
   guestEmail String?
 
-  parentId  String?       @db.ObjectId
-  parent    BlogComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  replies   BlogComment[] @relation("CommentReplies")
+  parentId String?       @db.ObjectId
+  parent   BlogComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies  BlogComment[] @relation("CommentReplies")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -739,8 +749,8 @@ model Page {
   id      String     @id @default(auto()) @map("_id") @db.ObjectId
   title   String
   slug    String     @unique
-  content String     // JSON or HTML content
-  excerpt String?    // Short description
+  content String // JSON or HTML content
+  excerpt String? // Short description
   status  PageStatus @default(DRAFT)
 
   // Template
@@ -770,7 +780,7 @@ model Page {
 // Navigation Menus
 model Menu {
   id       String       @id @default(auto()) @map("_id") @db.ObjectId
-  name     String       // Display name (e.g., "Main Menu", "Footer Links")
+  name     String // Display name (e.g., "Main Menu", "Footer Links")
   location MenuLocation @unique // One menu per location
   isActive Boolean      @default(true)
 
@@ -791,7 +801,7 @@ model MenuItem {
 
   // Item details
   label    String
-  url      String  // Can be internal (/about) or external (https://...)
+  url      String // Can be internal (/about) or external (https://...)
   icon     String? // Icon name or URL
   order    Int     @default(0)
   isActive Boolean @default(true)
@@ -830,13 +840,13 @@ enum SettingType {
 model Setting {
   id          String      @id @default(auto()) @map("_id") @db.ObjectId
   key         String      @unique
-  value       String      // Stored as string, parsed based on type
+  value       String // Stored as string, parsed based on type
   type        SettingType @default(STRING)
   category    String      @default("general")
-  label       String      // Human-readable label
-  description String?     // Help text
+  label       String // Human-readable label
+  description String? // Help text
   isPublic    Boolean     @default(false) // Can be accessed via public API
-  validation  String?     // JSON schema for validation
+  validation  String? // JSON schema for validation
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
@@ -852,17 +862,17 @@ enum FormStatus {
 }
 
 model Form {
-  id                String          @id @default(auto()) @map("_id") @db.ObjectId
+  id                String     @id @default(auto()) @map("_id") @db.ObjectId
   name              String
-  slug              String          @unique
+  slug              String     @unique
   description       String?
-  fields            String          // JSON array of field definitions
-  status            FormStatus      @default(ACTIVE)
-  notificationEmail String?         // Email to send submissions to
-  successMessage    String?         // Message shown after submission  
-  redirectUrl       String?         // Redirect after submission
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  fields            String // JSON array of field definitions
+  status            FormStatus @default(ACTIVE)
+  notificationEmail String? // Email to send submissions to
+  successMessage    String? // Message shown after submission  
+  redirectUrl       String? // Redirect after submission
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 
   submissions FormSubmission[]
 
@@ -880,7 +890,7 @@ enum SubmissionStatus {
 model FormSubmission {
   id        String           @id @default(auto()) @map("_id") @db.ObjectId
   formId    String           @db.ObjectId
-  data      String           // JSON object with submitted data
+  data      String // JSON object with submitted data
   status    SubmissionStatus @default(NEW)
   ip        String?
   userAgent String?
@@ -948,7 +958,7 @@ model SecurityEvent {
   ip          String
   userAgent   String?
   description String
-  data        String?               // JSON metadata
+  data        String? // JSON metadata
   resolved    Boolean               @default(false)
   resolvedBy  String?               @db.ObjectId
   resolvedAt  DateTime?
@@ -979,7 +989,7 @@ model ActivityLog {
   action     ActivityAction
   resource   String
   resourceId String?
-  changes    String?        // JSON diff
+  changes    String? // JSON diff
   ip         String
   userAgent  String?
   createdAt  DateTime       @default(now())
@@ -1010,4 +1020,138 @@ model IPBlacklist {
 
   @@index([expiresAt])
   @@map("ip_blacklist")
+}
+
+// ============================================
+// Sprint 4.1: Customer Experience Features
+// ============================================
+
+model Wishlist {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @unique @db.ObjectId
+  user   User   @relation("UserWishlist", fields: [userId], references: [id], onDelete: Cascade)
+
+  items WishlistItem[]
+
+  isPublic   Boolean @default(false)
+  shareToken String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("wishlists")
+}
+
+model WishlistItem {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  wishlistId String   @db.ObjectId
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+
+  productId String  @db.ObjectId
+  product   Product @relation("ProductWishlistItems", fields: [productId], references: [id], onDelete: Cascade)
+
+  variantId String?         @db.ObjectId
+  variant   ProductVariant? @relation("VariantWishlistItems", fields: [variantId], references: [id], onDelete: SetNull)
+
+  addedAt DateTime @default(now())
+
+  @@unique([wishlistId, productId, variantId])
+  @@index([wishlistId])
+  @@index([productId])
+  @@map("wishlist_items")
+}
+
+model ReviewReport {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  reviewId String @db.ObjectId
+  review   Review @relation("ReviewReports", fields: [reviewId], references: [id], onDelete: Cascade)
+
+  reportedBy String @db.ObjectId
+  reporter   User   @relation("UserReviewReports", fields: [reportedBy], references: [id], onDelete: Cascade)
+
+  reason      String
+  description String?
+
+  status     String    @default("PENDING")
+  resolvedBy String?   @db.ObjectId
+  resolver   User?     @relation("ReviewReportResolver", fields: [resolvedBy], references: [id])
+  resolvedAt DateTime?
+  resolution String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([reviewId])
+  @@index([status])
+  @@map("review_reports")
+}
+
+model Banner {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  imageUrl    String
+  linkUrl     String?
+
+  position String @default("HOME_HERO")
+  priority Int    @default(0)
+
+  targetPages    String[]
+  targetUserType String?
+
+  startDate DateTime?
+  endDate   DateTime?
+
+  isActive Boolean @default(true)
+
+  impressions Int @default(0)
+  clicks      Int @default(0)
+
+  createdAt DateTime @default(now())
+  createdBy String?  @db.ObjectId
+  creator   User?    @relation("BannerCreator", fields: [createdBy], references: [id])
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, startDate, endDate])
+  @@index([position])
+  @@map("banners")
+}
+
+model Popup {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  title    String
+  content  String
+  imageUrl String?
+
+  triggerType  String @default("IMMEDIATE")
+  triggerValue Int?
+
+  displayPages     String[]
+  displayFrequency String   @default("ONCE")
+
+  targetUserType String?
+
+  ctaText String?
+  ctaUrl  String?
+
+  variant String? @default("A")
+
+  startDate DateTime?
+  endDate   DateTime?
+
+  isActive Boolean @default(true)
+
+  impressions  Int @default(0)
+  interactions Int @default(0)
+  conversions  Int @default(0)
+
+  createdAt DateTime @default(now())
+  createdBy String?  @db.ObjectId
+  creator   User?    @relation("PopupCreator", fields: [createdBy], references: [id])
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, startDate, endDate])
+  @@index([triggerType])
+  @@map("popups")
 }

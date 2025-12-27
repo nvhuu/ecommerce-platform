@@ -1,6 +1,10 @@
+import { SettingType } from '@prisma/client';
 import { Expose } from 'class-transformer';
 
 export class Setting {
+  @Expose()
+  id!: string;
+
   @Expose()
   key!: string;
 
@@ -8,10 +12,19 @@ export class Setting {
   value!: string;
 
   @Expose()
+  type!: SettingType;
+
+  @Expose()
   category!: string;
 
   @Expose()
-  description?: string;
+  label!: string;
+
+  @Expose()
+  description!: string | null;
+
+  @Expose()
+  validation!: string | null;
 
   @Expose()
   isPublic!: boolean;
@@ -27,10 +40,14 @@ export class Setting {
     const data = input as Record<string, unknown>;
 
     const entity = new Setting();
+    entity.id = data.id as string;
     entity.key = data.key as string;
     entity.value = data.value as string;
+    entity.type = data.type as SettingType;
     entity.category = data.category as string;
-    entity.description = data.description as string | undefined;
+    entity.label = data.label as string;
+    entity.description = (data.description as string | null) ?? null;
+    entity.validation = (data.validation as string | null) ?? null;
     entity.isPublic = data.isPublic as boolean;
     entity.createdAt = data.createdAt as Date;
     entity.updatedAt = data.updatedAt as Date;

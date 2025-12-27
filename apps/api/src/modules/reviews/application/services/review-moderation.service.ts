@@ -60,7 +60,7 @@ export class ReviewModerationService {
       status: 'resolved',
       resolver: { connect: { id: resolvedBy } },
       resolvedAt: new Date(),
-      adminNotes: dto.adminNotes,
+      resolution: dto.adminNotes,
     });
   }
 
@@ -75,7 +75,7 @@ export class ReviewModerationService {
       status: 'dismissed',
       resolver: { connect: { id: resolvedBy } },
       resolvedAt: new Date(),
-      adminNotes: 'Dismissed as invalid',
+      resolution: 'Dismissed as invalid',
     });
   }
 }

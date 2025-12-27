@@ -1,5 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { BlockType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { UserResponseDto } from '../../../users/application/dtos/response/user.response.dto';
 import { UsersService } from '../../../users/application/services/users.service';

@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Form, Prisma } from '@prisma/client';
+import { FieldDefinition } from '../../domain/entities/field-definition';
 import { IFormRepository } from '../../domain/repositories/form.repository.interface';
 import { CreateFormDto } from '../dtos/create-form.dto';
 import { FormResponseDto } from '../dtos/form-response.dto';
@@ -59,7 +60,28 @@ export class FormsService {
       throw new NotFoundException(MESSAGES.FORM.NOT_FOUND);
     }
 
-    const updateData: Prisma.FormUpdateInput = { ...dto };
+    const updateData: Prisma.FormUpdateInput = {};
+    if (dto.name) {
+      updateData.name = dto.name;
+    }
+    if (dto.slug) {
+      updateData.slug = dto.slug;
+    }
+    if (dto.description !== undefined) {
+      updateData.description = dto.description;
+    }
+    if (dto.status) {
+      updateData.status = dto.status;
+    }
+    if (dto.notificationEmail !== undefined) {
+      updateData.notificationEmail = dto.notificationEmail;
+    }
+    if (dto.successMessage !== undefined) {
+      updateData.successMessage = dto.successMessage;
+    }
+    if (dto.redirectUrl !== undefined) {
+      updateData.redirectUrl = dto.redirectUrl;
+    }
     if (dto.fields) {
       updateData.fields = JSON.stringify(dto.fields);
     }
@@ -79,8 +101,17 @@ export class FormsService {
 
   private toResponseDto(form: Form): FormResponseDto {
     return {
-      ...form,
-      fields: JSON.parse(form.fields as string),
+      id: form.id,
+      name: form.name,
+      slug: form.slug,
+      description: form.description ?? undefined,
+      fields: JSON.parse(form.fields) as FieldDefinition[],
+      status: form.status,
+      notificationEmail: form.notificationEmail ?? undefined,
+      successMessage: form.successMessage ?? undefined,
+      redirectUrl: form.redirectUrl ?? undefined,
+      createdAt: form.createdAt,
+      updatedAt: form.updatedAt,
     };
   }
 }

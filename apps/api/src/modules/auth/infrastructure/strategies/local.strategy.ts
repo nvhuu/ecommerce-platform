@@ -19,9 +19,13 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     email: string,
     pass: string,
   ): Promise<Omit<User, 'password'>> {
-    const reqAny = req as any;
-    const ip = reqAny.ip || reqAny.connection?.remoteAddress || 'unknown';
-    const userAgent = reqAny.headers?.['user-agent'] || 'unknown';
+    const ip =
+      req.ip ||
+      req.socket?.remoteAddress ||
+      (req as { connection?: { remoteAddress?: string } }).connection
+        ?.remoteAddress ||
+      'unknown';
+    const userAgent = req.headers?.['user-agent'] || 'unknown';
 
     const user = await this.authService.validateUser(
       email,

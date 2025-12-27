@@ -44,10 +44,16 @@ export class FormValidationService {
     }
   }
 
-  private validateField(field: FieldDefinition, value: any): string | null {
+  private validateField(
+    field: FieldDefinition,
+    value: Prisma.JsonValue,
+  ): string | null {
     switch (field.type) {
       case FieldType.EMAIL:
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        if (
+          typeof value !== 'string' ||
+          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+        ) {
           return `${field.label} must be a valid email`;
         }
         break;
@@ -71,15 +77,19 @@ export class FormValidationService {
         break;
 
       case FieldType.URL:
-        try {
-          new URL(value);
-        } catch {
+        if (typeof value === 'string') {
+          try {
+            new URL(value);
+          } catch {
+            return `${field.label} must be a valid URL`;
+          }
+        } else {
           return `${field.label} must be a valid URL`;
         }
         break;
 
       case FieldType.TEL:
-        if (!/^\+?[\d\s\-()]+$/.test(value)) {
+        if (typeof value !== 'string' || !/^\+?[\d\s\-()]+$/.test(value)) {
           return `${field.label} must be a valid phone number`;
         }
         break;
@@ -96,7 +106,7 @@ export class FormValidationService {
     }
 
     // Pattern validation
-    if (field.validation?.pattern) {
+    if (field.validation?.pattern && typeof value !== 'object') {
       const regex = new RegExp(field.validation.pattern);
       if (!regex.test(String(value))) {
         return field.validation.message || `${field.label} format is invalid`;

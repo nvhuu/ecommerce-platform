@@ -66,10 +66,11 @@ export class FormsController {
     @Body() dto: SubmitFormDto,
     @Req() req: Request,
   ) {
-    const reqAny = req as any;
+    const ip = (req.ip || req.socket?.remoteAddress) ?? undefined;
+    const userAgent = req.headers?.['user-agent'];
     return this.submissionService.submit(slug, dto.data, {
-      ip: reqAny.ip,
-      userAgent: reqAny.headers?.['user-agent'],
+      ip,
+      userAgent,
     });
   }
 

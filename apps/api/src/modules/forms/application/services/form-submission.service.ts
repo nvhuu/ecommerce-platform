@@ -1,8 +1,9 @@
 import { MESSAGES } from '@/shared/constants/messages.constant';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { FormSubmission, Prisma } from '@prisma/client';
+import { FieldDefinition } from '../../domain/entities/field-definition';
 import { IFormSubmissionRepository } from '../../domain/repositories/form-submission.repository.interface';
 import { IFormRepository } from '../../domain/repositories/form.repository.interface';
-import { FieldDefinition } from '../../domain/types/field-definition.type';
 import { SubmissionResponseDto } from '../dtos/submission-response.dto';
 import { FormValidationService } from './form-validation.service';
 
@@ -23,7 +24,7 @@ export class FormSubmissionService {
 
   async submit(
     formSlug: string,
-    data: Record<string, any>,
+    data: Prisma.JsonObject,
     metadata: SubmissionMetadata,
   ): Promise<SubmissionResponseDto> {
     const form = await this.formRepository.findBySlug(formSlug);
@@ -86,10 +87,16 @@ export class FormSubmissionService {
     await this.submissionRepository.delete(id);
   }
 
-  private toResponseDto(submission: any): SubmissionResponseDto {
+  private toResponseDto(submission: FormSubmission): SubmissionResponseDto {
     return {
-      ...submission,
-      data: JSON.parse(submission.data),
+      id: submission.id,
+      formId: submission.formId,
+      data: JSON.parse(submission.data) as SubmissionResponseDto['data'],
+      status: submission.status,
+      ip: submission.ip ?? undefined,
+      userAgent: submission.userAgent ?? undefined,
+      createdAt: submission.createdAt,
+      updatedAt: submission.updatedAt,
     };
   }
 }

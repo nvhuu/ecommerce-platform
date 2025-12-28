@@ -3,7 +3,6 @@ import { Expose } from 'class-transformer';
 import { BaseEntity } from '@/shared/domain/base.entity';
 
 export class Setting extends BaseEntity {
-
   @Expose()
   key!: string;
 
@@ -27,8 +26,6 @@ export class Setting extends BaseEntity {
 
   @Expose()
   isPublic!: boolean;
-
-
 
   static toDomain(input: unknown): Setting | null {
     if (!input || typeof input !== 'object') return null;

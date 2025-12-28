@@ -118,6 +118,9 @@ model User {
   resolvedReports ReviewReport[] @relation("ReviewReportResolver")
   createdBanners  Banner[]       @relation("BannerCreator")
   createdPopups   Popup[]        @relation("PopupCreator")
+
+  // Sprint 4.2: Email Automation
+  emailLogs       EmailLog[]
 }
 
 model Category {
@@ -1154,4 +1157,58 @@ model Popup {
   @@index([isActive, startDate, endDate])
   @@index([triggerType])
   @@map("popups")
+}
+
+// ============================================
+// Sprint 4.2: Email Automation
+// ============================================
+
+model EmailTemplate {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  slug    String @unique
+  name    String
+  subject String
+  content String // HTML content with variables {{variable}}
+
+  variables String[] @default([]) // List of expected variables
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("email_templates")
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+  BOUNCED
+  OPENED
+  CLICKED
+}
+
+model EmailLog {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String?     @db.ObjectId
+  user      User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  recipient String
+  subject   String
+  template  String?     // Slug of template if used
+  metadata  Json?       // Extra data
+
+  status    EmailStatus @default(PENDING)
+  provider  String      // "sendgrid", "ses", "console"
+
+  error     String?
+  messageId String?     // Provider ID
+
+  sentAt    DateTime?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([recipient])
+  @@index([status])
+  @@index([userId])
+  @@map("email_logs")
 }

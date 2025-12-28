@@ -2,7 +2,6 @@ import { Expose } from 'class-transformer';
 import { BaseEntity } from '@/shared/domain/base.entity';
 
 export class ReturnItem extends BaseEntity {
-
   @Expose()
   returnId!: string;
 

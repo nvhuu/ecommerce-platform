@@ -20,6 +20,7 @@ import { CartModule } from './modules/cart/cart.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { CouponModule } from './modules/coupons/coupon.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { EmailModule } from './modules/email/email.module';
 import { FormsModule } from './modules/forms/forms.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { MarketingModule } from './modules/marketing/marketing.module';
@@ -87,6 +88,7 @@ import { WishlistModule } from './modules/wishlist/wishlist.module';
     SecurityModule,
     WishlistModule,
     MarketingModule,
+    EmailModule,
   ],
   controllers: [],
   providers: [

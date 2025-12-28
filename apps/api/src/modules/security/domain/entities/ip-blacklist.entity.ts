@@ -14,8 +14,6 @@ export class IPBlacklist extends BaseEntity {
   @Expose()
   expiresAt?: Date;
 
-
-
   static toDomain(input: unknown): IPBlacklist | null {
     if (!input || typeof input !== 'object') return null;
     const data = input as Record<string, unknown>;

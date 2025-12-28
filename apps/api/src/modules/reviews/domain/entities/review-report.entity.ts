@@ -2,7 +2,6 @@ import { Expose } from 'class-transformer';
 import { BaseEntity } from '@/shared/domain/base.entity';
 
 export class ReviewReport extends BaseEntity {
-
   @Expose()
   reviewId!: string;
 
@@ -26,8 +25,6 @@ export class ReviewReport extends BaseEntity {
 
   @Expose()
   adminNotes?: string;
-
-
 
   static toDomain(input: unknown): ReviewReport | null {
     if (!input || typeof input !== 'object') return null;

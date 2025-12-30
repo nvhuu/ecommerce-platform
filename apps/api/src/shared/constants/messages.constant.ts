@@ -199,6 +199,24 @@ export const MESSAGES = {
     POINTS_ADJUSTED: 'Loyalty points adjusted successfully',
     TRANSACTION_NOT_FOUND: 'Transaction not found',
   },
+
+  LANDING_PAGE: {
+    CREATED: 'Landing page created successfully',
+    UPDATED: 'Landing page updated successfully',
+    DELETED: 'Landing page deleted successfully',
+    PUBLISHED: 'Landing page published successfully',
+    ARCHIVED: 'Landing page archived successfully',
+    RETRIEVED: 'Landing page retrieved successfully',
+    LIST_RETRIEVED: 'Landing pages retrieved successfully',
+    NOT_FOUND: 'Landing page not found',
+    SLUG_EXISTS: 'A landing page with this slug already exists',
+    VARIANT_CREATED: 'Variant created successfully',
+    VARIANT_UPDATED: 'Variant updated successfully',
+    VARIANT_DELETED: 'Variant deleted successfully',
+    WINNER_SELECTED: 'Winner variant selected successfully',
+    EVENT_TRACKED: 'Event tracked successfully',
+    ANALYTICS_RETRIEVED: 'Analytics retrieved successfully',
+  },
 } as const;
 
 // Type helper for autocomplete

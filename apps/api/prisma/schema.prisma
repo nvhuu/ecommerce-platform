@@ -1249,3 +1249,118 @@ model LoyaltyTransaction {
   @@index([type, createdAt])
   @@map("loyalty_transactions")
 }
+
+// ============================================
+// Sprint 5.1: Landing Page Builder (Week 13)
+// ============================================
+
+enum LandingPageStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum SectionType {
+  HERO
+  FEATURES
+  TESTIMONIALS
+  CTA
+  FAQ
+  PRICING
+  GALLERY
+  CONTACT
+}
+
+enum ConversionGoalType {
+  FORM_SUBMISSION
+  BUTTON_CLICK
+  PAGE_VIEW
+  SCROLL_DEPTH
+  TIME_ON_PAGE
+}
+
+model LandingPage {
+  id          String            @id @default(auto()) @map("_id") @db.ObjectId
+  name        String // Internal name
+  slug        String            @unique
+  description String?
+  status      LandingPageStatus @default(DRAFT)
+
+  // SEO
+  seoTitle       String?
+  seoDescription String?
+  seoKeywords    String[]
+
+  // Sections (JSON array of section configs)
+  sections Json // [{ type: "HERO", config: {...}, order: 0 }]
+
+  // A/B Testing
+  isAbTest Boolean              @default(false)
+  variants LandingPageVariant[]
+
+  // Analytics
+  views       Int @default(0)
+  conversions Int @default(0)
+
+  // Conversion Goals
+  conversionGoals Json? // [{ type: "FORM_SUBMISSION", value: "contact-form" }]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+  createdBy   String?   @db.ObjectId
+
+  @@index([status, publishedAt])
+  @@map("landing_pages")
+}
+
+model LandingPageVariant {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  landingPageId String      @db.ObjectId
+  landingPage   LandingPage @relation(fields: [landingPageId], references: [id], onDelete: Cascade)
+
+  name          String // "Variant A", "Variant B"
+  trafficWeight Int     @default(50) // Percentage 0-100
+  isControl     Boolean @default(false)
+  isWinner      Boolean @default(false)
+
+  // Variant-specific sections
+  sections Json // Same structure as LandingPage.sections
+
+  // Analytics
+  views          Int   @default(0)
+  conversions    Int   @default(0)
+  conversionRate Float @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([landingPageId])
+  @@map("landing_page_variants")
+}
+
+model LandingPageAnalytics {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  landingPageId String  @db.ObjectId
+  variantId     String? @db.ObjectId
+
+  eventType      String // "VIEW", "CONVERSION", "SECTION_INTERACTION"
+  sectionType    String? // HERO, FEATURES, etc.
+  conversionGoal String? // "form-submit", "button-click"
+
+  // User context
+  userId    String? @db.ObjectId
+  sessionId String?
+  ip        String?
+  userAgent String?
+
+  // Metadata
+  metadata Json? // Additional event data
+
+  createdAt DateTime @default(now())
+
+  @@index([landingPageId, eventType, createdAt])
+  @@index([variantId, eventType])
+  @@index([sessionId])
+  @@map("landing_page_analytics")
+}

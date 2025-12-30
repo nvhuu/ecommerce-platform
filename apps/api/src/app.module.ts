@@ -23,6 +23,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { EmailModule } from './modules/email/email.module';
 import { FormsModule } from './modules/forms/forms.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
+import { LoyaltyModule } from './modules/loyalty/loyalty.module';
 import { MarketingModule } from './modules/marketing/marketing.module';
 import { MediaModule } from './modules/media/media.module';
 import { MenusModule } from './modules/menus/menus.module';
@@ -89,6 +90,7 @@ import { WishlistModule } from './modules/wishlist/wishlist.module';
     WishlistModule,
     MarketingModule,
     EmailModule,
+    LoyaltyModule,
   ],
   controllers: [],
   providers: [

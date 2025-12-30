@@ -1,4 +1,5 @@
 import { PrismaModule } from '@/core/prisma/prisma.module';
+import { UsersModule } from '@/modules/users/users.module';
 import { Module } from '@nestjs/common';
 import { EmailTemplateService } from './application/services/email-template.service';
 import { EmailService } from './application/services/email.service';
@@ -9,7 +10,7 @@ import { EmailTemplateRepository } from './infrastructure/repositories/email-tem
 import { EmailTemplateController } from './presentation/controllers/email-template.controller';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, UsersModule],
   controllers: [EmailTemplateController],
   providers: [
     EmailTemplateService,

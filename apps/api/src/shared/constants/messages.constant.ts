@@ -188,6 +188,17 @@ export const MESSAGES = {
     NOT_FOUND: 'Submission not found',
     VALIDATION_FAILED: 'Form validation failed',
   },
+
+  // Loyalty messages
+  LOYALTY: {
+    POINTS_EARNED: 'Loyalty points earned successfully',
+    POINTS_REDEEMED: 'Loyalty points redeemed successfully',
+    INSUFFICIENT_POINTS: 'Insufficient loyalty points',
+    BALANCE_RETRIEVED: 'Loyalty balance retrieved successfully',
+    HISTORY_RETRIEVED: 'Transaction history retrieved successfully',
+    POINTS_ADJUSTED: 'Loyalty points adjusted successfully',
+    TRANSACTION_NOT_FOUND: 'Transaction not found',
+  },
 } as const;
 
 // Type helper for autocomplete

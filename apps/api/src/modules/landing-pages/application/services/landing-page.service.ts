@@ -154,7 +154,7 @@ export class LandingPageService {
 
   async getVariantForUser(
     pageId: string,
-    sessionId: string,
+    _sessionId: string,
   ): Promise<LandingPageVariant | null> {
     const page = await this.findById(pageId);
 

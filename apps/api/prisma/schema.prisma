@@ -124,6 +124,10 @@ model User {
 
   // Sprint 4.3: Loyalty Program
   loyaltyTransactions LoyaltyTransaction[] @relation("UserLoyaltyTransactions")
+  ProductView         ProductView[]
+  SearchLog           SearchLog[]
+  CheckoutStep        CheckoutStep[]
+  CartAbandonment     CartAbandonment[]
 }
 
 model Category {
@@ -188,15 +192,16 @@ model Product {
   wishlistItems         WishlistItem[]         @relation("ProductWishlistItems") // Sprint 4.1
 
   // Timestamps
-  createdAt DateTime  @default(now())
-  createdBy String?   @db.ObjectId
-  creator   User?     @relation("ProductCreator", fields: [createdBy], references: [id])
-  updatedAt DateTime  @updatedAt
-  updatedBy String?   @db.ObjectId
-  updater   User?     @relation("ProductUpdater", fields: [updatedBy], references: [id])
-  deletedAt DateTime?
-  deletedBy String?   @db.ObjectId
-  deleter   User?     @relation("ProductDeleter", fields: [deletedBy], references: [id])
+  createdAt   DateTime      @default(now())
+  createdBy   String?       @db.ObjectId
+  creator     User?         @relation("ProductCreator", fields: [createdBy], references: [id])
+  updatedAt   DateTime      @updatedAt
+  updatedBy   String?       @db.ObjectId
+  updater     User?         @relation("ProductUpdater", fields: [updatedBy], references: [id])
+  deletedAt   DateTime?
+  deletedBy   String?       @db.ObjectId
+  deleter     User?         @relation("ProductDeleter", fields: [deletedBy], references: [id])
+  ProductView ProductView[]
 }
 
 enum InventoryTransactionType {
@@ -330,15 +335,16 @@ model Order {
   returns      Return[]       @relation("OrderReturns") // NEW Sprint 1.3
 
   // Timestamps
-  createdAt DateTime  @default(now())
-  createdBy String?   @db.ObjectId
-  creator   User?     @relation("OrderCreator", fields: [createdBy], references: [id])
-  updatedAt DateTime  @updatedAt
-  updatedBy String?   @db.ObjectId
-  updater   User?     @relation("OrderUpdater", fields: [updatedBy], references: [id])
-  deletedAt DateTime?
-  deletedBy String?   @db.ObjectId
-  deleter   User?     @relation("OrderDeleter", fields: [deletedBy], references: [id])
+  createdAt    DateTime       @default(now())
+  createdBy    String?        @db.ObjectId
+  creator      User?          @relation("OrderCreator", fields: [createdBy], references: [id])
+  updatedAt    DateTime       @updatedAt
+  updatedBy    String?        @db.ObjectId
+  updater      User?          @relation("OrderUpdater", fields: [updatedBy], references: [id])
+  deletedAt    DateTime?
+  deletedBy    String?        @db.ObjectId
+  deleter      User?          @relation("OrderDeleter", fields: [deletedBy], references: [id])
+  CheckoutStep CheckoutStep[]
 }
 
 model OrderItem {
@@ -1363,4 +1369,104 @@ model LandingPageAnalytics {
   @@index([variantId, eventType])
   @@index([sessionId])
   @@map("landing_page_analytics")
+}
+
+// ============================================================================
+// ANALYTICS TRACKING - Phase 6 Sprint 6.1
+// ============================================================================
+
+enum CheckoutStepType {
+  CART_VIEW
+  SHIPPING_INFO
+  PAYMENT_INFO
+  ORDER_REVIEW
+  ORDER_COMPLETE
+}
+
+enum AbandonmentStatus {
+  ABANDONED
+  RECOVERED
+  EXPIRED
+}
+
+// Track product views for analytics and recommendations
+model ProductView {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String?  @db.ObjectId
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sessionId String // Anonymous session tracking
+  userAgent String?
+  ipAddress String?
+  referrer  String?
+  viewedAt  DateTime @default(now())
+
+  @@index([productId, viewedAt])
+  @@index([userId, viewedAt])
+  @@index([sessionId])
+  @@index([viewedAt])
+  @@map("product_views")
+}
+
+// Track search queries for analytics and optimization
+model SearchLog {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  query          String
+  userId         String?  @db.ObjectId
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sessionId      String
+  resultsCount   Int
+  clickedResults String[] @db.ObjectId // Product IDs clicked
+  filters        Json? // Applied filters (category, price range, etc.)
+  sortBy         String?
+  searchedAt     DateTime @default(now())
+
+  @@index([query])
+  @@index([userId, searchedAt])
+  @@index([sessionId])
+  @@index([searchedAt])
+  @@map("search_logs")
+}
+
+// Track checkout funnel for conversion optimization
+model CheckoutStep {
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  orderId     String?          @db.ObjectId
+  order       Order?           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  userId      String?          @db.ObjectId
+  user        User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sessionId   String
+  stepType    CheckoutStepType
+  stepData    Json? // Step-specific data (shipping info, payment method, etc.)
+  completedAt DateTime         @default(now())
+
+  @@index([orderId])
+  @@index([sessionId, stepType])
+  @@index([userId, completedAt])
+  @@index([completedAt])
+  @@map("checkout_steps")
+}
+
+// Track abandoned carts for recovery campaigns
+model CartAbandonment {
+  id                 String            @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String?           @db.ObjectId
+  user               User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sessionId          String            @unique
+  email              String?
+  cartItems          Json // Snapshot: [{ productId, name, price, quantity, image }]
+  cartTotal          Float
+  status             AbandonmentStatus @default(ABANDONED)
+  recoveryEmailsSent Int               @default(0)
+  lastEmailSentAt    DateTime?
+  recoveredAt        DateTime?
+  expiredAt          DateTime?
+  abandonedAt        DateTime          @default(now())
+
+  @@index([userId, status])
+  @@index([email, status])
+  @@index([status, abandonedAt])
+  @@index([abandonedAt])
+  @@map("cart_abandonments")
 }

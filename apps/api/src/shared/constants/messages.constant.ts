@@ -217,6 +217,17 @@ export const MESSAGES = {
     EVENT_TRACKED: 'Event tracked successfully',
     ANALYTICS_RETRIEVED: 'Analytics retrieved successfully',
   },
+
+  ANALYTICS: {
+    PRODUCT_VIEW_TRACKED: 'Product view tracked successfully',
+    SEARCH_TRACKED: 'Search tracked successfully',
+    CHECKOUT_STEP_TRACKED: 'Checkout step tracked successfully',
+    CART_ABANDONMENT_TRACKED: 'Cart abandonment tracked successfully',
+    RECOVERY_EMAIL_SENT: 'Recovery email sent successfully',
+    CART_RECOVERED: 'Cart marked as recovered',
+    CART_NOT_FOUND: 'Cart not found',
+    ALREADY_RECOVERED: 'Cart already recovered',
+  },
 } as const;
 
 // Type helper for autocomplete

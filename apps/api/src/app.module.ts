@@ -14,6 +14,7 @@ import { AllExceptionsFilter } from './core/filters/all-exceptions.filter';
 import { AuditInterceptor } from './core/interceptors/audit.interceptor';
 import { SerializeInterceptor } from './core/interceptors/serialize.interceptor';
 import { PrismaModule } from './core/prisma/prisma.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BlogModule } from './modules/blog/blog.module';
 import { CartModule } from './modules/cart/cart.module';
@@ -93,6 +94,7 @@ import { WishlistModule } from './modules/wishlist/wishlist.module';
     EmailModule,
     LoyaltyModule,
     LandingPagesModule,
+    AnalyticsModule,
   ],
   controllers: [],
   providers: [

@@ -1,5 +1,6 @@
 import { PrismaModule } from '@/core/prisma/prisma.module';
 import { Module } from '@nestjs/common';
+import { LoyaltyModule } from '../loyalty/loyalty.module';
 import { ProductsModule } from '../products/products.module';
 import { UsersModule } from '../users/users.module';
 import { OrderHistoryService } from './application/services/order-history.service';
@@ -11,7 +12,7 @@ import { OrderRepository } from './infrastructure/repositories/order.repository'
 import { OrdersController } from './presentation/controllers/orders.controller';
 
 @Module({
-  imports: [PrismaModule, ProductsModule, UsersModule],
+  imports: [PrismaModule, ProductsModule, UsersModule, LoyaltyModule],
   controllers: [OrdersController],
   providers: [
     OrdersService,

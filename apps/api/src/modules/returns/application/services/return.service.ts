@@ -1,6 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ReturnStatus } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
+import { LoyaltyService } from '../../../loyalty/application/services/loyalty.service';
 import { IReturnRepository } from '../../domain/repositories/return.repository.interface';
 import {
   CreateReturnDto,
@@ -13,6 +14,7 @@ export class ReturnService {
   constructor(
     @Inject('IReturnRepository')
     private readonly repository: IReturnRepository,
+    private readonly loyaltyService: LoyaltyService,
     // Should inject OrdersService/ProductsService to validate order and calculate prices
     // For now, simplify or assume prices passed (actually better to fetch)
     // To safe complexity, I'll inject PrismaService directly here or just use repository.
@@ -95,6 +97,20 @@ export class ReturnService {
     }
 
     const updated = await this.repository.updateStatus(id, dto.status, adminId);
+
+    // Reverse loyalty points if return is approved
+    if (
+      dto.status === ReturnStatus.APPROVED &&
+      ret.status !== ReturnStatus.APPROVED
+    ) {
+      try {
+        await this.loyaltyService.reversePointsForOrder(ret.orderId);
+      } catch (error) {
+        // Log error but don't fail the return approval
+        console.error('Failed to reverse loyalty points:', error);
+      }
+    }
+
     return plainToInstance(ReturnResponseDto, updated);
   }
 }

@@ -1,6 +1,7 @@
 import { MESSAGES } from '@/shared/constants/messages.constant';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
+import { LoyaltyService } from '../../../loyalty/application/services/loyalty.service';
 import { IProductRepository } from '../../../products/domain/repositories/product.repository.interface';
 import { Order, OrderStatus } from '../../domain/entities/order.entity';
 import { IOrderRepository } from '../../domain/repositories/order.repository.interface';
@@ -16,6 +17,7 @@ export class OrdersService {
     @Inject('IProductRepository')
     private readonly productRepository: IProductRepository,
     private readonly orderHistoryService: OrderHistoryService,
+    private readonly loyaltyService: LoyaltyService,
   ) {}
 
   async create(userId: string, dto: CreateOrderDto) {
@@ -103,6 +105,23 @@ export class OrdersService {
       `Status changed from ${order.status} to ${status}`,
       userId,
     );
+
+    // Award loyalty points when order is completed
+    if (
+      status === OrderStatus.COMPLETED &&
+      order.status !== OrderStatus.COMPLETED
+    ) {
+      try {
+        await this.loyaltyService.earnPoints(
+          order.userId,
+          order.id,
+          order.totalAmount,
+        );
+      } catch (error) {
+        // Log error but don't fail the order update
+        console.error('Failed to award loyalty points:', error);
+      }
+    }
 
     return {
       message: MESSAGES.ORDER.UPDATED,

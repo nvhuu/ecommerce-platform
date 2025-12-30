@@ -1470,3 +1470,85 @@ model CartAbandonment {
   @@index([abandonedAt])
   @@map("cart_abandonments")
 }
+
+// ==========================================
+// Phase 6.2: Scheduling System
+// ==========================================
+
+enum ContentType {
+  BLOG
+  PAGE
+  PRODUCT
+}
+
+enum ScheduleStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
+
+enum WebhookEvent {
+  ORDER_CREATED
+  ORDER_UPDATED
+  ORDER_CANCELLED
+  USER_REGISTERED
+  PRODUCT_UPDATED
+  INVENTORY_LOW
+}
+
+model ScheduledContent {
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  contentType ContentType
+  contentId   String         @db.ObjectId
+  action      String         // PUBLISH, UNPUBLISH
+  scheduleAt  DateTime
+  status      ScheduleStatus @default(PENDING)
+  error       String?
+  createdAt   DateTime       @default(now())
+  processedAt DateTime?
+
+  @@index([scheduleAt, status])
+  @@map("scheduled_contents")
+}
+
+model ScheduledEmail {
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  templateKey String
+  recipients  String[]
+  data        Json?
+  scheduleAt  DateTime
+  status      ScheduleStatus @default(PENDING)
+  error       String?
+  createdAt   DateTime       @default(now())
+  processedAt DateTime?
+
+  @@index([scheduleAt, status])
+  @@map("scheduled_emails")
+}
+
+model CronJob {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String    @unique
+  schedule    String    // Cron expression
+  isEnabled   Boolean   @default(true)
+  lastRunAt   DateTime?
+  nextRunAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("cron_jobs")
+}
+
+model Webhook {
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  url            String
+  events         WebhookEvent[]
+  secret         String
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  lastTriggeredAt DateTime?
+  failureCount   Int            @default(0)
+
+  @@map("webhooks")
+}

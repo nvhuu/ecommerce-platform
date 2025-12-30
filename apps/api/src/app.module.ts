@@ -36,6 +36,7 @@ import { PaymentModule } from './modules/payments/payment.module'; // Updated pa
 import { ProductsModule } from './modules/products/products.module';
 import { ReturnModule } from './modules/returns/return.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { SecurityModule } from './modules/security/security.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { ShipmentModule } from './modules/shipments/shipment.module';
@@ -95,6 +96,7 @@ import { WishlistModule } from './modules/wishlist/wishlist.module';
     LoyaltyModule,
     LandingPagesModule,
     AnalyticsModule,
+    SchedulerModule,
   ],
   controllers: [],
   providers: [

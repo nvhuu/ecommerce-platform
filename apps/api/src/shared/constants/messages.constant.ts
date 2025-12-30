@@ -228,6 +228,19 @@ export const MESSAGES = {
     CART_NOT_FOUND: 'Cart not found',
     ALREADY_RECOVERED: 'Cart already recovered',
   },
+
+  SCHEDULER: {
+    CONTENT_SCHEDULED: 'Content scheduled successfully',
+    EMAIL_SCHEDULED: 'Email scheduled successfully',
+    WEBHOOK_CREATED: 'Webhook created successfully',
+    WEBHOOK_UPDATED: 'Webhook updated successfully',
+    WEBHOOK_DELETED: 'Webhook deleted successfully',
+    CRON_UPDATED: 'Cron job updated successfully',
+    DOMAIN_CONVERSION_FAILED: 'Failed to convert to domain entity',
+    TEST_TRIGGERED: 'Test functionality triggered (placeholder)',
+    UNKNOWN_ERROR: 'Unknown error',
+    DEFAULT_EMAIL_SUBJECT: 'Scheduled Email',
+  },
 } as const;
 
 // Type helper for autocomplete

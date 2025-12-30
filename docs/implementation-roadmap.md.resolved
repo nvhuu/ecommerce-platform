@@ -466,17 +466,17 @@ npm run test -- landing-page.service.spec.ts
 4. [x] Cart recovery emails (cron job)
 5. [x] Tests (Skipped per user request)
 
-#### **Sprint 6.2: Scheduling** (Week 16)
+#### **Sprint 6.2: Scheduling** (Week 16) ✅ COMPLETED
 
 **Entities**: ScheduledContent, ScheduledEmail, CronJob, Webhook
 
 **Tasks**:
-1. [ ] Create scheduling schemas
-2. [ ] Scheduler service (cron processor)
-3. [ ] Content scheduling
-4. [ ] Email scheduling
-5. [ ] Webhook system
-6. [ ] Tests
+1. [x] Create scheduling schemas
+2. [x] Scheduler service (cron processor)
+3. [x] Content scheduling
+4. [x] Email scheduling
+5. [x] Webhook system
+6. [x] Tests
 
 **Tests**:
 ```bash

@@ -159,6 +159,12 @@
 - ✅ Identified 15 missing Web features
 - ✅ Identified 25 missing CMS features
 - ✅ Designed 5-phase, 8-week roadmap
+- ✅ **Migrated Web app to Ant Design components**
+  - Removed all custom shadcn/ui components (button, card, input, label)
+  - Removed @radix-ui dependencies
+  - Updated login & register pages with Ant Design Form components
+  - Expanded registerSchema with firstName, lastName, confirmPassword
+  - Web app now uses Ant Design exclusively
 
 ---
 

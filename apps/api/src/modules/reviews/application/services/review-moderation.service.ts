@@ -1,3 +1,4 @@
+import { MESSAGES } from '@/shared/constants/messages.constant';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ReviewReport } from '../../domain/entities/review-report.entity';
 import {
@@ -40,7 +41,7 @@ export class ReviewModerationService {
   async getReportById(id: string): Promise<ReviewReport> {
     const report = await this.reviewReportRepository.findById(id);
     if (!report) {
-      throw new NotFoundException(`Report with ID ${id} not found`);
+      throw new NotFoundException(MESSAGES.REVIEW_REPORT.NOT_FOUND);
     }
     return report;
   }
@@ -53,7 +54,7 @@ export class ReviewModerationService {
     const report = await this.getReportById(id);
 
     if (report.status !== 'pending') {
-      throw new Error('Report has already been processed');
+      throw new Error(MESSAGES.REVIEW_REPORT.ALREADY_PROCESSED);
     }
 
     return this.reviewReportRepository.update(id, {
@@ -68,7 +69,7 @@ export class ReviewModerationService {
     const report = await this.getReportById(id);
 
     if (report.status !== 'pending') {
-      throw new Error('Report has already been processed');
+      throw new Error(MESSAGES.REVIEW_REPORT.ALREADY_PROCESSED);
     }
 
     return this.reviewReportRepository.update(id, {

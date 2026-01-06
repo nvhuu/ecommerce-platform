@@ -24,6 +24,7 @@ export const MESSAGES = {
     INVALID_CREDENTIALS: 'Invalid credentials',
     EMAIL_ALREADY_EXISTS: 'Email already exists',
     PASSWORD_RESET_SUCCESS: 'Password reset successful',
+    PASSWORD_RESET_EMAIL_SENT: 'If email exists, a reset link has been sent',
     USER_NOT_FOUND: 'User not found',
   },
 
@@ -86,6 +87,9 @@ export const MESSAGES = {
 
   // Payment messages
   PAYMENT: {
+    NOT_FOUND: 'Payment not found',
+    CREATED: 'Payment created successfully',
+    UPDATED: 'Payment status updated successfully',
     PROCESSED: 'Payment processed successfully',
     FAILED: 'Payment failed',
     CANCELLED: 'Payment cancelled',
@@ -112,11 +116,12 @@ export const MESSAGES = {
 
   // Review messages
   REVIEW: {
-    CREATED: 'Review created successfully',
+    NOT_FOUND: 'Review not found',
+    ALREADY_REVIEWED: 'You have already reviewed this product',
+    CREATED: 'Review submitted successfully',
     UPDATED: 'Review updated successfully',
     DELETED: 'Review deleted successfully',
     LIST_RETRIEVED: 'Reviews retrieved successfully',
-    NOT_FOUND: 'Review not found',
   },
 
   // Page messages
@@ -227,6 +232,57 @@ export const MESSAGES = {
     CART_RECOVERED: 'Cart marked as recovered',
     CART_NOT_FOUND: 'Cart not found',
     ALREADY_RECOVERED: 'Cart already recovered',
+  },
+
+  PRODUCT_VARIANT: {
+    NOT_FOUND: 'Product variant not found',
+    SKU_EXISTS: 'SKU already exists',
+    CREATED: 'Product variant created successfully',
+    UPDATED: 'Product variant updated successfully',
+    DELETED: 'Product variant deleted successfully',
+  },
+
+  COUPON: {
+    NOT_FOUND: 'Coupon not found',
+    CODE_EXISTS: 'Coupon code already exists',
+    INVALID_DATE_RANGE: 'End date must be after start date',
+    NOT_ACTIVE: 'Coupon is not active',
+    NOT_YET_VALID: 'Coupon not yet valid',
+    EXPIRED: 'Coupon has expired',
+    USAGE_LIMIT_REACHED: 'Coupon usage limit reached',
+    USER_LIMIT_REACHED: 'You have reached the usage limit for this coupon',
+    MIN_ORDER_NOT_MET: 'Minimum order amount not met',
+    APPLIED: 'Coupon applied successfully',
+    VALIDATED: 'Coupon validated successfully',
+  },
+
+  EMAIL_TEMPLATE: {
+    NOT_FOUND: 'Email template not found',
+    CREATED: 'Email template created successfully',
+    UPDATED: 'Email template updated successfully',
+    DELETED: 'Email template deleted successfully',
+  },
+
+  WISHLIST: {
+    PRODUCT_EXISTS: 'Product already in wishlist',
+    ITEM_NOT_FOUND: 'Wishlist item not found',
+    ITEM_ADDED: 'Item added to wishlist',
+    ITEM_REMOVED: 'Item removed from wishlist',
+    RETRIEVED: 'Wishlist retrieved successfully',
+  },
+
+  IP_BLACKLIST: {
+    ALREADY_BLOCKED: 'IP address already blocked',
+    NOT_FOUND: 'IP address not found in blacklist',
+    ADDED: 'IP address added to blacklist',
+    REMOVED: 'IP address removed from blacklist',
+  },
+
+  REVIEW_REPORT: {
+    NOT_FOUND: 'Review report not found',
+    ALREADY_PROCESSED: 'Report has already been processed',
+    SUBMITTED: 'Report submitted successfully',
+    RESOLVED: 'Report resolved successfully',
   },
 
   SCHEDULER: {

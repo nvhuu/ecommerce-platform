@@ -1,10 +1,16 @@
 import { MESSAGES } from '@/shared/constants/messages.constant';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { LoyaltyService } from '../../../loyalty/application/services/loyalty.service';
 import { IProductRepository } from '../../../products/domain/repositories/product.repository.interface';
 import { Order, OrderStatus } from '../../domain/entities/order.entity';
 import { IOrderRepository } from '../../domain/repositories/order.repository.interface';
+import { isValidTransition } from '../../domain/validators/order-status.validator';
 import { CreateOrderDto } from '../dtos/order.dto';
 import { OrderResponseDto } from '../dtos/response/order.response.dto';
 import { OrderHistoryService } from './order-history.service';
@@ -95,6 +101,13 @@ export class OrdersService {
       throw new NotFoundException(MESSAGES.ORDER.NOT_FOUND);
     }
 
+    // Validate status transition
+    if (!isValidTransition(order.status, status)) {
+      throw new BadRequestException(
+        `Cannot transition order from ${order.status} to ${status}`,
+      );
+    }
+
     const updated = await this.orderRepository.update(id, { status });
 
     // Auto-track status change
@@ -140,7 +153,9 @@ export class OrdersService {
     }
 
     if (order.status !== OrderStatus.PENDING) {
-      throw new NotFoundException('Order cannot be cancelled'); // Using NotFound or BadRequest
+      throw new BadRequestException(
+        `Cannot cancel order with status ${order.status}. Only PENDING orders can be cancelled.`,
+      );
     }
 
     const updated = await this.orderRepository.update(id, {
@@ -156,7 +171,7 @@ export class OrdersService {
     );
 
     return {
-      message: 'Order cancelled successfully',
+      message: MESSAGES.ORDER.CANCELLED,
       data: plainToClass(OrderResponseDto, updated),
     };
   }

@@ -1,3 +1,4 @@
+import { MESSAGES } from '@/shared/constants/messages.constant';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { BlockType } from '@prisma/client';
@@ -107,7 +108,7 @@ export class AuthService {
     const user = await this.usersService.findByEmail(email);
     if (!user) {
       // Don't reveal user existence
-      return { message: 'If email exists, a reset link has been sent' };
+      return { message: MESSAGES.AUTH.PASSWORD_RESET_EMAIL_SENT };
     }
 
     // Generate token
@@ -125,7 +126,7 @@ export class AuthService {
     // Actually, I can't inject PrismaService easily without changing constructor and all tests/modules
     // Let's check imports.
     return {
-      message: 'If email exists, a reset link has been sent',
+      message: MESSAGES.AUTH.PASSWORD_RESET_EMAIL_SENT,
       mockToken: token,
     };
   }
@@ -134,7 +135,7 @@ export class AuthService {
     // Mock implementation - in production, verify token from database
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     return {
-      message: 'Password reset successful',
+      message: MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
       token,
       hashedPassword,
     };

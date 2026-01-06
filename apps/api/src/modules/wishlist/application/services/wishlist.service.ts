@@ -1,3 +1,4 @@
+import { MESSAGES } from '@/shared/constants/messages.constant';
 import {
   ConflictException,
   Injectable,
@@ -34,7 +35,7 @@ export class WishlistService {
     );
 
     if (exists) {
-      throw new ConflictException('Product already in wishlist');
+      throw new ConflictException(MESSAGES.WISHLIST.PRODUCT_EXISTS);
     }
 
     return this.repository.addItem(wishlist.id, productId, variantId);
@@ -44,13 +45,13 @@ export class WishlistService {
     const item = await this.repository.findItemById(itemId);
 
     if (!item) {
-      throw new NotFoundException('Wishlist item not found');
+      throw new NotFoundException(MESSAGES.WISHLIST.ITEM_NOT_FOUND);
     }
 
     // Verify item belongs to user's wishlist
     const wishlist = await this.repository.findByUserId(userId);
     if (!wishlist || item.wishlistId !== wishlist.id) {
-      throw new NotFoundException('Wishlist item not found');
+      throw new NotFoundException(MESSAGES.WISHLIST.ITEM_NOT_FOUND);
     }
 
     await this.repository.removeItem(itemId);
@@ -76,7 +77,7 @@ export class WishlistService {
     const wishlist = await this.repository.findByShareToken(shareToken);
 
     if (!wishlist || !wishlist.isPublic) {
-      throw new NotFoundException('Wishlist not found or not public');
+      throw new NotFoundException(MESSAGES.WISHLIST.ITEM_NOT_FOUND);
     }
 
     return wishlist;

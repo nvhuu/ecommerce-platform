@@ -1,3 +1,4 @@
+import { MESSAGES } from '@/shared/constants/messages.constant';
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { BlockType } from '@prisma/client';
 import { IIPBlacklistRepository } from '../../domain/repositories/ip-blacklist.repository.interface';
@@ -18,7 +19,7 @@ export class IPBlacklistService {
   }) {
     const existing = await this.repository.findByIP(data.ip);
     if (existing) {
-      throw new ConflictException('IP already blocked');
+      throw new ConflictException(MESSAGES.IP_BLACKLIST.ALREADY_BLOCKED);
     }
 
     return this.repository.create({
@@ -33,7 +34,7 @@ export class IPBlacklistService {
   async unblockIP(ip: string) {
     const existing = await this.repository.findByIP(ip);
     if (!existing) {
-      throw new ConflictException('IP not found in blacklist');
+      throw new ConflictException(MESSAGES.IP_BLACKLIST.NOT_FOUND);
     }
 
     return this.repository.delete(ip);

@@ -1,3 +1,4 @@
+import { MESSAGES } from '@/shared/constants/messages.constant';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { IOrderRepository } from '../../../orders/domain/repositories/order.repository.interface';
@@ -23,7 +24,7 @@ export class ReviewsService {
     const existing = userReviews.find((r) => r.productId === dto.productId);
 
     if (existing) {
-      throw new BadRequestException('You have already reviewed this product');
+      throw new BadRequestException(MESSAGES.REVIEW.ALREADY_REVIEWED);
     }
 
     const review = new Review();
@@ -68,7 +69,7 @@ export class ReviewsService {
 
   async updateStatus(id: string, status: ReviewStatus) {
     const review = await this.reviewRepository.findById(id);
-    if (!review) throw new BadRequestException('Review not found');
+    if (!review) throw new BadRequestException(MESSAGES.REVIEW.NOT_FOUND);
 
     const updated = await this.reviewRepository.updateStatus(id, status);
     return plainToClass(ReviewResponseDto, updated, {
@@ -78,7 +79,7 @@ export class ReviewsService {
 
   async delete(id: string) {
     const review = await this.reviewRepository.findById(id);
-    if (!review) throw new BadRequestException('Review not found');
+    if (!review) throw new BadRequestException(MESSAGES.REVIEW.NOT_FOUND);
 
     await this.reviewRepository.delete(id);
     return { success: true };

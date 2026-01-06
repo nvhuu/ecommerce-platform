@@ -1,3 +1,4 @@
+import { MESSAGES } from '@/shared/constants/messages.constant';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { EmailTemplate } from '../../domain/entities/email-template.entity';
 import {
@@ -36,7 +37,7 @@ export class EmailTemplateService {
   async findById(id: string): Promise<EmailTemplate> {
     const template = await this.repository.findById(id);
     if (!template) {
-      throw new NotFoundException(`Email template with ID ${id} not found`);
+      throw new NotFoundException(MESSAGES.EMAIL_TEMPLATE.NOT_FOUND);
     }
     return template;
   }
@@ -44,7 +45,7 @@ export class EmailTemplateService {
   async findBySlug(slug: string): Promise<EmailTemplate> {
     const template = await this.repository.findBySlug(slug);
     if (!template) {
-      throw new NotFoundException(`Email template with slug ${slug} not found`);
+      throw new NotFoundException(MESSAGES.EMAIL_TEMPLATE.NOT_FOUND);
     }
     return template;
   }

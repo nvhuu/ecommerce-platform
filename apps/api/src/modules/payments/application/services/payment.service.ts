@@ -1,3 +1,4 @@
+import { MESSAGES } from '@/shared/constants/messages.constant';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PaymentStatus } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
@@ -48,7 +49,7 @@ export class PaymentService {
   ): Promise<PaymentResponseDto> {
     const payment = await this.repository.findById(id);
     if (!payment) {
-      throw new NotFoundException('Payment not found');
+      throw new NotFoundException(MESSAGES.PAYMENT.NOT_FOUND);
     }
 
     const refunded = await this.repository.processRefund(

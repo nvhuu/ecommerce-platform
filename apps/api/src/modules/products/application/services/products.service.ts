@@ -68,28 +68,34 @@ export class ProductsService {
   }
 
   async update(id: string, dto: UpdateProductDto) {
-    const product = await this.productRepository.findById(id);
-    if (!product) {
-      throw new NotFoundException(MESSAGES.PRODUCT.NOT_FOUND);
+    try {
+      const updated = await this.productRepository.update(id, dto);
+      return {
+        message: MESSAGES.PRODUCT.UPDATED,
+        data: plainToClass(ProductResponseDto, updated),
+      };
+    } catch (error) {
+      // Prisma P2025: Record to update not found
+      if (error instanceof Error && 'code' in error && error.code === 'P2025') {
+        throw new NotFoundException(MESSAGES.PRODUCT.NOT_FOUND);
+      }
+      throw error;
     }
-
-    const updated = await this.productRepository.update(id, dto);
-    return {
-      message: MESSAGES.PRODUCT.UPDATED,
-      data: plainToClass(ProductResponseDto, updated),
-    };
   }
 
   async remove(id: string) {
-    const product = await this.productRepository.findById(id);
-    if (!product) {
-      throw new NotFoundException(MESSAGES.PRODUCT.NOT_FOUND);
+    try {
+      await this.productRepository.delete(id);
+      return {
+        message: MESSAGES.PRODUCT.DELETED,
+        data: null,
+      };
+    } catch (error) {
+      // Prisma P2025: Record to delete not found
+      if (error instanceof Error && 'code' in error && error.code === 'P2025') {
+        throw new NotFoundException(MESSAGES.PRODUCT.NOT_FOUND);
+      }
+      throw error;
     }
-
-    await this.productRepository.delete(id);
-    return {
-      message: MESSAGES.PRODUCT.DELETED,
-      data: null,
-    };
   }
 }

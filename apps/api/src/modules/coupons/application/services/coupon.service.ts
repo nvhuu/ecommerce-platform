@@ -1,3 +1,4 @@
+import { MESSAGES } from '@/shared/constants/messages.constant';
 import {
   BadRequestException,
   Inject,
@@ -29,7 +30,7 @@ export class CouponService {
     // Check if code already exists
     const existing = await this.repository.findByCode(dto.code);
     if (existing) {
-      throw new BadRequestException('Coupon code already exists');
+      throw new BadRequestException(MESSAGES.COUPON.CODE_EXISTS);
     }
 
     // Validate dates
@@ -37,7 +38,7 @@ export class CouponService {
     const endDate = new Date(dto.endDate);
 
     if (endDate <= startDate) {
-      throw new BadRequestException('End date must be after start date');
+      throw new BadRequestException(MESSAGES.COUPON.INVALID_DATE_RANGE);
     }
 
     const coupon = await this.repository.create({
@@ -64,7 +65,7 @@ export class CouponService {
   async getCoupon(id: string): Promise<CouponResponseDto> {
     const coupon = await this.repository.findById(id);
     if (!coupon) {
-      throw new NotFoundException('Coupon not found');
+      throw new NotFoundException(MESSAGES.COUPON.NOT_FOUND);
     }
     return plainToInstance(CouponResponseDto, coupon);
   }
@@ -75,7 +76,7 @@ export class CouponService {
   ): Promise<CouponResponseDto> {
     const coupon = await this.repository.findById(id);
     if (!coupon) {
-      throw new NotFoundException('Coupon not found');
+      throw new NotFoundException(MESSAGES.COUPON.NOT_FOUND);
     }
 
     const updated = await this.repository.update(id, {
@@ -89,7 +90,7 @@ export class CouponService {
   async deleteCoupon(id: string): Promise<void> {
     const coupon = await this.repository.findById(id);
     if (!coupon) {
-      throw new NotFoundException('Coupon not found');
+      throw new NotFoundException(MESSAGES.COUPON.NOT_FOUND);
     }
     await this.repository.delete(id);
   }
@@ -106,7 +107,7 @@ export class CouponService {
     if (!coupon) {
       return {
         valid: false,
-        message: 'Coupon not found',
+        message: MESSAGES.COUPON.NOT_FOUND,
       };
     }
 
@@ -114,7 +115,7 @@ export class CouponService {
     if (!coupon.isActive) {
       return {
         valid: false,
-        message: 'Coupon is not active',
+        message: MESSAGES.COUPON.NOT_ACTIVE,
       };
     }
 
@@ -123,14 +124,14 @@ export class CouponService {
     if (now < coupon.startDate) {
       return {
         valid: false,
-        message: 'Coupon not yet valid',
+        message: MESSAGES.COUPON.NOT_YET_VALID,
       };
     }
 
     if (now > coupon.endDate) {
       return {
         valid: false,
-        message: 'Coupon has expired',
+        message: MESSAGES.COUPON.EXPIRED,
       };
     }
 
@@ -138,7 +139,7 @@ export class CouponService {
     if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit) {
       return {
         valid: false,
-        message: 'Coupon usage limit reached',
+        message: MESSAGES.COUPON.USAGE_LIMIT_REACHED,
       };
     }
 
@@ -151,7 +152,7 @@ export class CouponService {
       if (userUsageCount >= coupon.perUserLimit) {
         return {
           valid: false,
-          message: 'You have reached the usage limit for this coupon',
+          message: MESSAGES.COUPON.USER_LIMIT_REACHED,
         };
       }
     }
@@ -160,7 +161,7 @@ export class CouponService {
     if (coupon.minOrderAmount && dto.orderTotal < coupon.minOrderAmount) {
       return {
         valid: false,
-        message: `Minimum order amount is ${coupon.minOrderAmount}`,
+        message: MESSAGES.COUPON.MIN_ORDER_NOT_MET,
       };
     }
 

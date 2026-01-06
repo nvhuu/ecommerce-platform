@@ -202,6 +202,10 @@ model Product {
   deletedBy   String?       @db.ObjectId
   deleter     User?         @relation("ProductDeleter", fields: [deletedBy], references: [id])
   ProductView ProductView[]
+
+  @@index([categoryId, isActive, price])
+  @@index([isActive, createdAt])
+  @@index([name])
 }
 
 enum InventoryTransactionType {
@@ -345,6 +349,9 @@ model Order {
   deletedBy    String?        @db.ObjectId
   deleter      User?          @relation("OrderDeleter", fields: [deletedBy], references: [id])
   CheckoutStep CheckoutStep[]
+
+  @@index([status, createdAt])
+  @@index([userId, status])
 }
 
 model OrderItem {

@@ -1,3 +1,4 @@
+import { MESSAGES } from '@/shared/constants/messages.constant';
 import {
   ConflictException,
   Inject,
@@ -28,9 +29,7 @@ export class ProductVariantService {
     // Check if product exists
     const product = await this.productRepository.findById(createDto.productId);
     if (!product) {
-      throw new NotFoundException(
-        `Product with ID ${createDto.productId} not found`,
-      );
+      throw new NotFoundException(MESSAGES.PRODUCT.NOT_FOUND);
     }
 
     // Check if SKU already exists
@@ -38,7 +37,7 @@ export class ProductVariantService {
       createDto.sku,
     );
     if (existingVariant) {
-      throw new ConflictException(`SKU ${createDto.sku} already exists`);
+      throw new ConflictException(MESSAGES.PRODUCT_VARIANT.SKU_EXISTS);
     }
 
     const variant = await this.variantRepository.create(createDto);
@@ -55,7 +54,7 @@ export class ProductVariantService {
   async findOne(id: string): Promise<ProductVariantResponseDto> {
     const variant = await this.variantRepository.findById(id);
     if (!variant) {
-      throw new NotFoundException(`Variant with ID ${id} not found`);
+      throw new NotFoundException(MESSAGES.PRODUCT_VARIANT.NOT_FOUND);
     }
 
     return plainToInstance(ProductVariantResponseDto, variant);

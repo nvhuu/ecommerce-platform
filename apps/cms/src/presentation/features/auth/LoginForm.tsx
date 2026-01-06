@@ -1,10 +1,16 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import type { LoginFormData } from "@/data/schemas/validation.schemas";
+import {
+  BUTTON_LABELS,
+  FORM_PLACEHOLDERS,
+  MESSAGES,
+  PAGE_DESCRIPTIONS,
+  PAGE_TITLES,
+  VALIDATION_MESSAGES,
+} from "@/shared/constants/form-messages.constant";
 import { Button, Card, Form, Input, message, Typography } from "antd";
 import { useRouter } from "next/navigation";
-import { Controller, useForm } from "react-hook-form";
-import { loginSchema, type LoginFormData } from "@/data/schemas/validation.schemas";
 import { useLogin } from "../hooks/useAuth";
 
 const { Title, Text } = Typography;
@@ -12,26 +18,15 @@ const { Title, Text } = Typography;
 export function LoginForm() {
   const router = useRouter();
   const loginMutation = useLogin();
+  const [form] = Form.useForm<LoginFormData>();
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
-
-  const onSubmit = async (data: LoginFormData) => {
+  const onFinish = async (values: LoginFormData) => {
     try {
-      await loginMutation.mutateAsync(data);
-      message.success("Login successful!");
+      await loginMutation.mutateAsync(values);
+      message.success(MESSAGES.SUCCESS.LOGIN);
       router.push("/");
     } catch (error: any) {
-      message.error(error.message || "Login failed");
+      message.error(error.message || MESSAGES.ERROR.LOGIN_FAILED);
     }
   };
 
@@ -39,46 +34,37 @@ export function LoginForm() {
     <div className='min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8'>
       <Card className='w-full max-w-md'>
         <div className='text-center mb-8'>
-          <Title level={2}>CMS Admin</Title>
-          <Text type='secondary'>Sign in to your account</Text>
+          <Title level={2}>{PAGE_TITLES.CMS_ADMIN}</Title>
+          <Text type='secondary'>{PAGE_DESCRIPTIONS.CMS_LOGIN}</Text>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Form.Item validateStatus={errors.email ? "error" : ""} help={errors.email?.message}>
-            <Controller
-              name='email'
-              control={control}
-              render={({ field }) => (
-                <Input {...field} size='large' placeholder='Email address' type='email' />
-              )}
-            />
+        <Form form={form} layout='vertical' onFinish={onFinish} size='large'>
+          <Form.Item
+            name='email'
+            rules={[
+              { required: true, message: VALIDATION_MESSAGES.REQUIRED.EMAIL },
+              { type: "email", message: VALIDATION_MESSAGES.FORMAT.EMAIL },
+            ]}
+          >
+            <Input placeholder={FORM_PLACEHOLDERS.EMAIL_ADDRESS} type='email' />
           </Form.Item>
 
           <Form.Item
-            validateStatus={errors.password ? "error" : ""}
-            help={errors.password?.message}
+            name='password'
+            rules={[
+              { required: true, message: VALIDATION_MESSAGES.REQUIRED.PASSWORD },
+              { min: 6, message: VALIDATION_MESSAGES.LENGTH.PASSWORD_MIN },
+            ]}
           >
-            <Controller
-              name='password'
-              control={control}
-              render={({ field }) => (
-                <Input.Password {...field} size='large' placeholder='Password' />
-              )}
-            />
+            <Input.Password placeholder={FORM_PLACEHOLDERS.PASSWORD} />
           </Form.Item>
 
           <Form.Item>
-            <Button
-              type='primary'
-              htmlType='submit'
-              size='large'
-              block
-              loading={loginMutation.isPending}
-            >
-              Sign in
+            <Button type='primary' htmlType='submit' block loading={loginMutation.isPending}>
+              {BUTTON_LABELS.SIGN_IN}
             </Button>
           </Form.Item>
-        </form>
+        </Form>
       </Card>
     </div>
   );

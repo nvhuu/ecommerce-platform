@@ -1,33 +1,31 @@
 "use client";
 
-import { loginSchema, type LoginFormData } from "@/data/schemas/validation.schemas";
+import type { LoginFormData } from "@/data/schemas/validation.schemas";
 import { useLogin } from "@/presentation/hooks/useAuth";
+import {
+  BUTTON_LABELS,
+  FORM_LABELS,
+  FORM_PLACEHOLDERS,
+  LINK_TEXTS,
+  MESSAGES,
+  PAGE_DESCRIPTIONS,
+  PAGE_TITLES,
+  VALIDATION_MESSAGES,
+} from "@/shared/constants/form-messages.constant";
 import { LoadingOutlined } from "@ant-design/icons";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Card, Form, Input, Typography } from "antd";
+import { Button, Card, Form, Input, Typography, message } from "antd";
 import Link from "next/link";
-import { Controller, useForm } from "react-hook-form";
 
 const { Title, Text } = Typography;
 
 export default function LoginPage() {
   const { mutate: login, isPending } = useLogin();
+  const [form] = Form.useForm<LoginFormData>();
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-    setError,
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-  });
-
-  const onSubmit = (data: LoginFormData) => {
-    login(data, {
+  const onFinish = (values: LoginFormData) => {
+    login(values, {
       onError: (error) => {
-        setError("root", {
-          message: error.message || "Login failed",
-        });
+        message.error(error.message || MESSAGES.ERROR.LOGIN_FAILED);
       },
     });
   };
@@ -36,52 +34,42 @@ export default function LoginPage() {
     <Card className='max-w-md mx-auto mt-20'>
       <div className='mb-6'>
         <Title level={3} className='mb-2'>
-          Welcome back
+          {PAGE_TITLES.WELCOME_BACK}
         </Title>
-        <Text type='secondary'>Enter your email and password to sign in to your account</Text>
+        <Text type='secondary'>{PAGE_DESCRIPTIONS.LOGIN}</Text>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        {errors.root && (
-          <div className='p-3 mb-4 text-sm text-red-500 bg-red-50 rounded-md'>
-            {errors.root.message}
-          </div>
-        )}
-
+      <Form form={form} layout='vertical' onFinish={onFinish} size='large'>
         <Form.Item
-          label='Email'
-          validateStatus={errors.email ? "error" : ""}
-          help={errors.email?.message}
+          label={FORM_LABELS.EMAIL}
+          name='email'
+          rules={[
+            { required: true, message: VALIDATION_MESSAGES.REQUIRED.EMAIL },
+            { type: "email", message: VALIDATION_MESSAGES.FORMAT.EMAIL },
+          ]}
         >
-          <Controller
-            name='email'
-            control={control}
-            render={({ field }) => (
-              <Input {...field} type='email' placeholder='m@example.com' size='large' />
-            )}
-          />
+          <Input type='email' placeholder={FORM_PLACEHOLDERS.EMAIL} />
         </Form.Item>
 
         <Form.Item
           label={
             <div className='flex items-center justify-between w-full'>
-              <span>Password</span>
+              <span>{FORM_LABELS.PASSWORD}</span>
               <Link
                 href='/forgot-password'
                 className='text-sm font-medium text-primary hover:underline'
               >
-                Forgot password?
+                {LINK_TEXTS.FORGOT_PASSWORD}
               </Link>
             </div>
           }
-          validateStatus={errors.password ? "error" : ""}
-          help={errors.password?.message}
+          name='password'
+          rules={[
+            { required: true, message: VALIDATION_MESSAGES.REQUIRED.PASSWORD },
+            { min: 6, message: VALIDATION_MESSAGES.LENGTH.PASSWORD_MIN },
+          ]}
         >
-          <Controller
-            name='password'
-            control={control}
-            render={({ field }) => <Input.Password {...field} size='large' />}
-          />
+          <Input.Password />
         </Form.Item>
 
         <Button
@@ -90,19 +78,18 @@ export default function LoginPage() {
           loading={isPending}
           icon={isPending ? <LoadingOutlined /> : null}
           block
-          size='large'
           className='mt-4'
         >
-          Sign In
+          {BUTTON_LABELS.SIGN_IN}
         </Button>
 
         <div className='text-center mt-4 text-sm text-gray-600'>
-          Don&apos;t have an account?{" "}
+          {LINK_TEXTS.NO_ACCOUNT}{" "}
           <Link href='/register' className='font-medium text-primary hover:underline'>
-            Sign up
+            {BUTTON_LABELS.SIGN_UP}
           </Link>
         </div>
-      </form>
+      </Form>
     </Card>
   );
 }

@@ -62,6 +62,8 @@ export const MESSAGES = {
     EMPTY_CART: 'Cart is empty',
     INSUFFICIENT_STOCK: 'Insufficient stock for order',
     INVALID_STATUS: 'Invalid order status',
+    INVALID_TRANSITION: 'Invalid order status transition',
+    CANNOT_CANCEL: 'Only pending orders can be cancelled',
   },
 
   // User messages
@@ -168,6 +170,8 @@ export const MESSAGES = {
     KEY_EXISTS: 'Setting with this key already exists',
     INVALID_TYPE: 'Invalid setting type',
     INVALID_VALUE: 'Invalid value for setting type',
+    VALUE_MUST_BE_NUMBER: 'Value must be a number',
+    VALUE_MUST_BE_BOOLEAN: 'Value must be true or false',
   },
 
   // Form messages
@@ -283,6 +287,23 @@ export const MESSAGES = {
     ALREADY_PROCESSED: 'Report has already been processed',
     SUBMITTED: 'Report submitted successfully',
     RESOLVED: 'Report resolved successfully',
+    DISMISSED: 'Dismissed as invalid',
+  },
+
+  POPUP: {
+    NOT_FOUND: 'Popup not found',
+    CREATED: 'Popup created successfully',
+    UPDATED: 'Popup updated successfully',
+    DELETED: 'Popup deleted successfully',
+    LIST_RETRIEVED: 'Popups retrieved successfully',
+  },
+
+  BANNER: {
+    NOT_FOUND: 'Banner not found',
+    CREATED: 'Banner created successfully',
+    UPDATED: 'Banner updated successfully',
+    DELETED: 'Banner deleted successfully',
+    LIST_RETRIEVED: 'Banners retrieved successfully',
   },
 
   SCHEDULER: {

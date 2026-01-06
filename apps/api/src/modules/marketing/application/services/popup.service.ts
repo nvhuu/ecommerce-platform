@@ -1,3 +1,4 @@
+import { MESSAGES } from '@/shared/constants/messages.constant';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Popup } from '../../domain/entities/popup.entity';
 import {
@@ -31,7 +32,7 @@ export class PopupService {
   async findById(id: string): Promise<Popup> {
     const popup = await this.popupRepository.findById(id);
     if (!popup) {
-      throw new NotFoundException(`Popup with ID ${id} not found`);
+      throw new NotFoundException(MESSAGES.POPUP.NOT_FOUND);
     }
     return popup;
   }

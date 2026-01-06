@@ -1,3 +1,4 @@
+import { MESSAGES } from '@/shared/constants/messages.constant';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Banner } from '../../domain/entities/banner.entity';
 import {
@@ -30,7 +31,7 @@ export class BannerService {
   async findById(id: string): Promise<Banner> {
     const banner = await this.bannerRepository.findById(id);
     if (!banner) {
-      throw new NotFoundException(`Banner with ID ${id} not found`);
+      throw new NotFoundException(MESSAGES.BANNER.NOT_FOUND);
     }
     return banner;
   }

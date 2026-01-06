@@ -90,12 +90,12 @@ export class SettingsService {
       switch (type) {
         case SettingType.NUMBER:
           if (isNaN(Number(value))) {
-            throw new Error('Value must be a number');
+            throw new Error(MESSAGES.SETTING.VALUE_MUST_BE_NUMBER);
           }
           break;
         case SettingType.BOOLEAN:
           if (value !== 'true' && value !== 'false') {
-            throw new Error('Value must be true or false');
+            throw new Error(MESSAGES.SETTING.VALUE_MUST_BE_BOOLEAN);
           }
           break;
         case SettingType.JSON:

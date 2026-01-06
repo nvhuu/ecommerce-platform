@@ -76,7 +76,7 @@ export class ReviewModerationService {
       status: 'dismissed',
       resolver: { connect: { id: resolvedBy } },
       resolvedAt: new Date(),
-      resolution: 'Dismissed as invalid',
+      resolution: MESSAGES.REVIEW_REPORT.DISMISSED,
     });
   }
 }

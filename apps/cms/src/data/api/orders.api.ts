@@ -1,17 +1,6 @@
+import type { Order, OrderFilters, UpdateOrderStatusDto } from "@/domain/entities/order.entity";
 import { apiClient } from "./api-client";
 import { API_ENDPOINTS } from "./endpoints.constant";
-
-export interface Order {
-  id: string;
-  orderNumber: string;
-  userId: string;
-  status: OrderStatus;
-  totalAmount: number;
-  shippingAddress: Record<string, unknown>;
-  items: OrderItem[];
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface OrderItem {
   id: string;
@@ -20,31 +9,11 @@ export interface OrderItem {
   price: number;
 }
 
-export enum OrderStatus {
-  PENDING = "PENDING",
-  PROCESSING = "PROCESSING",
-  SHIPPED = "SHIPPED",
-  DELIVERED = "DELIVERED",
-  CANCELLED = "CANCELLED",
-}
-
-export interface OrderFilters {
-  status?: OrderStatus;
-  userId?: string;
-  startDate?: string;
-  endDate?: string;
-  search?: string;
-}
-
-export interface UpdateOrderStatusDto {
-  status: OrderStatus;
-}
-
 export const ordersApi = {
   getAll: async (filters?: OrderFilters) => {
     return await apiClient.get<Order[]>({
       path: API_ENDPOINTS.ORDERS.BASE,
-      query: filters,
+      query: filters as Record<string, string | number | boolean | null | undefined>,
     });
   },
 

@@ -1,7 +1,8 @@
 "use client";
 
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Card, Input, message, Modal, Space, Table, Tag, Typography } from "antd";
+import { Button, Input, message, Modal, Space, Table, Tag, Typography } from "antd";
+import { Card } from "@/components/Card";
 import { useState } from "react";
 import type { User } from "@/domain/entities/user.entity";
 import { UserRole } from "@/domain/entities/user.entity";

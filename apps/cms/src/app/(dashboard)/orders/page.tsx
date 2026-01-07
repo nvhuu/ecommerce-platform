@@ -1,15 +1,12 @@
 "use client";
 
-import { SearchOutlined } from "@ant-design/icons";
-import { Button, Card, Input, message, Modal, Select, Space, Table, Tag, Typography } from "antd";
-import { useState } from "react";
+import { Card } from "@/components/Card";
 import type { Order } from "@/domain/entities/order.entity";
 import { OrderStatus } from "@/domain/entities/order.entity";
-import {
-  useDeleteOrder,
-  useOrders,
-  useUpdateOrderStatus,
-} from "@/presentation/hooks/useOrders";
+import { useDeleteOrder, useOrders, useUpdateOrderStatus } from "@/presentation/hooks/useOrders";
+import { SearchOutlined } from "@ant-design/icons";
+import { Button, Input, message, Modal, Select, Space, Table, Tag, Typography } from "antd";
+import { useState } from "react";
 
 const { Title } = Typography;
 
@@ -98,16 +95,14 @@ export default function OrdersPage() {
       render: (status: OrderStatus, record: Order) => (
         <Select
           value={status}
-          onChange={(value) => handleStatusChange(record.id, value)}
+          onChange={(value: OrderStatus) => handleStatusChange(record.id, value)}
           style={{ width: 130 }}
           loading={updateStatusMutation.isPending}
-        >
-          {Object.values(OrderStatus).map((s) => (
-            <Select.Option key={s} value={s}>
-              <Tag color={getStatusColor(s)}>{s}</Tag>
-            </Select.Option>
-          ))}
-        </Select>
+          options={Object.values(OrderStatus).map((s) => ({
+            label: <Tag color={getStatusColor(s)}>{s}</Tag>,
+            value: s,
+          }))}
+        />
       ),
     },
     {
@@ -148,7 +143,7 @@ export default function OrdersPage() {
           <Input
             placeholder='Search orders...'
             prefix={<SearchOutlined />}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchText(e.target.value)}
             size='large'
             className='max-w-md'
           />
@@ -158,18 +153,16 @@ export default function OrdersPage() {
             onChange={setStatusFilter}
             style={{ width: 200 }}
             size='large'
-          >
-            {Object.values(OrderStatus).map((status) => (
-              <Select.Option key={status} value={status}>
-                {status}
-              </Select.Option>
-            ))}
-          </Select>
+            options={Object.values(OrderStatus).map((status) => ({
+              label: status,
+              value: status,
+            }))}
+          />
         </div>
 
         <Table
           columns={columns}
-          dataSource={data?.data || []}
+          dataSource={data || []}
           rowKey='id'
           loading={isLoading}
           pagination={{ pageSize: 10 }}

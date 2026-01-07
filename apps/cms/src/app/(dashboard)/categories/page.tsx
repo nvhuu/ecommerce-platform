@@ -1,11 +1,12 @@
 "use client";
 
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Card, Input, message, Modal, Space, Table, Tag, Typography } from "antd";
-import { useState } from "react";
+import { Card } from "@/components/Card";
 import type { Category } from "@/domain/entities/category.entity";
 import { CategoryFormModal } from "@/presentation/features/categories/CategoryFormModal";
 import { useCategories, useDeleteCategory } from "@/presentation/hooks/useCategories";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { Button, Input, message, Modal, Space, Table, Tag, Typography } from "antd";
+import { useState } from "react";
 
 const { Title } = Typography;
 
@@ -106,7 +107,7 @@ export default function CategoriesPage() {
           <Input
             placeholder='Search categories...'
             prefix={<SearchOutlined />}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchText(e.target.value)}
             size='large'
             className='max-w-md'
           />

@@ -1,17 +1,11 @@
 "use client";
 
+import { Card } from "@/components/Card";
 import api from "@/lib/api";
 import auth from "@/lib/auth"; // Assuming you have an auth helper
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card as AntCard, Button, Divider, Form, Input, message } from "antd";
+import { Button, Divider, Form, Input, message } from "antd";
 import { useRouter } from "next/navigation";
-
-import { ElementType } from "react";
-
-// Workaround for Ant Design + React 19 type issue
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-const Card = AntCard as ElementType;
 
 export default function SettingsPage() {
   const [form] = Form.useForm();

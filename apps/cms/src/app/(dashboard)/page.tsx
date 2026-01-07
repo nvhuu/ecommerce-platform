@@ -1,5 +1,6 @@
 "use client";
 
+import { Card } from "@/components/Card";
 import type { Order } from "@/domain/entities/order.entity";
 import { useDashboardStats } from "@/presentation/hooks/useDashboard";
 import { useOrders } from "@/presentation/hooks/useOrders";
@@ -10,13 +11,13 @@ import {
   ShoppingCartOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Card, Col, Row, Skeleton, Statistic, Table, Tag } from "antd";
+import { Col, Row, Skeleton, Statistic, Table, Tag } from "antd";
 
 export default function DashboardPage() {
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: ordersData, isLoading: ordersLoading } = useOrders({ page: 1, limit: 5 });
 
-  const recentOrders = ordersData?.data || [];
+  const recentOrders = ordersData || [];
 
   const columns = [
     {

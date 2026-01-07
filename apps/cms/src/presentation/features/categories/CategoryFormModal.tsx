@@ -1,11 +1,8 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import type { Category } from "@/domain/entities/category.entity";
 import { Button, Form, Input, message, Modal, Select } from "antd";
 import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { categorySchema, type CategoryFormData } from "@/data/schemas/validation.schemas";
-import type { Category } from "@/domain/entities/category.entity";
 import { useCategories, useCreateCategory, useUpdateCategory } from "../../hooks/useCategories";
 
 interface CategoryFormModalProps {
@@ -14,51 +11,58 @@ interface CategoryFormModalProps {
   onClose: () => void;
 }
 
+interface CategoryFormValues {
+  name: string;
+  slug: string;
+  parentId: string | null;
+}
+
 export function CategoryFormModal({ open, category, onClose }: CategoryFormModalProps) {
+  const [form] = Form.useForm<CategoryFormValues>();
   const { data: categories } = useCategories({ limit: 100 });
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory();
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<CategoryFormData>({
-    resolver: zodResolver(categorySchema),
-  });
-
   useEffect(() => {
-    if (category) {
-      reset({
-        name: category.name,
-        slug: category.slug,
-        parentId: category.parentId,
-      });
-    } else {
-      reset({
-        name: "",
-        slug: "",
-        parentId: null,
-      });
+    if (open) {
+      if (category) {
+        form.setFieldsValue({
+          name: category.name,
+          slug: category.slug,
+          parentId: category.parentId,
+        });
+      } else {
+        form.resetFields();
+      }
     }
-  }, [category, reset]);
+  }, [category, open, form]);
 
-  const onSubmit = async (data: CategoryFormData) => {
+  const onSubmit = async (values: CategoryFormValues) => {
     try {
       // Auto-generate slug if not provided
-      const slug = data.slug || data.name.toLowerCase().replace(/\s+/g, "-");
+      const slug = values.slug || values.name.toLowerCase().replace(/\s+/g, "-");
 
       if (category) {
-        await updateMutation.mutateAsync({ id: category.id, data: { ...data, slug } });
+        await updateMutation.mutateAsync({
+          id: category.id,
+          data: {
+            name: values.name,
+            slug,
+            parentId: values.parentId,
+          },
+        });
         message.success("Category updated successfully");
       } else {
-        await createMutation.mutateAsync({ ...data, slug });
+        await createMutation.mutateAsync({
+          name: values.name,
+          slug,
+          parentId: values.parentId,
+        });
         message.success("Category created successfully");
       }
       onClose();
-    } catch (error: any) {
-      message.error(error.message || "Operation failed");
+    } catch (error: unknown) {
+      message.error((error as Error).message || "Operation failed");
     }
   };
 
@@ -75,50 +79,46 @@ export function CategoryFormModal({ open, category, onClose }: CategoryFormModal
       footer={null}
       width={600}
     >
-      <form onSubmit={handleSubmit(onSubmit)} className='mt-4'>
+      <Form
+        form={form}
+        layout='vertical'
+        onFinish={onSubmit}
+        initialValues={{
+          name: "",
+          slug: "",
+          parentId: null,
+        }}
+      >
         <Form.Item
           label='Category Name'
-          validateStatus={errors.name ? "error" : ""}
-          help={errors.name?.message}
-          required
+          name='name'
+          rules={[
+            { required: true, message: "Please enter category name" },
+            { min: 2, message: "Name must be at least 2 characters" },
+          ]}
         >
-          <Controller
-            name='name'
-            control={control}
-            render={({ field }) => <Input {...field} placeholder='Electronics' />}
-          />
+          <Input placeholder='Electronics' />
+        </Form.Item>
+
+        <Form.Item label='Slug' name='slug' help='Leave empty to auto-generate from name'>
+          <Input placeholder='electronics' />
         </Form.Item>
 
         <Form.Item
-          label='Slug'
-          validateStatus={errors.slug ? "error" : ""}
-          help={errors.slug?.message || "Leave empty to auto-generate from name"}
+          label='Parent Category'
+          name='parentId'
+          help='Select a parent category to create a subcategory'
         >
-          <Controller
-            name='slug'
-            control={control}
-            render={({ field }) => <Input {...field} placeholder='electronics' />}
-          />
-        </Form.Item>
-
-        <Form.Item label='Parent Category' help='Select a parent category to create a subcategory'>
-          <Controller
-            name='parentId'
-            control={control}
-            render={({ field }) => (
-              <Select
-                {...field}
-                placeholder='None (Top level)'
-                allowClear
-                options={[
-                  { label: "None (Top level)", value: null },
-                  ...(availableParents?.map((c) => ({
-                    label: c.name,
-                    value: c.id,
-                  })) || []),
-                ]}
-              />
-            )}
+          <Select
+            placeholder='None (Top level)'
+            allowClear
+            options={[
+              { label: "None (Top level)", value: null },
+              ...(availableParents?.map((c) => ({
+                label: c.name,
+                value: c.id,
+              })) || []),
+            ]}
           />
         </Form.Item>
 
@@ -132,7 +132,7 @@ export function CategoryFormModal({ open, category, onClose }: CategoryFormModal
             {category ? "Update Category" : "Create Category"}
           </Button>
         </div>
-      </form>
+      </Form>
     </Modal>
   );
 }

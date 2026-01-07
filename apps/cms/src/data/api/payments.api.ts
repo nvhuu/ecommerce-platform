@@ -62,7 +62,7 @@ export const paymentsApi = {
   getPayments: async (filters?: PaymentFilters) => {
     return await apiClient.get<Payment[]>({
       path: API_ENDPOINTS.PAYMENTS.BASE,
-      query: filters,
+      query: filters as Record<string, string | number | boolean | null | undefined>,
     });
   },
 

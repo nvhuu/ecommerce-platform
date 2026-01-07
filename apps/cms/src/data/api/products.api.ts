@@ -1,42 +1,17 @@
+import type {
+  CreateProductDto,
+  Product,
+  ProductFilters,
+  UpdateProductDto,
+} from "@/domain/entities/product.entity";
 import { apiClient } from "./api-client";
 import { API_ENDPOINTS } from "./endpoints.constant";
-
-export interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  stock: number;
-  categoryId: string;
-  images: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ProductFilters {
-  categoryId?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  inStock?: boolean;
-  search?: string;
-}
-
-export interface CreateProductDto {
-  name: string;
-  description: string;
-  price: number;
-  stock: number;
-  categoryId: string;
-  images?: string[];
-}
-
-export interface UpdateProductDto extends Partial<CreateProductDto> {}
 
 export const productsApi = {
   getAll: async (filters?: ProductFilters) => {
     return await apiClient.get<Product[]>({
       path: API_ENDPOINTS.PRODUCTS.BASE,
-      query: filters,
+      query: filters as Record<string, string | number | boolean | null | undefined>,
     });
   },
 
@@ -51,7 +26,7 @@ export const productsApi = {
     return await apiClient.get<Product[]>({
       path: API_ENDPOINTS.PRODUCTS.BY_CATEGORY,
       params: { categoryId },
-      query: filters,
+      query: filters as Record<string, string | number | boolean | null | undefined>,
     });
   },
 

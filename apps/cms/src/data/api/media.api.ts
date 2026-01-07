@@ -1,12 +1,21 @@
 import { API_ROUTES } from "@/domain/constants/api-routes";
 import type { CreateFolderDto, MediaFile, MediaFolder } from "@/domain/entities/media.entity";
-import { apiClient, deleteApi, postApi } from "./api-client";
+import { apiClient } from "./api-client";
 
 export const mediaApi = {
   getAll: async (folderId?: string): Promise<{ files: MediaFile[]; folders: MediaFolder[] }> => {
-    const params = folderId ? { folderId } : undefined;
-    const response = await apiClient.get<any>(API_ROUTES.MEDIA.BASE, params);
-    return response.data || response;
+    const response = await apiClient.get<
+      | { files: MediaFile[]; folders: MediaFolder[] }
+      | { data: { files: MediaFile[]; folders: MediaFolder[] } }
+    >({
+      path: API_ROUTES.MEDIA.BASE,
+      query: folderId ? { folderId } : undefined,
+    });
+
+    if ("data" in response) {
+      return response.data;
+    }
+    return response;
   },
 
   uploadFile: async (file: File, folderId?: string): Promise<MediaFile> => {
@@ -24,15 +33,14 @@ export const mediaApi = {
   },
 
   createFolder: async (data: CreateFolderDto): Promise<MediaFolder> => {
-    const response = await postApi<MediaFolder>(API_ROUTES.MEDIA.FOLDER, data);
-    return response.data;
+    return await apiClient.post<MediaFolder>(API_ROUTES.MEDIA.FOLDER, data);
   },
 
   deleteFile: async (id: string): Promise<void> => {
-    await deleteApi(API_ROUTES.MEDIA.DELETE("file", id));
+    await apiClient.delete(API_ROUTES.MEDIA.DELETE("file", id));
   },
 
   deleteFolder: async (id: string): Promise<void> => {
-    await deleteApi(API_ROUTES.MEDIA.DELETE("folder", id));
+    await apiClient.delete(API_ROUTES.MEDIA.DELETE("folder", id));
   },
 };

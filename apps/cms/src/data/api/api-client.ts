@@ -137,6 +137,15 @@ export const apiClient = {
     const config = getConfig(options);
     return axiosInstance.delete<T, T>(url, config);
   },
+
+  // Upload file with FormData
+  uploadFile: async <T = unknown>(path: string, formData: FormData): Promise<T> => {
+    return axiosInstance.post(path, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
 };
 
 export default axiosInstance;

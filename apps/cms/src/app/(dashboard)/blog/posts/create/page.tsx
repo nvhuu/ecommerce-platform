@@ -1,9 +1,10 @@
 "use client";
 
+import { Card } from "@/components/Card";
 import { BlogService, CreateBlogPostDto } from "@/domain/blog/blog.service";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useMutation } from "@tanstack/react-query";
-import { Button, Card, Form, Input, message, Select } from "antd";
+import { Button, Form, Input, message, Select } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -67,11 +68,13 @@ export default function CreateBlogPostPage() {
           </Form.Item>
 
           <Form.Item name='status' label='Status'>
-            <Select>
-              <Select.Option value='DRAFT'>Draft</Select.Option>
-              <Select.Option value='PUBLISHED'>Published</Select.Option>
-              <Select.Option value='ARCHIVED'>Archived</Select.Option>
-            </Select>
+            <Select
+              options={[
+                { label: "Draft", value: "DRAFT" },
+                { label: "Published", value: "PUBLISHED" },
+                { label: "Archived", value: "ARCHIVED" },
+              ]}
+            />
           </Form.Item>
 
           <Form.Item

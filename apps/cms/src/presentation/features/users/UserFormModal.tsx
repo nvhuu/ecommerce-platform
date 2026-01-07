@@ -1,17 +1,9 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Form, Input, message, Modal, Select } from "antd";
-import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
-import {
-  createUserSchema,
-  updateUserSchema,
-  type CreateUserFormData,
-  type UpdateUserFormData,
-} from "@/data/schemas/validation.schemas";
 import type { User } from "@/domain/entities/user.entity";
 import { UserRole } from "@/domain/entities/user.entity";
+import { Button, Form, Input, message, Modal, Select } from "antd";
+import { useEffect } from "react";
 import { useCreateUser, useUpdateUser } from "../../hooks/useUsers";
 
 interface UserFormModalProps {
@@ -20,51 +12,60 @@ interface UserFormModalProps {
   onClose: () => void;
 }
 
+interface UserFormValues {
+  name: string;
+  email: string;
+  password?: string;
+  role: UserRole;
+}
+
 export function UserFormModal({ open, user, onClose }: UserFormModalProps) {
+  const [form] = Form.useForm<UserFormValues>();
   const createMutation = useCreateUser();
   const updateMutation = useUpdateUser();
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<CreateUserFormData | UpdateUserFormData>({
-    resolver: zodResolver(user ? updateUserSchema : createUserSchema),
-  });
-
   useEffect(() => {
-    if (user) {
-      reset({
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      });
-    } else {
-      reset({
-        name: "",
-        email: "",
-        password: "",
-        role: UserRole.USER,
-      });
+    if (open) {
+      if (user) {
+        form.setFieldsValue({
+          name: user.name,
+          email: user.email,
+          role: user.role as UserRole,
+        });
+      } else {
+        form.resetFields();
+      }
     }
-  }, [user, reset]);
+  }, [user, open, form]);
 
-  const onSubmit = async (data: CreateUserFormData | UpdateUserFormData) => {
+  const onSubmit = async (values: UserFormValues) => {
     try {
       if (user) {
         await updateMutation.mutateAsync({
           id: user.id,
-          data: data as UpdateUserFormData,
+          data: {
+            name: values.name,
+            email: values.email,
+            role: values.role,
+          },
         });
         message.success("User updated successfully");
       } else {
-        await createMutation.mutateAsync(data as CreateUserFormData);
+        if (!values.password) {
+          message.error("Password is required for new users");
+          return;
+        }
+        await createMutation.mutateAsync({
+          name: values.name,
+          email: values.email,
+          password: values.password,
+          role: values.role,
+        });
         message.success("User created successfully");
       }
       onClose();
-    } catch (error: any) {
-      message.error(error.message || "Operation failed");
+    } catch (error: unknown) {
+      message.error((error as Error).message || "Operation failed");
     }
   };
 
@@ -76,67 +77,63 @@ export function UserFormModal({ open, user, onClose }: UserFormModalProps) {
       footer={null}
       width={600}
     >
-      <form onSubmit={handleSubmit(onSubmit)} className='mt-4'>
+      <Form
+        form={form}
+        layout='vertical'
+        onFinish={onSubmit}
+        initialValues={{
+          name: "",
+          email: "",
+          password: "",
+          role: UserRole.USER,
+        }}
+      >
         <Form.Item
           label='Name'
-          validateStatus={errors.name ? "error" : ""}
-          help={errors.name?.message}
-          required
+          name='name'
+          rules={[
+            { required: true, message: "Please enter user name" },
+            { min: 2, message: "Name must be at least 2 characters" },
+          ]}
         >
-          <Controller
-            name='name'
-            control={control}
-            render={({ field }) => <Input {...field} placeholder='John Doe' />}
-          />
+          <Input placeholder='John Doe' />
         </Form.Item>
 
         <Form.Item
           label='Email'
-          validateStatus={errors.email ? "error" : ""}
-          help={errors.email?.message}
-          required
+          name='email'
+          rules={[
+            { required: true, message: "Please enter email" },
+            { type: "email", message: "Please enter a valid email" },
+          ]}
         >
-          <Controller
-            name='email'
-            control={control}
-            render={({ field }) => <Input {...field} type='email' placeholder='john@example.com' />}
-          />
+          <Input type='email' placeholder='john@example.com' />
         </Form.Item>
 
         {!user && (
           <Form.Item
             label='Password'
-            validateStatus={"password" in errors && errors.password ? "error" : ""}
-            help={"password" in errors ? errors.password?.message : undefined}
-            required
+            name='password'
+            rules={[
+              { required: true, message: "Please enter password" },
+              { min: 6, message: "Password must be at least 6 characters" },
+            ]}
           >
-            <Controller
-              name='password'
-              control={control}
-              render={({ field }) => (
-                <Input.Password {...field} placeholder='Minimum 6 characters' />
-              )}
-            />
+            <Input.Password placeholder='Minimum 6 characters' />
           </Form.Item>
         )}
 
         <Form.Item
           label='Role'
-          validateStatus={errors.role ? "error" : ""}
-          help={errors.role?.message}
+          name='role'
+          rules={[{ required: true, message: "Please select a role" }]}
         >
-          <Controller
-            name='role'
-            control={control}
-            render={({ field }) => (
-              <Select {...field} placeholder='Select role'>
-                {Object.values(UserRole).map((role) => (
-                  <Select.Option key={role} value={role}>
-                    {role}
-                  </Select.Option>
-                ))}
-              </Select>
-            )}
+          <Select
+            placeholder='Select role'
+            options={Object.values(UserRole).map((role) => ({
+              label: role,
+              value: role,
+            }))}
           />
         </Form.Item>
 
@@ -150,7 +147,7 @@ export function UserFormModal({ open, user, onClose }: UserFormModalProps) {
             {user ? "Update User" : "Create User"}
           </Button>
         </div>
-      </form>
+      </Form>
     </Modal>
   );
 }

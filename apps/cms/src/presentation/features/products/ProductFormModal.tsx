@@ -1,11 +1,8 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import type { Product } from "@/domain/entities/product.entity";
 import { Button, Form, Input, InputNumber, message, Modal, Select } from "antd";
 import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { productSchema, type ProductFormData } from "@/data/schemas/validation.schemas";
-import type { Product } from "@/domain/entities/product.entity";
 import { useCategories } from "../../hooks/useCategories";
 import { useCreateProduct, useUpdateProduct } from "../../hooks/useProducts";
 
@@ -17,54 +14,50 @@ interface ProductFormModalProps {
   onClose: () => void;
 }
 
+interface ProductFormValues {
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  categoryId: string;
+  images: string[];
+}
+
 export function ProductFormModal({ open, product, onClose }: ProductFormModalProps) {
+  const [form] = Form.useForm<ProductFormValues>();
   const { data: categories } = useCategories({ limit: 100 });
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<ProductFormData>({
-    resolver: zodResolver(productSchema),
-  });
-
   useEffect(() => {
-    if (product) {
-      reset({
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        stock: product.stock,
-        categoryId: product.categoryId,
-        images: product.images,
-      });
-    } else {
-      reset({
-        name: "",
-        description: "",
-        price: 0,
-        stock: 0,
-        categoryId: "",
-        images: [],
-      });
+    if (open) {
+      if (product) {
+        form.setFieldsValue({
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          stock: product.stock,
+          categoryId: product.categoryId,
+          images: product.images,
+        });
+      } else {
+        form.resetFields();
+      }
     }
-  }, [product, reset]);
+  }, [product, open, form]);
 
-  const onSubmit = async (data: ProductFormData) => {
+  const onSubmit = async (values: ProductFormValues) => {
     try {
       if (product) {
-        await updateMutation.mutateAsync({ id: product.id, data });
+        await updateMutation.mutateAsync({ id: product.id, data: values });
         message.success("Product updated successfully");
       } else {
-        await createMutation.mutateAsync(data);
+        await createMutation.mutateAsync(values);
         message.success("Product created successfully");
       }
       onClose();
-    } catch (error: any) {
-      message.error(error.message || "Operation failed");
+    } catch (error: unknown) {
+      message.error((error as Error).message || "Operation failed");
     }
   };
 
@@ -76,96 +69,84 @@ export function ProductFormModal({ open, product, onClose }: ProductFormModalPro
       footer={null}
       width={700}
     >
-      <form onSubmit={handleSubmit(onSubmit)} className='mt-4'>
+      <Form
+        form={form}
+        layout='vertical'
+        onFinish={onSubmit}
+        initialValues={{
+          name: "",
+          description: "",
+          price: 0,
+          stock: 0,
+          categoryId: "",
+          images: [],
+        }}
+      >
         <Form.Item
           label='Product Name'
-          validateStatus={errors.name ? "error" : ""}
-          help={errors.name?.message}
+          name='name'
+          rules={[
+            { required: true, message: "Please enter product name" },
+            { min: 2, message: "Name must be at least 2 characters" },
+          ]}
         >
-          <Controller
-            name='name'
-            control={control}
-            render={({ field }) => <Input {...field} placeholder='Premium Cotton Shirt' />}
-          />
+          <Input placeholder='Premium Cotton Shirt' />
         </Form.Item>
 
         <div className='grid grid-cols-2 gap-4'>
           <Form.Item
             label='Price ($)'
-            validateStatus={errors.price ? "error" : ""}
-            help={errors.price?.message}
+            name='price'
+            rules={[
+              { required: true, message: "Please enter price" },
+              { type: "number", min: 0, message: "Price must be non-negative" },
+            ]}
           >
-            <Controller
-              name='price'
-              control={control}
-              render={({ field }) => (
-                <InputNumber {...field} style={{ width: "100%" }} min={0} step={0.01} />
-              )}
-            />
+            <InputNumber style={{ width: "100%" }} min={0} step={0.01} />
           </Form.Item>
 
           <Form.Item
             label='Stock Quantity'
-            validateStatus={errors.stock ? "error" : ""}
-            help={errors.stock?.message}
+            name='stock'
+            rules={[
+              { required: true, message: "Please enter stock quantity" },
+              { type: "number", min: 0, message: "Stock must be non-negative" },
+            ]}
           >
-            <Controller
-              name='stock'
-              control={control}
-              render={({ field }) => (
-                <InputNumber {...field} style={{ width: "100%" }} min={0} precision={0} />
-              )}
-            />
+            <InputNumber style={{ width: "100%" }} min={0} precision={0} />
           </Form.Item>
         </div>
 
         <Form.Item
           label='Category'
-          validateStatus={errors.categoryId ? "error" : ""}
-          help={errors.categoryId?.message}
+          name='categoryId'
+          rules={[{ required: true, message: "Please select a category" }]}
         >
-          <Controller
-            name='categoryId'
-            control={control}
-            render={({ field }) => (
-              <Select
-                {...field}
-                placeholder='Select a category'
-                options={categories?.map((c) => ({
-                  label: c.name,
-                  value: c.id,
-                }))}
-              />
-            )}
+          <Select
+            placeholder='Select a category'
+            options={categories?.map((c) => ({
+              label: c.name,
+              value: c.id,
+            }))}
           />
         </Form.Item>
 
-        <Form.Item label='Description'>
-          <Controller
-            name='description'
-            control={control}
-            render={({ field }) => (
-              <TextArea {...field} rows={4} placeholder='Detailed product description...' />
-            )}
-          />
+        <Form.Item label='Description' name='description'>
+          <TextArea rows={4} placeholder='Detailed product description...' />
         </Form.Item>
 
-        <Form.Item label='Images (URLs)' help='Enter image URLs separated by new lines'>
-          <Controller
-            name='images'
-            control={control}
-            render={({ field: { value, onChange } }) => (
-              <TextArea
-                value={value?.join("\n") || ""}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                  const urls = e.target.value.split("\n").filter(Boolean);
-                  onChange(urls);
-                }}
-                rows={3}
-                placeholder='https://example.com/image1.jpg'
-              />
-            )}
-          />
+        <Form.Item
+          label='Images (URLs)'
+          name='images'
+          help='Enter image URLs separated by new lines'
+          getValueFromEvent={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+            return e.target.value.split("\n").filter(Boolean);
+          }}
+          getValueProps={(value: string[]) => ({
+            value: value?.join("\n") || "",
+          })}
+        >
+          <TextArea rows={3} placeholder='https://example.com/image1.jpg' />
         </Form.Item>
 
         <div className='flex justify-end gap-2 mt-6'>
@@ -178,7 +159,7 @@ export function ProductFormModal({ open, product, onClose }: ProductFormModalPro
             {product ? "Update Product" : "Create Product"}
           </Button>
         </div>
-      </form>
+      </Form>
     </Modal>
   );
 }

@@ -1,12 +1,13 @@
 "use client";
 
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Card, Input, message, Modal, Space, Table, Tag, Typography } from "antd";
-import Image from "next/image";
-import { useState } from "react";
+import { Card } from "@/components/Card";
 import type { Product } from "@/domain/entities/product.entity";
 import { ProductFormModal } from "@/presentation/features/products/ProductFormModal";
 import { useDeleteProduct, useProducts } from "@/presentation/hooks/useProducts";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { Button, Input, message, Modal, Space, Table, Tag, Typography } from "antd";
+import Image from "next/image";
+import { useState } from "react";
 
 const { Title } = Typography;
 
@@ -130,7 +131,7 @@ export default function ProductsPage() {
 
         <Table
           columns={columns}
-          dataSource={data?.data || []}
+          dataSource={data || []}
           rowKey='id'
           loading={isLoading}
           pagination={{ pageSize: 10 }}

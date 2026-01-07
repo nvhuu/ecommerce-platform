@@ -1,5 +1,6 @@
 "use client";
 
+import { Card } from "@/components/Card";
 import type { MediaFile, MediaFolder } from "@/domain/entities/media.entity";
 import {
   useCreateFolder,
@@ -10,7 +11,7 @@ import {
 } from "@/presentation/hooks/useMedia";
 import { FolderAddOutlined, InboxOutlined, UploadOutlined } from "@ant-design/icons";
 import type { UploadProps } from "antd";
-import { Button, Card, Input, message, Modal, Space, Table, Typography, Upload } from "antd";
+import { Button, Input, message, Modal, Space, Table, Typography, Upload } from "antd";
 import { useState } from "react";
 
 const { Title, Text } = Typography;
@@ -27,7 +28,7 @@ export default function MediaPage() {
   const deleteFileMutation = useDeleteFile();
   const deleteFolderMutation = useDeleteFolder();
 
-  const uploadProps: UploadProps = {
+  const uploadProps: Partial<UploadProps> = {
     name: "file",
     multiple: true,
     customRequest: async ({ file, onSuccess, onError }) => {
@@ -258,7 +259,7 @@ export default function MediaPage() {
         <Input
           placeholder='Folder name'
           value={newFolderName}
-          onChange={(e) => setNewFolderName(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewFolderName(e.target.value)}
           onPressEnter={handleCreateFolder}
           autoFocus
         />

@@ -1,66 +1,83 @@
-import { API_ROUTES } from "@/domain/constants/api-routes";
-import type { PaginatedResponse, PaginationParams } from "@/domain/entities/common.entity";
-import type {
-  CreateProductDto,
-  Product,
-  ProductFilters,
-  UpdateProductDto,
-} from "@/domain/entities/product.entity";
-import { apiClient, deleteApi, getApi, patchApi, postApi } from "./api-client";
+import { apiClient } from "./api-client";
+import { API_ENDPOINTS } from "./endpoints.constant";
+
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  categoryId: string;
+  images: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProductFilters {
+  categoryId?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  inStock?: boolean;
+  search?: string;
+}
+
+export interface CreateProductDto {
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  categoryId: string;
+  images?: string[];
+}
+
+export interface UpdateProductDto extends Partial<CreateProductDto> {}
 
 export const productsApi = {
-  getAll: async (
-    params?: PaginationParams & ProductFilters
-  ): Promise<PaginatedResponse<Product>> => {
-    // API returns either paginated or simple array, handle both
-    const response = await apiClient.get<PaginatedResponse<Product> | { data: Product[] }>(
-      API_ROUTES.PRODUCTS.BASE,
-      params
-    );
+  getAll: async (filters?: ProductFilters) => {
+    return await apiClient.get<Product[]>({
+      path: API_ENDPOINTS.PRODUCTS.BASE,
+      query: filters,
+    });
+  },
 
-    // Normalize response
-    if ("metadata" in response) {
-      return response;
-    }
+  getById: async (id: string) => {
+    return await apiClient.get<Product>({
+      path: API_ENDPOINTS.PRODUCTS.BY_ID,
+      params: { id },
+    });
+  },
 
-    // Convert simple response to paginated format
-    return {
-      data: (response as any).data || [],
-      metadata: {
-        total: ((response as any).data || []).length,
-        page: params?.page || 1,
-        limit: params?.limit || 10,
-        totalPages: 1,
+  getByCategory: async (categoryId: string, filters?: ProductFilters) => {
+    return await apiClient.get<Product[]>({
+      path: API_ENDPOINTS.PRODUCTS.BY_CATEGORY,
+      params: { categoryId },
+      query: filters,
+    });
+  },
+
+  create: async (data: CreateProductDto) => {
+    return await apiClient.post<Product>(
+      {
+        path: API_ENDPOINTS.PRODUCTS.BASE,
       },
-    };
-  },
-
-  getById: async (id: string): Promise<Product> => {
-    const response = await getApi<Product>(API_ROUTES.PRODUCTS.BY_ID(id));
-    return response.data;
-  },
-
-  getByCategory: async (
-    categoryId: string,
-    params?: PaginationParams
-  ): Promise<PaginatedResponse<Product>> => {
-    return apiClient.get<PaginatedResponse<Product>>(
-      API_ROUTES.PRODUCTS.BY_CATEGORY(categoryId),
-      params
+      data
     );
   },
 
-  create: async (data: CreateProductDto): Promise<Product> => {
-    const response = await postApi<Product>(API_ROUTES.PRODUCTS.BASE, data);
-    return response.data;
+  update: async (id: string, data: UpdateProductDto) => {
+    return await apiClient.patch<Product>(
+      {
+        path: API_ENDPOINTS.PRODUCTS.BY_ID,
+        params: { id },
+      },
+      data
+    );
   },
 
-  update: async (id: string, data: UpdateProductDto): Promise<Product> => {
-    const response = await patchApi<Product>(API_ROUTES.PRODUCTS.BY_ID(id), data);
-    return response.data;
-  },
-
-  delete: async (id: string): Promise<void> => {
-    await deleteApi(API_ROUTES.PRODUCTS.BY_ID(id));
+  delete: async (id: string) => {
+    return await apiClient.delete({
+      path: API_ENDPOINTS.PRODUCTS.BY_ID,
+      params: { id },
+    });
   },
 };

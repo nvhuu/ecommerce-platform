@@ -1,41 +1,81 @@
-import { API_ROUTES } from "@/domain/constants/api-routes";
-import type { PaginatedResponse, PaginationParams } from "@/domain/entities/common.entity";
-import type { Order, OrderFilters, UpdateOrderStatusDto } from "@/domain/entities/order.entity";
-import { apiClient, deleteApi, getApi, patchApi } from "./api-client";
+import { apiClient } from "./api-client";
+import { API_ENDPOINTS } from "./endpoints.constant";
+
+export interface Order {
+  id: string;
+  orderNumber: string;
+  userId: string;
+  status: OrderStatus;
+  totalAmount: number;
+  shippingAddress: Record<string, unknown>;
+  items: OrderItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrderItem {
+  id: string;
+  productId: string;
+  quantity: number;
+  price: number;
+}
+
+export enum OrderStatus {
+  PENDING = "PENDING",
+  PROCESSING = "PROCESSING",
+  SHIPPED = "SHIPPED",
+  DELIVERED = "DELIVERED",
+  CANCELLED = "CANCELLED",
+}
+
+export interface OrderFilters {
+  status?: OrderStatus;
+  userId?: string;
+  startDate?: string;
+  endDate?: string;
+  search?: string;
+}
+
+export interface UpdateOrderStatusDto {
+  status: OrderStatus;
+}
 
 export const ordersApi = {
-  getAll: async (params?: PaginationParams & OrderFilters): Promise<PaginatedResponse<Order>> => {
-    const response = await apiClient.get<PaginatedResponse<Order> | { data: Order[] }>(
-      API_ROUTES.ORDERS.BASE,
-      params
-    );
+  getAll: async (filters?: OrderFilters) => {
+    return await apiClient.get<Order[]>({
+      path: API_ENDPOINTS.ORDERS.BASE,
+      query: filters,
+    });
+  },
 
-    if ("metadata" in response) {
-      return response;
-    }
+  getById: async (id: string) => {
+    return await apiClient.get<Order>({
+      path: API_ENDPOINTS.ORDERS.BY_ID,
+      params: { id },
+    });
+  },
 
-    return {
-      data: (response as any).data || [],
-      metadata: {
-        total: ((response as any).data || []).length,
-        page: params?.page || 1,
-        limit: params?.limit || 10,
-        totalPages: 1,
+  getByUser: async (userId: string) => {
+    return await apiClient.get<Order[]>({
+      path: API_ENDPOINTS.ORDERS.BY_USER,
+      params: { userId },
+    });
+  },
+
+  updateStatus: async (id: string, data: UpdateOrderStatusDto) => {
+    return await apiClient.patch<Order>(
+      {
+        path: API_ENDPOINTS.ORDERS.UPDATE_STATUS,
+        params: { id },
       },
-    };
+      data
+    );
   },
 
-  getById: async (id: string): Promise<Order> => {
-    const response = await getApi<Order>(API_ROUTES.ORDERS.BY_ID(id));
-    return response.data;
-  },
-
-  updateStatus: async (id: string, data: UpdateOrderStatusDto): Promise<Order> => {
-    const response = await patchApi<Order>(API_ROUTES.ORDERS.STATUS(id), data);
-    return response.data;
-  },
-
-  delete: async (id: string): Promise<void> => {
-    await deleteApi(API_ROUTES.ORDERS.BY_ID(id));
+  delete: async (id: string) => {
+    return await apiClient.delete({
+      path: API_ENDPOINTS.ORDERS.BY_ID,
+      params: { id },
+    });
   },
 };

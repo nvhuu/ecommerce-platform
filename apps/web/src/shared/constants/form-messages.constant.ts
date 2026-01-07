@@ -78,15 +78,15 @@ export const translations = {
 export type Translations = typeof translations;
 
 // Helper function to get translation (placeholder for future i18n)
-export const t = (key: string, locale: Locale = "en"): string => {
+export const t = (key: string): string => {
   // For now, just return English
-  // In the future, this will support multiple locales
+  // In the future, this will support multiple locales: t(key, locale)
   const keys = key.split(".");
-  let value: any = translations;
+  let value: Record<string, unknown> | string = translations;
 
   for (const k of keys) {
     if (value && typeof value === "object" && k in value) {
-      value = value[k];
+      value = value[k] as Record<string, unknown> | string;
     } else {
       return key; // Return key if not found
     }

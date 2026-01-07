@@ -1,119 +1,142 @@
-import type {
-  ApiError,
-  ApiResponse,
-  PaginatedResponse,
-  PaginationParams,
-} from "@/domain/entities/common.entity";
-import axios, { type AxiosError, type AxiosInstance } from "axios";
+import { translations } from "@/shared/constants/messages.constant";
+import { message } from "antd";
+import axios, { type AxiosInstance, type AxiosRequestConfig } from "axios";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
 
-class ApiClient {
-  private client: AxiosInstance;
+// Create axios instance
+const axiosInstance: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
-  constructor(baseURL: string) {
-    this.client = axios.create({
-      baseURL,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      withCredentials: true,
-    });
+// Request interceptor for adding auth token
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
-    // Request interceptor - add auth token
-    this.client.interceptors.request.use(
-      (config) => {
-        // Get token from localStorage (client-side only)
-        const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
-
-    // Response interceptor - handle errors
-    this.client.interceptors.response.use(
-      (response) => response,
-      (error: AxiosError<ApiError>) => {
-        // Handle 401 - redirect to login
-        if (error.response?.status === 401 && typeof window !== "undefined") {
-          localStorage.removeItem("access_token");
-          if (!window.location.pathname.includes("/login")) {
-            window.location.href = "/login";
-          }
-        }
-
-        // Format error
-        const apiError: ApiError = {
-          message: error.response?.data?.message || error.message || "An error occurred",
-          error: error.response?.data?.error,
-          statusCode: error.response?.status,
-        };
-
-        return Promise.reject(apiError);
+// Response interceptor for handling errors with toast
+axiosInstance.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    // Only show toast on client side
+    if (typeof window !== "undefined") {
+      // Handle authentication errors
+      if (error.response?.status === 401) {
+        message.error(translations.errors.auth.sessionExpired);
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        return Promise.reject(error);
       }
-    );
+
+      // Handle other errors with toast
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        translations.errors.network.generic;
+
+      message.error(errorMessage);
+    }
+
+    return Promise.reject(error.response?.data || error);
+  }
+);
+
+// Enhanced API request options
+export interface ApiRequestOptions {
+  path: string;
+  params?: Record<string, string | number>;
+  query?: Record<string, string | number | boolean | undefined | null>;
+  config?: AxiosRequestConfig;
+  silent?: boolean; // Skip error toast for this request
+}
+
+// Helper to build full URL with params and query
+const buildRequestUrl = (options: string | ApiRequestOptions): string => {
+  if (typeof options === "string") {
+    return options;
   }
 
-  async get<T>(endpoint: string, params?: PaginationParams): Promise<T> {
-    const response = await this.client.get<T>(endpoint, { params });
-    return response.data;
-  }
+  let url = options.path;
 
-  async post<T>(endpoint: string, data?: unknown): Promise<T> {
-    const response = await this.client.post<T>(endpoint, data);
-    return response.data;
-  }
-
-  async patch<T>(endpoint: string, data?: unknown): Promise<T> {
-    const response = await this.client.patch<T>(endpoint, data);
-    return response.data;
-  }
-
-  async delete<T>(endpoint: string): Promise<T> {
-    const response = await this.client.delete<T>(endpoint);
-    return response.data;
-  }
-
-  async uploadFile<T>(endpoint: string, formData: FormData): Promise<T> {
-    const response = await this.client.post<T>(endpoint, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+  // Replace path parameters
+  if (options.params) {
+    Object.entries(options.params).forEach(([key, value]) => {
+      url = url.replace(`:${key}`, String(value));
     });
-    return response.data;
   }
-}
 
-export const apiClient = new ApiClient(API_BASE_URL);
+  // Add query string
+  if (options.query) {
+    const searchParams = new URLSearchParams();
+    Object.entries(options.query).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+    const queryString = searchParams.toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+  }
 
-// Type-safe wrapper helpers
-export async function getApi<T>(
-  endpoint: string,
-  params?: PaginationParams
-): Promise<ApiResponse<T>> {
-  return apiClient.get<ApiResponse<T>>(endpoint, params);
-}
+  return url;
+};
 
-export async function getPaginatedApi<T>(
-  endpoint: string,
-  params?: PaginationParams
-): Promise<PaginatedResponse<T>> {
-  return apiClient.get<PaginatedResponse<T>>(endpoint, params);
-}
+// Get config with silent option
+const getConfig = (options: string | ApiRequestOptions, additionalConfig?: AxiosRequestConfig) => {
+  const baseConfig = typeof options === "object" ? options.config : additionalConfig;
+  const silent = typeof options === "object" ? options.silent : false;
 
-export async function postApi<T>(endpoint: string, data?: unknown): Promise<ApiResponse<T>> {
-  return apiClient.post<ApiResponse<T>>(endpoint, data);
-}
+  return {
+    ...baseConfig,
+    metadata: { silent }, // Pass silent flag through metadata
+  };
+};
 
-export async function patchApi<T>(endpoint: string, data?: unknown): Promise<ApiResponse<T>> {
-  return apiClient.patch<ApiResponse<T>>(endpoint, data);
-}
+// Enhanced API client with options support
+export const apiClient = {
+  get: <T = unknown>(options: string | ApiRequestOptions): Promise<T> => {
+    const url = buildRequestUrl(options);
+    const config = getConfig(options);
+    return axiosInstance.get<T, T>(url, config);
+  },
 
-export async function deleteApi<T>(endpoint: string): Promise<ApiResponse<T>> {
-  return apiClient.delete<ApiResponse<T>>(endpoint);
-}
+  post: <T = unknown>(options: string | ApiRequestOptions, data?: unknown): Promise<T> => {
+    const url = buildRequestUrl(options);
+    const config = getConfig(options);
+    return axiosInstance.post<T, T>(url, data, config);
+  },
+
+  patch: <T = unknown>(options: string | ApiRequestOptions, data?: unknown): Promise<T> => {
+    const url = buildRequestUrl(options);
+    const config = getConfig(options);
+    return axiosInstance.patch<T, T>(url, data, config);
+  },
+
+  put: <T = unknown>(options: string | ApiRequestOptions, data?: unknown): Promise<T> => {
+    const url = buildRequestUrl(options);
+    const config = getConfig(options);
+    return axiosInstance.put<T, T>(url, data, config);
+  },
+
+  delete: <T = unknown>(options: string | ApiRequestOptions): Promise<T> => {
+    const url = buildRequestUrl(options);
+    const config = getConfig(options);
+    return axiosInstance.delete<T, T>(url, config);
+  },
+};
+
+export default axiosInstance;
